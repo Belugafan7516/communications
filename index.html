@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v3.1 // MODERATOR_EDITION</title>
+    <title>TERM-CHAT v3.2 // ADMIN_ACCESS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -11,6 +11,7 @@
             --terminal-dark: #050505;
             --terminal-glow: 0 0 8px rgba(34, 197, 94, 0.6);
             --terminal-alert: #ef4444;
+            --terminal-alert-glow: 0 0 8px rgba(239, 68, 68, 0.6);
         }
         
         body {
@@ -34,9 +35,16 @@
         }
 
         .retro-text { text-shadow: var(--terminal-glow); }
+        .alert-text { color: var(--terminal-alert); text-shadow: var(--terminal-alert-glow); }
+        
         .neon-border {
             border: 2px solid var(--terminal-green);
             box-shadow: var(--terminal-glow);
+        }
+        
+        .alert-border {
+            border: 2px solid var(--terminal-alert);
+            box-shadow: var(--terminal-alert-glow);
         }
 
         .btn-retro {
@@ -45,12 +53,25 @@
             font-size: 10px;
             background: rgba(0, 20, 0, 0.5);
             white-space: nowrap;
+            cursor: pointer;
         }
 
         .btn-retro:hover {
             background: var(--terminal-green);
             color: black;
             box-shadow: var(--terminal-glow);
+        }
+
+        .btn-alert {
+            border: 1px solid var(--terminal-alert);
+            color: var(--terminal-alert);
+            background: rgba(20, 0, 0, 0.5);
+        }
+        
+        .btn-alert:hover {
+            background: var(--terminal-alert);
+            color: black;
+            box-shadow: var(--terminal-alert-glow);
         }
 
         ::-webkit-scrollbar { width: 4px; }
@@ -119,7 +140,7 @@
         </div>
     </div>
 
-    <!-- MODAL (NICKNAME/EDIT) -->
+    <!-- GENERIC MODAL (NICKNAME/EDIT) -->
     <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-sm bg-zinc-950 neon-border p-6 md:p-8 text-center my-auto">
             <h2 id="modal-title" class="text-lg font-bold retro-text mb-4">IDENTITY_PROTOCOL</h2>
@@ -131,6 +152,43 @@
                     <button type="button" id="cancel-modal" onclick="closeModal()" class="text-[10px] text-green-900 hover:text-red-500 p-2 uppercase">Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-50 flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-md bg-zinc-950 alert-border p-6 md:p-8 my-auto relative">
+            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
+            
+            <h2 class="text-xl font-bold alert-text mb-2 text-center">SYSTEM_ADMINISTRATION</h2>
+            <div class="h-px bg-red-900 w-full mb-6"></div>
+
+            <div class="space-y-6">
+                <!-- Stats -->
+                <div class="bg-red-950/20 p-4 border border-red-900">
+                    <div class="text-[10px] text-red-400 mb-1">SYSTEM_DIAGNOSTICS</div>
+                    <div id="admin-stats" class="text-sm font-bold text-red-500">CACHED_MSG_COUNT: CALCULATING...</div>
+                </div>
+
+                <!-- Actions -->
+                <div class="space-y-3">
+                    <div class="text-[10px] text-red-400 mb-1">MAINTENANCE_PROTOCOLS</div>
+                    
+                    <button onclick="performCleanup(true)" class="w-full btn-alert py-3 flex items-center justify-center gap-2">
+                        <span>[ EXECUTE_PURGE_PROTOCOL ]</span>
+                        <span class="text-[8px] opacity-70">(>30 DAYS)</span>
+                    </button>
+
+                    <button onclick="confirmSystemFlush()" class="w-full btn-alert py-3 flex items-center justify-center gap-2 bg-red-950/40 hover:bg-red-600">
+                        <span>[ SYSTEM_FLUSH ]</span>
+                        <span class="text-[8px] opacity-70">(DELETE ALL)</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <div id="admin-status" class="text-[10px] text-red-400 animate-pulse">READY_FOR_COMMAND</div>
+            </div>
         </div>
     </div>
 
@@ -148,7 +206,7 @@
             </div>
 
             <div class="flex items-center gap-2">
-                <span id="mod-badge" class="hidden text-[8px] bg-red-900 text-white px-2 py-1 rounded font-bold">ADMIN_KEY</span>
+                <button id="admin-btn" onclick="openAdminPanel()" class="hidden btn-retro !border-red-500 !text-red-500 hover:!bg-red-500 hover:!text-black"> [ ADMIN ] </button>
                 <button onclick="openNicknameModal()" class="btn-retro"> [ NAME ] </button>
                 <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500 hover:!bg-red-950/20 hover:!text-red-500"> [ EXIT ] </button>
             </div>
@@ -172,7 +230,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs, writeBatch } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
@@ -192,12 +250,14 @@
         let isModerator = false;
         let messagesUnsubscribe = null;
         let activeModalAction = null;
+        let currentMessageCount = 0;
 
         const els = {
             loading: document.getElementById('loading-screen'),
             auth: document.getElementById('auth-screen'),
             chat: document.getElementById('chat-screen'),
             nicknameModal: document.getElementById('nickname-modal'),
+            adminModal: document.getElementById('admin-modal'),
             messageFeed: document.getElementById('message-feed'),
             messageInput: document.getElementById('message-input'),
             modalInput: document.getElementById('modal-input'),
@@ -207,7 +267,9 @@
             sessionInfo: document.getElementById('session-info'),
             authError: document.getElementById('auth-error-msg'),
             genericForm: document.getElementById('generic-form'),
-            modBadge: document.getElementById('mod-badge')
+            adminBtn: document.getElementById('admin-btn'),
+            adminStats: document.getElementById('admin-stats'),
+            adminStatus: document.getElementById('admin-status')
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -220,10 +282,10 @@
                     isModerator = modSnap.exists();
                     
                     if(isModerator) {
-                        els.modBadge.classList.remove('hidden');
-                        performCleanup(); // Only mods run the cleanup script
+                        els.adminBtn.classList.remove('hidden');
+                        performCleanup(false); // Silent auto-cleanup on login
                     } else {
-                        els.modBadge.classList.add('hidden');
+                        els.adminBtn.classList.add('hidden');
                     }
                 } catch(e) { console.error("Mod Check Failed", e); }
 
@@ -247,9 +309,20 @@
             }
         });
 
-        // 30-Day Auto Cleanup Logic (MODERATORS ONLY)
-        async function performCleanup() {
-            els.systemStatus.innerText = "ADMIN: RUNNING_PURGE_PROTOCOL...";
+        // --- ADMIN FUNCTIONS ---
+        
+        window.openAdminPanel = () => {
+            els.adminModal.classList.remove('hidden');
+            els.adminStats.innerText = `ACTIVE_NODES: ${currentMessageCount}`;
+        };
+
+        window.closeAdminPanel = () => {
+            els.adminModal.classList.add('hidden');
+        };
+
+        window.performCleanup = async (manualTrigger) => {
+            if (manualTrigger) els.adminStatus.innerText = "EXECUTING_PURGE...";
+            
             try {
                 const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
                 const querySnapshot = await getDocs(collection(db, "messages"));
@@ -263,13 +336,37 @@
                         deletedCount++;
                     }
                 });
-                setTimeout(() => els.systemStatus.innerText = `PURGE_COMPLETE: ${deletedCount} DELETED`, 2000);
-                setTimeout(() => els.systemStatus.innerText = "ADMIN_ACCESS_GRANTED", 5000);
+                
+                if (manualTrigger) els.adminStatus.innerText = `PURGE_COMPLETE: ${deletedCount} REMOVED`;
             } catch (e) { 
                 console.error("Cleanup Error", e);
-                els.systemStatus.innerText = "PURGE_ERROR";
+                if (manualTrigger) els.adminStatus.innerText = "ERROR_DURING_PURGE";
             }
-        }
+        };
+
+        window.confirmSystemFlush = async () => {
+            const code = prompt("WARNING: THIS WILL DELETE ALL MESSAGES.\nTYPE 'CONFIRM' TO EXECUTE.");
+            if (code !== 'CONFIRM') return;
+
+            els.adminStatus.innerText = "INITIATING_SYSTEM_FLUSH...";
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, "messages"));
+                // Firestore batch limit is 500, simple loop for small app
+                const batchPromises = [];
+                querySnapshot.forEach((d) => {
+                    batchPromises.push(deleteDoc(doc(db, "messages", d.id)));
+                });
+                await Promise.all(batchPromises);
+                els.adminStatus.innerText = "SYSTEM_FLUSHED_SUCCESSFULLY";
+                els.adminStats.innerText = "ACTIVE_NODES: 0";
+            } catch (e) {
+                console.error("Flush Error", e);
+                els.adminStatus.innerText = "FLUSH_FAILED";
+            }
+        };
+
+        // --- MESSAGE LOGIC ---
 
         function subscribeMessages() {
             if (messagesUnsubscribe) messagesUnsubscribe();
@@ -277,6 +374,11 @@
             messagesUnsubscribe = onSnapshot(msgsRef, (snap) => {
                 const messages = snap.docs.map(d => ({ id: d.id, ...d.data() }))
                     .sort((a,b) => (a.timestamp?.toMillis?.() || a.createdAt || 0) - (b.timestamp?.toMillis?.() || b.createdAt || 0));
+                
+                currentMessageCount = messages.length;
+                if (!els.adminModal.classList.contains('hidden')) {
+                     els.adminStats.innerText = `ACTIVE_NODES: ${currentMessageCount}`;
+                }
                 render(messages);
             });
         }
@@ -286,22 +388,23 @@
             els.messageFeed.innerHTML = messages.map(msg => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
                 const canEdit = isMe;
-                const canDelete = isMe || isModerator; // Mods can delete anything
+                const canDelete = isMe || isModerator;
                 
                 const date = msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt || Date.now());
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                 
+                // UPDATED: Controls are now always visible (opacity 70% -> 100% on hover) for mobile support
                 return `
                     <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 group">
                         <div class="max-w-[85%]">
-                            <div class="flex items-center gap-2 mb-0.5 ${isMe ? 'justify-end' : ''}">
-                                <span class="text-[8px] text-green-900 font-bold">${timeStr}</span>
-                                <span class="text-[9px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'}">
+                            <div class="flex items-center gap-2 mb-0.5 ${isMe ? 'justify-end' : ''} flex-wrap">
+                                <span class="text-[8px] text-green-900 font-bold whitespace-nowrap">${timeStr}</span>
+                                <span class="text-[9px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'} whitespace-nowrap">
                                     [${msg.nickname}]${msg.edited ? '*' : ''}
                                 </span>
-                                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    ${canEdit ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[8px] text-green-700 hover:text-green-400">[E]</button>` : ''}
-                                    ${canDelete ? `<button onclick="confirmDelete('${msg.id}')" class="text-[8px] text-red-900 hover:text-red-500 font-bold">[${isModerator && !isMe ? 'MOD_DEL' : 'X'}]</button>` : ''}
+                                <div class="flex gap-2 opacity-70 hover:opacity-100 transition-opacity ml-1">
+                                    ${canEdit ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[9px] text-green-600 hover:text-green-300 font-bold p-1">[E]</button>` : ''}
+                                    ${canDelete ? `<button onclick="confirmDelete('${msg.id}')" class="text-[9px] text-red-800 hover:text-red-500 font-bold p-1">[${isModerator && !isMe ? 'DEL' : 'X'}]</button>` : ''}
                                 </div>
                             </div>
                             <div class="text-xs break-words p-2 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'} leading-relaxed">
@@ -336,7 +439,7 @@
                 await updateProfile(currentUser, { displayName: val });
                 els.sessionInfo.innerText = `ID: ${val}`;
                 closeModal();
-                subscribeMessages(); // Refresh to update names in UI if necessary
+                subscribeMessages(); 
             };
             els.modalTitle.innerText = "IDENTITY_PROTOCOL";
             els.modalDesc.innerText = "Enter system alias for terminal identification.";
