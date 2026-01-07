@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v3.4</title>
+    <title>TERM-CHAT v3.6 // ACCOUNT_DECOMMISSION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --terminal-green: #22c55e;
+            --terminal-yellow: #eab308;
             --terminal-dark: #050505;
             --terminal-glow: 0 0 8px rgba(34, 197, 94, 0.6);
             --terminal-alert: #ef4444;
@@ -37,15 +38,9 @@
         .retro-text { text-shadow: var(--terminal-glow); }
         .alert-text { color: var(--terminal-alert); text-shadow: var(--terminal-alert-glow); }
         
-        .neon-border {
-            border: 2px solid var(--terminal-green);
-            box-shadow: var(--terminal-glow);
-        }
-        
-        .alert-border {
-            border: 2px solid var(--terminal-alert);
-            box-shadow: var(--terminal-alert-glow);
-        }
+        .neon-border { border: 2px solid var(--terminal-green); box-shadow: var(--terminal-glow); }
+        .alert-border { border: 2px solid var(--terminal-alert); box-shadow: var(--terminal-alert-glow); }
+        .warn-border { border: 2px solid var(--terminal-yellow); box-shadow: 0 0 8px rgba(234, 179, 8, 0.6); }
 
         .btn-retro {
             border: 1px solid var(--terminal-green);
@@ -56,11 +51,7 @@
             cursor: pointer;
         }
 
-        .btn-retro:hover {
-            background: var(--terminal-green);
-            color: black;
-            box-shadow: var(--terminal-glow);
-        }
+        .btn-retro:hover { background: var(--terminal-green); color: black; box-shadow: var(--terminal-glow); }
 
         .btn-alert {
             border: 1px solid var(--terminal-alert);
@@ -69,29 +60,27 @@
             cursor: pointer;
         }
         
-        .btn-alert:hover {
-            background: var(--terminal-alert);
-            color: black;
-            box-shadow: var(--terminal-alert-glow);
+        .btn-alert:hover { background: var(--terminal-alert); color: black; box-shadow: var(--terminal-alert-glow); }
+
+        .btn-warn {
+            border: 1px solid var(--terminal-yellow);
+            color: var(--terminal-yellow);
+            background: rgba(20, 20, 0, 0.5);
+            cursor: pointer;
         }
+        
+        .btn-warn:hover { background: var(--terminal-yellow); color: black; box-shadow: 0 0 8px rgba(234, 179, 8, 0.6); }
 
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #001100; }
         ::-webkit-scrollbar-thumb { background: #15803d; }
 
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .msg-enter { animation: fade-in 0.2s ease-out forwards; }
         .hidden { display: none !important; }
 
         .crt-flicker { animation: flicker 0.15s infinite; }
-        @keyframes flicker {
-            0% { opacity: 0.98; }
-            50% { opacity: 1; }
-            100% { opacity: 0.99; }
-        }
+        @keyframes flicker { 0% { opacity: 0.98; } 50% { opacity: 1; } 100% { opacity: 0.99; } }
     </style>
 </head>
 <body class="w-screen flex flex-col relative scanline crt-flicker">
@@ -101,6 +90,16 @@
         <div>
             <div class="retro-text text-2xl font-bold animate-pulse">[ INITIALIZING UPLINK... ]</div>
             <div class="text-[10px] mt-2 opacity-50">NODE: COMMUNIACTOR_SECURE_V3</div>
+        </div>
+    </div>
+
+    <!-- BANNED SCREEN -->
+    <div id="banned-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[60] text-center p-8">
+        <div class="border-4 border-red-600 p-8 shadow-[0_0_20px_red]">
+            <div class="text-4xl font-bold text-red-600 mb-4">ACCESS TERMINATED</div>
+            <p class="text-red-400 font-mono mb-6">YOUR CONNECTION HAS BEEN SEVERED BY ADMINISTRATION.</p>
+            <div class="text-[10px] text-red-800">REASON: VIOLATION_OF_PROTOCOL</div>
+            <button onclick="location.reload()" class="mt-8 border border-red-600 text-red-600 px-4 py-2 hover:bg-red-600 hover:text-black">RETRY_CONNECTION</button>
         </div>
     </div>
 
@@ -134,10 +133,14 @@
                 <button type="submit" id="email-submit-btn" class="w-full bg-green-500/10 border border-green-500 py-3 font-bold hover:bg-green-500 hover:text-black transition-all text-xs">LOGIN</button>
                 <button type="button" id="toggle-auth-mode-btn" onclick="toggleEmailMode()" class="w-full text-[10px] text-green-800 hover:text-green-400 underline uppercase p-2">Create Record</button>
             </form>
+
+            <div class="mt-8 text-center border-t border-green-900 pt-4">
+                <a href="mailto:support@eugeneevons.com" class="text-[9px] text-green-900 hover:text-green-500">SYS_ADMIN: support@eugeneevons.com</a>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL (NICKNAME/EDIT) -->
     <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-sm bg-zinc-950 neon-border p-6 md:p-8 text-center my-auto">
             <h2 id="modal-title" class="text-lg font-bold retro-text mb-4">IDENTITY_PROTOCOL</h2>
@@ -149,6 +152,12 @@
                     <button type="button" id="cancel-modal" onclick="closeModal()" class="text-[10px] text-green-900 hover:text-red-500 p-2 uppercase">Cancel</button>
                 </div>
             </form>
+            <div id="danger-zone" class="hidden mt-12 pt-6 border-t border-red-900/50">
+                <p class="text-[9px] text-red-900 font-bold mb-3 tracking-widest">DANGER_ZONE: IRREVERSIBLE_ACTION</p>
+                <button onclick="handleDeleteAccount()" class="w-full border border-red-900 text-red-900 py-2 hover:bg-red-900 hover:text-white transition-all text-[10px] font-bold">
+                    [ DELETE_SYSTEM_ACCOUNT ]
+                </button>
+            </div>
         </div>
     </div>
 
@@ -160,37 +169,26 @@
             <div class="h-px bg-red-900 w-full mb-6"></div>
             
             <div class="space-y-6">
-                <div class="bg-red-950/20 p-4 border border-red-900">
-                    <div class="text-[10px] text-red-400 mb-1 font-bold tracking-widest">SYSTEM_STATUS</div>
-                    <div id="admin-stats" class="text-sm font-bold text-red-500">NODES_LOADED: CALCULATING...</div>
-                </div>
-
                 <div class="space-y-3">
                     <div class="text-[10px] text-red-400 font-bold">DATA_MANAGEMENT</div>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="exportData()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600 hover:!text-black text-[10px]">
-                            [ BACKUP_JSON ]
-                        </button>
-                        <button onclick="triggerImport()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600 hover:!text-black text-[10px]">
-                            [ UPLOAD_JSON ]
-                        </button>
+                        <button onclick="exportData()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600 hover:!text-black text-[10px]">[ BACKUP_JSON ]</button>
+                        <button onclick="triggerImport()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600 hover:!text-black text-[10px]">[ UPLOAD_JSON ]</button>
                     </div>
                     <input type="file" id="import-input" class="hidden" accept=".json" onchange="handleImport(event)">
                 </div>
 
                 <div class="space-y-3">
-                    <div class="text-[10px] text-red-400 font-bold">MAINTENANCE_PROTOCOLS</div>
-                    <button onclick="performCleanup(true)" class="w-full btn-alert py-3 flex items-center justify-center gap-2 font-bold text-xs uppercase">
-                        [ PURGE_EXP_DATA ]
-                    </button>
-                    <button onclick="confirmSystemFlush()" class="w-full btn-alert py-3 flex items-center justify-center gap-2 bg-red-950/40 hover:bg-red-600 font-bold text-xs uppercase">
-                        [ WIPE_ALL_DATA ]
-                    </button>
+                    <div class="text-[10px] text-red-400 font-bold">MODERATION_TOOLS</div>
+                    <button onclick="broadcastAnnouncement()" class="w-full btn-warn py-3 flex items-center justify-center gap-2 font-bold text-xs uppercase">[ BROADCAST_MSG ]</button>
+                    <button onclick="openBanList()" class="w-full btn-alert py-3 flex items-center justify-center gap-2 font-bold text-xs uppercase">[ MANAGE_BAN_LIST ]</button>
                 </div>
-            </div>
-            
-            <div class="mt-6 text-center">
-                <div id="admin-status" class="text-[10px] text-red-400 animate-pulse">ADMIN_READY: leeeugene1574@gmail.com</div>
+
+                <div class="space-y-3">
+                    <div class="text-[10px] text-red-400 font-bold">SYSTEM_MAINTENANCE</div>
+                    <button onclick="performCleanup(true)" class="w-full btn-retro py-2 text-[10px] uppercase text-green-600 border-green-900">[ PURGE_EXP_DATA ]</button>
+                    <button onclick="confirmSystemFlush()" class="w-full btn-alert py-2 text-[10px] uppercase bg-red-950/40">[ WIPE_ALL_DATA ]</button>
+                </div>
             </div>
         </div>
     </div>
@@ -200,7 +198,7 @@
         <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-3 overflow-hidden">
                 <div>
-                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_04</h1>
+                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_06</h1>
                     <div class="flex items-center gap-1 mt-1">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         <span id="system-status" class="text-[7px] text-green-700">LINK_SECURE</span>
@@ -231,8 +229,8 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, deleteUser } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
@@ -253,14 +251,15 @@
         let currentUser = null;
         let isModerator = false;
         let messagesUnsubscribe = null;
+        let banCheckUnsubscribe = null;
         let activeModalAction = null;
-        let currentMessageCount = 0;
         let rawMessages = [];
 
         const els = {
             loading: document.getElementById('loading-screen'),
             auth: document.getElementById('auth-screen'),
             chat: document.getElementById('chat-screen'),
+            bannedScreen: document.getElementById('banned-screen'),
             nicknameModal: document.getElementById('nickname-modal'),
             adminModal: document.getElementById('admin-modal'),
             messageFeed: document.getElementById('message-feed'),
@@ -268,27 +267,35 @@
             modalInput: document.getElementById('modal-input'),
             modalTitle: document.getElementById('modal-title'),
             modalDesc: document.getElementById('modal-desc'),
+            dangerZone: document.getElementById('danger-zone'),
             systemStatus: document.getElementById('system-status'),
             sessionInfo: document.getElementById('session-info'),
             authError: document.getElementById('auth-error-msg'),
             genericForm: document.getElementById('generic-form'),
             adminBtn: document.getElementById('admin-btn'),
-            adminStats: document.getElementById('admin-stats'),
-            adminStatus: document.getElementById('admin-status'),
             importInput: document.getElementById('import-input')
         };
 
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
+                // 1. Check Ban Status
+                banCheckUnsubscribe = onSnapshot(doc(db, 'banned_users', user.uid), (doc) => {
+                    if (doc.exists()) {
+                        signOut(auth);
+                        els.auth.classList.add('hidden');
+                        els.chat.classList.add('hidden');
+                        els.bannedScreen.classList.remove('hidden');
+                    }
+                });
+
+                // 2. Check Mod Status
                 isModerator = (user.email === ADMIN_EMAIL);
-                
                 if (!isModerator) {
                     try {
-                        const modRef = doc(db, 'moderators', user.uid);
-                        const modSnap = await getDoc(modRef);
+                        const modSnap = await getDoc(doc(db, 'moderators', user.uid));
                         isModerator = modSnap.exists();
-                    } catch(e) { console.error("Firestore Mod Check Failed", e); }
+                    } catch(e) {}
                 }
 
                 if(isModerator) {
@@ -314,173 +321,170 @@
             } else {
                 isModerator = false;
                 if (messagesUnsubscribe) messagesUnsubscribe();
+                if (banCheckUnsubscribe) banCheckUnsubscribe();
                 els.loading.classList.add('hidden');
                 els.chat.classList.add('hidden');
+                els.bannedScreen.classList.add('hidden');
                 els.auth.classList.remove('hidden');
             }
         });
 
-        // --- ADMIN PANEL FUNCTIONS ---
-        
-        window.openAdminPanel = () => {
-            els.adminModal.classList.remove('hidden');
-            els.adminStats.innerText = `NODES_LOADED: ${currentMessageCount}`;
+        // --- ACCOUNT DECOMMISSION ---
+        window.handleDeleteAccount = async () => {
+            if (!currentUser) return;
+            const confirmation = prompt("TERMINAL WARNING: THIS WILL PERMANENTLY WIPE YOUR AUTHENTICATION RECORDS.\nTYPE 'DECOMMISSION' TO CONFIRM.");
+            if (confirmation !== 'DECOMMISSION') return;
+
+            try {
+                await deleteUser(currentUser);
+                alert("ACCOUNT_DATA_PURGED. SYSTEM DISCONNECTED.");
+            } catch (error) {
+                console.error("Deletion error:", error);
+                if (error.code === 'auth/requires-recent-login') {
+                    alert("PROTOCOL_ERROR: RECENT_AUTHENTICATION_REQUIRED.\nPLEASE SIGN OUT AND SIGN BACK IN TO COMPLETE DECOMMISSION.");
+                } else {
+                    alert("DECOMMISSION_FAILED: " + error.message);
+                }
+            }
         };
 
-        window.closeAdminPanel = () => {
-            els.adminModal.classList.add('hidden');
+        // --- ADMIN FUNCTIONS ---
+        window.openAdminPanel = () => els.adminModal.classList.remove('hidden');
+        window.closeAdminPanel = () => els.adminModal.classList.add('hidden');
+
+        window.broadcastAnnouncement = async () => {
+            const text = prompt("ENTER SYSTEM BROADCAST MESSAGE:");
+            if (!text) return;
+            try {
+                await addDoc(collection(db, 'messages'), {
+                    text, nickname: "SYSTEM_ANNOUNCEMENT", uid: "SYSTEM", type: 'announcement',
+                    timestamp: serverTimestamp(), createdAt: Date.now()
+                });
+            } catch(e) { console.error(e); }
+        };
+
+        window.confirmBan = async (targetUid, targetName) => {
+            if (targetUid === currentUser.uid) return alert("CANNOT_BAN_SELF");
+            const reason = prompt(`BAN USER [${targetName}]?\nREASON:`);
+            if (reason === null) return;
+            try {
+                await setDoc(doc(db, 'banned_users', targetUid), {
+                    nickname: targetName, bannedBy: currentUser.uid, reason: reason || "VIOLATION", timestamp: serverTimestamp()
+                });
+            } catch(e) { console.error(e); }
+        };
+
+        window.openBanList = async () => {
+            alert("BAN_LIST_MODULE_UNDER_MAINTENANCE_PLEASE_USE_CONSOLE");
         };
 
         window.exportData = () => {
-            if (rawMessages.length === 0) {
-                els.adminStatus.innerText = "NO_DATA_TO_EXPORT";
-                return;
-            }
-            els.adminStatus.innerText = "COMPILING_DATA_PACKET...";
-            
+            if (rawMessages.length === 0) return;
             const dataStr = JSON.stringify(rawMessages, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
             const a = document.createElement('a');
             a.href = url;
             a.download = `chat_backup_${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            els.adminStatus.innerText = "EXPORT_SUCCESSFUL";
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
         };
 
-        window.triggerImport = () => {
-            els.importInput.click();
-        };
-
+        window.triggerImport = () => els.importInput.click();
         window.handleImport = async (event) => {
             const file = event.target.files[0];
             if (!file) return;
-
-            els.adminStatus.innerText = "READING_DATA_PACKET...";
             const reader = new FileReader();
-            
             reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!Array.isArray(data)) throw new Error("INVALID_FORMAT");
-
-                    els.adminStatus.innerText = `IMPORTING: 0 / ${data.length}`;
-                    
-                    for (let i = 0; i < data.length; i++) {
-                        const msg = data[i];
-                        // Strip internal IDs and fix timestamp for re-import
+                    for (const msg of data) {
                         await addDoc(collection(db, 'messages'), {
-                            text: msg.text || "EMPTY_MSG",
-                            nickname: msg.nickname || "RESTORED_USER",
-                            uid: msg.uid || "RESTORED_UID",
-                            timestamp: serverTimestamp(),
-                            createdAt: msg.createdAt || Date.now()
+                            text: msg.text || ".", nickname: msg.nickname || "RESTORED", uid: msg.uid || "RESTORED",
+                            timestamp: serverTimestamp(), createdAt: msg.createdAt || Date.now()
                         });
-                        
-                        if (i % 5 === 0 || i === data.length - 1) {
-                            els.adminStatus.innerText = `IMPORTING: ${i + 1} / ${data.length}`;
-                        }
                     }
-                    
-                    els.adminStatus.innerText = "UPLOAD_PROTOCOL_SUCCESSFUL";
-                } catch (err) {
-                    console.error("Import error", err);
-                    els.adminStatus.innerText = "UPLOAD_FAILED: MALFORMED_JSON";
-                } finally {
-                    event.target.value = ''; // Reset input
-                }
+                    alert("DATA_RECOVERY_COMPLETE");
+                } catch (err) { alert("DATA_CORRUPTION_DETECTED"); }
+                event.target.value = '';
             };
-            
             reader.readAsText(file);
         };
 
-        window.performCleanup = async (manualTrigger) => {
-            if (manualTrigger) els.adminStatus.innerText = "SCANNING_STALE_PACKETS...";
-            try {
-                const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-                const querySnapshot = await getDocs(collection(db, "messages"));
-                let deletedCount = 0;
-                
-                querySnapshot.forEach(async (d) => {
-                    const data = d.data();
-                    const ts = data.timestamp?.toMillis() || data.createdAt;
-                    if (ts && ts < thirtyDaysAgo) {
-                        await deleteDoc(doc(db, "messages", d.id));
-                        deletedCount++;
-                    }
-                });
-                if (manualTrigger) els.adminStatus.innerText = `PURGED: ${deletedCount} RECORDS`;
-            } catch (e) { 
-                console.error("Cleanup Error", e);
-                if (manualTrigger) els.adminStatus.innerText = "MAINTENANCE_FAILURE";
-            }
+        window.performCleanup = async (manual) => {
+            const snap = await getDocs(collection(db, "messages"));
+            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            snap.forEach(async (d) => {
+                const ts = d.data().timestamp?.toMillis() || d.data().createdAt;
+                if (ts && ts < thirtyDaysAgo) await deleteDoc(doc(db, "messages", d.id));
+            });
+            if(manual) alert("STALE_DATA_PURGED");
         };
 
         window.confirmSystemFlush = async () => {
-            const code = prompt("TERMINAL WARNING: THIS WILL WIPE ALL CHAT LOGS.\nTYPE 'CONFIRM' TO EXECUTE FLUSH.");
-            if (code !== 'CONFIRM') return;
-            els.adminStatus.innerText = "INITIATING_GLOBAL_WIPE...";
-            try {
-                const querySnapshot = await getDocs(collection(db, "messages"));
-                const batchPromises = [];
-                querySnapshot.forEach((d) => batchPromises.push(deleteDoc(doc(db, "messages", d.id))));
-                await Promise.all(batchPromises);
-                els.adminStatus.innerText = "WIPE_COMPLETE";
-            } catch (e) {
-                console.error("Flush Error", e);
-                els.adminStatus.innerText = "WIPE_TERMINATED_BY_ERROR";
-            }
+            if(prompt("TYPE 'CONFIRM' TO WIPE ALL MESSAGES") !== 'CONFIRM') return;
+            const snap = await getDocs(collection(db, "messages"));
+            snap.forEach(d => deleteDoc(doc(db, "messages", d.id)));
         };
 
-        // --- CORE LOGIC ---
-
+        // --- CORE CHAT LOGIC ---
         function subscribeMessages() {
             if (messagesUnsubscribe) messagesUnsubscribe();
             const msgsRef = collection(db, 'messages');
             messagesUnsubscribe = onSnapshot(msgsRef, (snap) => {
                 const messages = snap.docs.map(d => ({ id: d.id, ...d.data() }))
                     .sort((a,b) => (a.timestamp?.toMillis?.() || a.createdAt || 0) - (b.timestamp?.toMillis?.() || b.createdAt || 0));
-                
                 rawMessages = messages;
-                currentMessageCount = messages.length;
                 render(messages);
             });
         }
 
         function render(messages) {
             const atBottom = els.messageFeed.scrollHeight - els.messageFeed.scrollTop <= els.messageFeed.clientHeight + 100;
-            els.messageFeed.innerHTML = messages.map(msg => {
+            let html = `
+                <div class="mb-4 text-center border-y border-yellow-600 bg-yellow-900/10 py-4 animate-in fade-in slide-in-from-top-4">
+                    <div class="text-yellow-500 font-bold text-sm mb-1">SYSTEM_ROOT_MESSAGE</div>
+                    <div class="text-yellow-200 text-xs leading-relaxed max-w-lg mx-auto">
+                        WELCOME TO TERM-CHAT, COMPUTER. BE RESPECTFUL AND DO NOT BREAK RULES. WE MAY TERMINATE YOUR ACCESS TO TERM-CHAT AT ANY TIME.
+                    </div>
+                </div>
+            `;
+
+            html += messages.map(msg => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
-                const canEdit = isMe;
-                const canDelete = isMe || isModerator;
+                if (msg.type === 'announcement') {
+                    return `
+                        <div class="my-4 text-center border border-yellow-500/50 bg-yellow-900/20 p-2 rounded mx-4">
+                            <div class="text-[9px] text-yellow-600 font-bold tracking-widest mb-1">SYSTEM_BROADCAST</div>
+                            <div class="text-yellow-400 font-bold text-sm">${escapeHtml(msg.text)}</div>
+                        </div>
+                    `;
+                }
+
                 const date = msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt || Date.now());
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                
+
                 return `
                     <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 group">
                         <div class="max-w-[85%]">
                             <div class="flex items-center gap-2 mb-0.5 ${isMe ? 'justify-end' : ''} flex-wrap">
-                                <span class="text-[8px] text-green-900 font-bold whitespace-nowrap">${timeStr}</span>
-                                <span class="text-[9px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'} whitespace-nowrap">
+                                <span class="text-[8px] text-green-900 font-bold">${timeStr}</span>
+                                <span class="text-[9px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'}">
                                     [${msg.nickname}]${msg.edited ? '*' : ''}
                                 </span>
-                                <div class="flex gap-2 opacity-100 transition-opacity ml-1">
-                                    ${canEdit ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[9px] text-green-600 hover:text-green-300 font-bold p-1">[E]</button>` : ''}
-                                    ${canDelete ? `<button onclick="confirmDelete('${msg.id}')" class="text-[9px] text-red-800 hover:text-red-500 font-bold p-1">[${isModerator && !isMe ? 'DEL' : 'X'}]</button>` : ''}
+                                <div class="flex gap-2">
+                                    ${isMe ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[9px] text-green-600 font-bold p-1">[E]</button>` : ''}
+                                    ${(isMe || isModerator) ? `<button onclick="confirmDelete('${msg.id}')" class="text-[9px] text-red-800 font-bold p-1">[${isModerator && !isMe ? 'DEL' : 'X'}]</button>` : ''}
+                                    ${(isModerator && !isMe) ? `<button onclick="confirmBan('${msg.uid}', '${escapeHtml(msg.nickname)}')" class="text-[9px] text-red-500 bg-red-900/30 px-1 font-bold">[BAN]</button>` : ''}
                                 </div>
                             </div>
-                            <div class="text-xs break-words p-2 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'} leading-relaxed">
+                            <div class="text-xs break-words p-2 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'}">
                                 ${escapeHtml(msg.text)}
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
+            els.messageFeed.innerHTML = html;
             if (atBottom) els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
         }
 
@@ -490,15 +494,11 @@
             if (!text || !currentUser) return;
             try {
                 await addDoc(collection(db, 'messages'), {
-                    text,
-                    nickname: currentUser.displayName,
-                    uid: currentUser.uid,
-                    timestamp: serverTimestamp(),
-                    createdAt: Date.now()
+                    text, nickname: currentUser.displayName, uid: currentUser.uid,
+                    timestamp: serverTimestamp(), createdAt: Date.now()
                 });
                 els.messageInput.value = '';
-                els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
-            } catch (err) { console.error("Transmission error:", err); }
+            } catch (err) { console.error(err); }
         };
 
         window.openNicknameModal = () => {
@@ -512,6 +512,8 @@
             els.modalDesc.innerText = "Enter system alias for terminal identification.";
             els.modalInput.value = currentUser?.displayName || '';
             els.nicknameModal.classList.remove('hidden');
+            if (!currentUser.isAnonymous) els.dangerZone.classList.remove('hidden');
+            else els.dangerZone.classList.add('hidden');
         };
 
         window.openEditModal = (id, oldText) => {
@@ -523,12 +525,11 @@
             els.modalDesc.innerText = "Update packet data contents.";
             els.modalInput.value = oldText;
             els.nicknameModal.classList.remove('hidden');
+            els.dangerZone.classList.add('hidden');
         };
 
         window.confirmDelete = async (id) => {
-            if (confirm("PERMANENTLY PURGE DATA PACKET?")) {
-                await deleteDoc(doc(db, "messages", id));
-            }
+            if (confirm("PERMANENTLY PURGE DATA PACKET?")) await deleteDoc(doc(db, "messages", id));
         };
 
         window.closeModal = () => els.nicknameModal.classList.add('hidden');
@@ -538,9 +539,8 @@
             if (val && activeModalAction) await activeModalAction(val);
         };
 
-        // Auth
-        window.handleGoogleSignIn = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (err) { showError(err.message); } };
-        window.handleGuestSignIn = async () => { try { await signInAnonymously(auth); } catch (err) { showError(err.message); } };
+        window.handleGoogleSignIn = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (err) { alert(err.message); } };
+        window.handleGuestSignIn = async () => { try { await signInAnonymously(auth); } catch (err) { alert(err.message); } };
         window.handleEmailSubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email-input').value;
@@ -549,13 +549,12 @@
             try {
                 if (mode === 'login') await signInWithEmailAndPassword(auth, email, password);
                 else await createUserWithEmailAndPassword(auth, email, password);
-            } catch (err) { showError(err.message); }
+            } catch (err) { alert(err.message); }
         };
         window.handleLogout = () => signOut(auth);
-        window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); setMode(mode); };
+        window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "LOGIN" : "CREATE RECORD"; };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
-        function setMode(m) { document.getElementById('auth-mode').value = m; document.getElementById('email-submit-btn').innerText = m === 'login' ? "LOGIN" : "CREATE RECORD"; }
-        function showError(m) { els.authError.innerText = "!! ERROR: " + m; els.authError.classList.remove('hidden'); }
+        window.toggleEmailMode = () => { const m = document.getElementById('auth-mode').value; window.showEmailAuth(m === 'login' ? 'signup' : 'login'); };
         function escapeHtml(t) { return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
     </script>
 </body>
