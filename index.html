@@ -9,6 +9,7 @@
         :root {
             --terminal-green: #22c55e;
             --terminal-dark: #050505;
+            --terminal-glow: 0 0 8px rgba(34, 197, 94, 0.6);
         }
         
         body {
@@ -16,6 +17,7 @@
             color: var(--terminal-green);
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
+            text-transform: uppercase;
         }
 
         .scanline::after {
@@ -29,13 +31,27 @@
             pointer-events: none;
         }
 
-        .retro-text { text-shadow: 0 0 4px rgba(34, 197, 94, 0.5); }
+        .retro-text { text-shadow: var(--terminal-glow); }
         .neon-border {
             border: 2px solid var(--terminal-green);
-            box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+            box-shadow: var(--terminal-glow);
         }
 
-        ::-webkit-scrollbar { width: 8px; }
+        .btn-retro {
+            border: 1px solid var(--terminal-green);
+            padding: 4px 12px;
+            font-size: 10px;
+            transition: all 0.2s;
+            background: rgba(0, 20, 0, 0.5);
+        }
+
+        .btn-retro:hover {
+            background: var(--terminal-green);
+            color: black;
+            box-shadow: var(--terminal-glow);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #001100; }
         ::-webkit-scrollbar-thumb { background: #15803d; }
 
@@ -43,26 +59,36 @@
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .msg-enter { animation: fade-in 0.3s ease-out forwards; }
+        .msg-enter { animation: fade-in 0.2s ease-out forwards; }
         .hidden { display: none !important; }
+
+        .crt-flicker {
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.98; }
+            50% { opacity: 1; }
+            100% { opacity: 0.99; }
+        }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col relative scanline">
+<body class="h-screen w-screen flex flex-col relative scanline crt-flicker">
 
-    <!-- LOADING -->
+    <!-- LOADING SCREEN -->
     <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-40 text-center">
         <div>
             <div class="retro-text text-2xl font-bold animate-pulse">[ INITIALIZING UPLINK... ]</div>
-            <div class="text-[10px] mt-2 opacity-50">PROJECT: COMMUNIACATIONTOR</div>
+            <div class="text-[10px] mt-2 opacity-50">NODE: COMMUNIACTOR_SECURE_V2</div>
         </div>
     </div>
 
-    <!-- AUTH -->
+    <!-- AUTHENTICATION SCREEN -->
     <div id="auth-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-30 p-4">
         <div class="w-full max-w-md bg-zinc-950 neon-border p-8">
             <div class="text-center mb-8 border-b border-green-900 pb-4">
                 <h1 class="text-2xl font-bold retro-text mb-1 tracking-tighter">TERM-CHAT.EXE</h1>
-                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_v2.0</p>
+                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_ESTABLISHED</p>
             </div>
 
             <div id="auth-error-msg" class="hidden mb-4 p-2 border border-red-500 text-red-500 text-[10px] uppercase font-bold text-center"></div>
@@ -80,7 +106,7 @@
             </div>
 
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
-                <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white">&lt;&lt; RETURN</button>
+                <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white">&lt;&lt; BACK</button>
                 <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none focus:border-green-500 text-sm" placeholder="EMAIL_ADDR" required>
                 <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none focus:border-green-500 text-sm" placeholder="PASS_CODE" required>
                 <input type="hidden" id="auth-mode" value="login">
@@ -89,55 +115,83 @@
             </form>
 
             <div class="mt-8 text-center border-t border-green-900 pt-4">
-                <a href="mailto:support@eugeneevons.com" class="text-[9px] text-green-900 hover:text-green-500 uppercase">Admin: support@eugeneevons.com</a>
+                <a href="mailto:support@eugeneevons.com" class="text-[9px] text-green-900 hover:text-green-500">SYS_ADMIN: support@eugeneevons.com</a>
             </div>
         </div>
     </div>
 
-    <!-- NICKNAME MODAL -->
+    <!-- NICKNAME MODAL (IDENTITY PROTOCOL) -->
     <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex items-center justify-center p-4">
-        <div class="w-full max-w-sm bg-zinc-950 neon-border p-8 text-center">
+        <div class="w-full max-w-sm bg-zinc-950 neon-border p-8 text-center relative">
             <h2 class="text-lg font-bold retro-text mb-4">IDENTITY_PROTOCOL</h2>
+            <p class="text-[10px] text-green-800 mb-6">Enter system alias for terminal identification.</p>
             <form onsubmit="handleNicknameSubmit(event)" class="space-y-6">
-                <input type="text" id="nickname-input" class="w-full bg-transparent border-b-2 border-green-500 p-2 text-center text-xl text-green-500 focus:outline-none uppercase" placeholder="HANDLE" maxlength="15" required autofocus>
-                <button type="submit" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black font-bold transition-all text-xs">INITIATE_SESSION</button>
+                <input type="text" id="nickname-input" class="w-full bg-transparent border-b-2 border-green-500 p-2 text-center text-xl text-green-500 focus:outline-none" placeholder="HANDLE" maxlength="15" required autofocus>
+                <div class="flex flex-col gap-2">
+                    <button type="submit" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black font-bold transition-all text-xs">CONFIRM_IDENTITY</button>
+                    <button type="button" id="cancel-nickname" onclick="closeNicknameModal()" class="hidden text-[10px] text-green-900 hover:text-red-500">Cancel</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- CHAT UI -->
+    <!-- MAIN CHAT INTERFACE -->
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black">
-        <header class="bg-zinc-950 border-b border-green-900 p-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></div>
-                <div>
-                    <h1 class="font-bold text-sm retro-text leading-none uppercase">Comm_Link_Alpha</h1>
-                    <button onclick="openNicknameModal(true)" id="user-display" class="text-[9px] text-green-800 hover:text-green-400 mt-1 uppercase">Loading...</button>
+        
+        <!-- TOP HUD BAR -->
+        <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex flex-wrap items-center justify-between gap-4 z-10 shadow-lg">
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col">
+                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_ALPHA</h1>
+                    <div class="flex items-center gap-1 mt-1">
+                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></span>
+                        <span class="text-[8px] text-green-700 tracking-tighter">SECURE_CONNECTION_STABLE</span>
+                    </div>
+                </div>
+                <div class="hidden md:block h-8 w-[1px] bg-green-900 mx-2"></div>
+                <div class="flex flex-col">
+                    <span class="text-[8px] text-green-900 font-bold">OPERATOR_ID</span>
+                    <span id="user-display-name" class="text-xs font-bold retro-text text-green-400 leading-none">---</span>
                 </div>
             </div>
-            <button onclick="handleLogout()" class="border border-green-900 px-3 py-1 text-[10px] hover:bg-red-950/20 hover:text-red-500 hover:border-red-500 transition-colors uppercase">Disconnect</button>
+
+            <div class="flex items-center gap-2">
+                <button onclick="openNicknameModal(true)" class="btn-retro">
+                    [ CHANGE_NAME ]
+                </button>
+                <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500 hover:!bg-red-950/20 hover:!text-red-500">
+                    [ SIGN_OUT ]
+                </button>
+            </div>
         </header>
 
-        <main id="message-feed" class="flex-1 overflow-y-auto p-4 space-y-3 font-mono"></main>
+        <!-- MESSAGE STREAM -->
+        <main id="message-feed" class="flex-1 overflow-y-auto p-4 space-y-2 font-mono bg-[rgba(0,10,0,0.3)]">
+            <!-- Messages stream in here -->
+        </main>
 
-        <footer class="bg-zinc-950 border-t border-green-900 p-4">
-            <form onsubmit="handleSendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center">
-                <span class="text-green-500 font-bold animate-pulse">&gt;</span>
-                <input type="text" id="message-input" class="flex-1 bg-transparent border-none focus:ring-0 text-green-400 placeholder-green-900/40 text-sm py-1 focus:outline-none" placeholder="TRANSMIT_DATA..." autocomplete="off">
-                <button type="submit" id="send-btn" class="text-green-600 hover:text-green-400 font-bold text-xs">[SEND]</button>
+        <!-- INPUT CONSOLE -->
+        <footer class="bg-zinc-950 border-t-2 border-green-500 p-4">
+            <form onsubmit="handleSendMessage(event)" class="flex gap-3 max-w-6xl mx-auto items-center relative">
+                <span class="text-green-500 font-bold text-lg">&gt;</span>
+                <input type="text" id="message-input" class="flex-1 bg-transparent border-none focus:ring-0 text-green-400 placeholder-green-900/40 text-sm py-1 focus:outline-none" placeholder="TRANSMIT_DATA_HERE..." autocomplete="off">
+                <button type="submit" id="send-btn" class="text-green-600 hover:text-green-400 font-bold text-xs transition-all uppercase px-4 border border-green-900 hover:border-green-400 py-1">
+                    EXECUTE
+                </button>
             </form>
-            <div class="text-center mt-3 opacity-30">
-                <span class="text-[7px] uppercase tracking-[0.4em]">Support: support@eugeneevons.com</span>
+            <div class="flex justify-between items-center mt-3 border-t border-green-950 pt-2">
+                <span class="text-[7px] text-green-900 tracking-[0.2em]">ENCRYPTION_LEVEL: AES-256-BIT</span>
+                <span class="text-[7px] text-green-900">SUPPORT: support@eugeneevons.com</span>
             </div>
         </footer>
     </div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        // --- AUTH CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
             authDomain: "communiacationtor.firebaseapp.com",
@@ -149,7 +203,6 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
@@ -161,22 +214,25 @@
             auth: document.getElementById('auth-screen'),
             chat: document.getElementById('chat-screen'),
             nicknameModal: document.getElementById('nickname-modal'),
-            userDisplay: document.getElementById('user-display'),
+            userDisplayName: document.getElementById('user-display-name'),
             messageFeed: document.getElementById('message-feed'),
             messageInput: document.getElementById('message-input'),
             authError: document.getElementById('auth-error-msg'),
             nicknameInput: document.getElementById('nickname-input'),
+            cancelNickname: document.getElementById('cancel-nickname'),
             authLanding: document.getElementById('auth-landing'),
             authEmailForm: document.getElementById('auth-email-form')
         };
 
+        // --- AUTH STATE LISTENER ---
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             els.loading.classList.add('hidden');
+            
             if (user) {
                 els.auth.classList.add('hidden');
                 if (user.displayName) {
-                    els.userDisplay.innerText = `ID: ${user.displayName} [CLICK TO EDIT]`;
+                    els.userDisplayName.innerText = user.displayName;
                     els.nicknameModal.classList.add('hidden');
                     els.chat.classList.remove('hidden');
                     subscribeMessages();
@@ -190,6 +246,7 @@
             }
         });
 
+        // --- MESSAGE STREAMING ---
         function subscribeMessages() {
             if (messagesUnsubscribe) messagesUnsubscribe();
             const msgsRef = collection(db, 'messages');
@@ -203,12 +260,12 @@
             els.messageFeed.innerHTML = messages.map(msg => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
                 return `
-                    <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'}">
-                        <div class="max-w-[90%]">
+                    <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'} group">
+                        <div class="max-w-[85%]">
                             <span class="text-[9px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'}">
                                 [${msg.nickname}]:
                             </span>
-                            <span class="text-xs break-words ml-1">${escapeHtml(msg.text)}</span>
+                            <span class="text-xs break-words ml-1 leading-relaxed">${escapeHtml(msg.text)}</span>
                         </div>
                     </div>
                 `;
@@ -216,6 +273,7 @@
             els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
         }
 
+        // --- EVENT HANDLERS ---
         window.handleSendMessage = async (e) => {
             e.preventDefault();
             const text = els.messageInput.value.trim();
@@ -224,11 +282,38 @@
                 await addDoc(collection(db, 'messages'), {
                     text,
                     nickname: currentUser.displayName,
-                    uid: currentUser.uid,
+                    uid: currentUser.uid, // Hidden link to account
                     timestamp: Date.now()
                 });
                 els.messageInput.value = '';
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Transmission error:", err); }
+        };
+
+        window.handleNicknameSubmit = async (e) => {
+            e.preventDefault();
+            const val = els.nicknameInput.value.trim();
+            if (!val) return;
+            try {
+                await updateProfile(currentUser, { displayName: val });
+                els.userDisplayName.innerText = val;
+                els.nicknameModal.classList.add('hidden');
+                els.chat.classList.remove('hidden');
+                subscribeMessages();
+            } catch (err) { console.error("Identity update error:", err); }
+        };
+
+        window.openNicknameModal = (allowCancel) => {
+            els.nicknameModal.classList.remove('hidden');
+            els.nicknameInput.value = currentUser?.displayName || '';
+            els.nicknameInput.focus();
+            if (allowCancel) els.cancelNickname.classList.remove('hidden');
+            else els.cancelNickname.classList.add('hidden');
+        };
+
+        window.closeNicknameModal = () => {
+            if (currentUser && currentUser.displayName) {
+                els.nicknameModal.classList.add('hidden');
+            }
         };
 
         window.handleGoogleSignIn = async () => {
@@ -250,24 +335,6 @@
                 if (mode === 'login') await signInWithEmailAndPassword(auth, email, password);
                 else await createUserWithEmailAndPassword(auth, email, password);
             } catch (err) { showError(err.message); }
-        };
-
-        window.handleNicknameSubmit = async (e) => {
-            e.preventDefault();
-            const val = els.nicknameInput.value.trim();
-            if (!val) return;
-            try {
-                await updateProfile(currentUser, { displayName: val });
-                els.userDisplay.innerText = `ID: ${val} [CLICK TO EDIT]`;
-                els.nicknameModal.classList.add('hidden');
-                els.chat.classList.remove('hidden');
-                subscribeMessages();
-            } catch (err) { console.error(err); }
-        };
-
-        window.openNicknameModal = (show) => {
-            els.nicknameModal.classList.remove('hidden');
-            els.nicknameInput.value = currentUser?.displayName || '';
         };
 
         window.handleLogout = () => signOut(auth);
