@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v4.2 // PROTOCOL_TERMINATOR</title>
+    <title>TERM-CHAT v4.3 // TEMPORAL_RESTRICTION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -65,23 +65,28 @@
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-[100] text-center">
         <div>
-            <div class="retro-text text-2xl font-bold animate-pulse">[ AUTHENTICATING WITH CENTRAL_CORE... ]</div>
-            <div class="text-[10px] mt-2 opacity-50 font-mono tracking-widest uppercase">Encryption: Enabled // Protocol: 4.2</div>
+            <div class="retro-text text-2xl font-bold animate-pulse">[ SCANNING TEMPORAL_PRIVILEGES... ]</div>
+            <div class="text-[10px] mt-2 opacity-50 font-mono tracking-widest uppercase">System: Communiacator // Version: 4.3</div>
         </div>
     </div>
 
-    <!-- TERMINATED/SUSPENDED SCREEN -->
+    <!-- SUSPENDED SCREEN -->
     <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[95] text-center p-8">
-        <div class="border-4 border-red-600 p-8 shadow-[0_0_50px_red] bg-black max-w-lg">
-            <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter">ACCESS_REVOKED</div>
+        <div class="border-4 border-red-600 p-8 shadow-[0_0_50px_red] bg-black max-w-lg w-full">
+            <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter">ACCESS_VOIDED</div>
             <div class="h-1 bg-red-600 w-full mb-6"></div>
-            <p class="text-red-400 font-mono mb-8 text-sm">YOUR TERMINAL IDENTITY HAS BEEN SEVERED. ALL NETWORK PRIVILEGES HAVE BEEN TERMINATED.</p>
-            <div id="ban-reason-display" class="text-xs text-red-900 border border-red-900 p-4 mb-8 uppercase font-bold italic bg-red-950/20">REASON: PROTOCOL_VIOLATION</div>
-            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-6 py-2 hover:bg-red-600 hover:text-black transition-all">ATTEMPT RE-VALIDATION</button>
+            <p class="text-red-400 font-mono mb-6 text-sm">YOUR TERMINAL UID IS CURRENTLY UNDER TEMPORAL RESTRICTION.</p>
+            
+            <div class="space-y-4 mb-8">
+                <div id="ban-reason-display" class="text-xs text-red-900 border border-red-900 p-3 uppercase font-bold italic bg-red-950/20">REASON: PROTOCOL_VIOLATION</div>
+                <div id="ban-expiry-display" class="text-xs text-red-600 border border-red-900 p-3 font-mono bg-red-950/10">EXPIRATION: CALCULATING...</div>
+            </div>
+
+            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-6 py-2 hover:bg-red-600 hover:text-black transition-all">TRY_RE-VALIDATION</button>
         </div>
     </div>
 
-    <!-- AUTHENTICATION SCREEN -->
+    <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden absolute inset-0 bg-black z-30 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 neon-border p-6 md:p-8 my-auto">
             <div class="text-center mb-8 border-b border-green-900 pb-4">
@@ -119,15 +124,15 @@
         </div>
     </div>
 
-    <!-- WIPE MODAL (TRUE ACCOUNT DELETE) -->
+    <!-- WIPE MODAL -->
     <div id="decommission-modal" class="hidden absolute inset-0 bg-black/98 z-[80] flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-sm bg-zinc-950 alert-border p-6 md:p-8 text-center my-auto">
             <h2 class="text-xl font-bold alert-text mb-2 tracking-tighter">DESTRUCTION_CONSOLE</h2>
             <div class="h-px bg-red-900 w-full mb-6"></div>
-            <p class="text-[10px] text-red-500 mb-6 font-bold uppercase animate-pulse leading-relaxed">WARNING: THIS OPERATION WILL REMOVE YOUR ACCOUNT FROM THE FIREBASE AUTH DATABASE. ALL ACCESS WILL BE PERMANENTLY VOIDED.</p>
+            <p class="text-[10px] text-red-500 mb-6 font-bold uppercase animate-pulse leading-relaxed">WARNING: ACCOUNT PURGE IS IRREVERSIBLE.</p>
             <div class="flex flex-col gap-3">
                 <button onclick="handleDeleteAccount()" class="w-full border-2 border-red-600 bg-red-950/20 text-red-600 py-4 hover:bg-red-600 hover:text-white font-black text-xs shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                    [ INITIATE_TRUE_DECOMMISSION ]
+                    [ INITIATE_FINAL_WIPE ]
                 </button>
                 <button onclick="document.getElementById('decommission-modal').classList.add('hidden')" class="text-[10px] text-green-800 hover:text-white p-2 uppercase tracking-widest">Abort_Mission</button>
             </div>
@@ -138,46 +143,46 @@
     <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-50 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 alert-border p-6 md:p-8 my-auto relative">
             <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
-            <h2 class="text-xl font-bold alert-text mb-2 text-center uppercase tracking-tighter">ROOT_AUTHORITY_CONTROL</h2>
+            <h2 class="text-xl font-bold alert-text mb-2 text-center uppercase tracking-tighter text-red-500">ROOT_AUTHORITY_CONTROL</h2>
             <div class="h-px bg-red-900 w-full mb-6"></div>
             <div class="space-y-6">
                 <div class="space-y-3">
-                    <div class="text-[10px] text-red-400 font-bold tracking-widest uppercase">DATA_OPERATIONS</div>
+                    <div class="text-[10px] text-red-400 font-bold tracking-widest uppercase">DATA_ARCHIVAL</div>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="exportData()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">BACKUP_JSON</button>
-                        <button onclick="triggerImport()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">RESTORE_JSON</button>
+                        <button onclick="exportData()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">BACKUP_DATA</button>
+                        <button onclick="triggerImport()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">RESTORE_DATA</button>
                     </div>
                     <input type="file" id="import-input" class="hidden" accept=".json" onchange="handleImport(event)">
                 </div>
                 <div class="space-y-3">
-                    <div class="text-[10px] text-red-400 font-bold tracking-widest uppercase">SECURITY_PROTOCOL</div>
-                    <button onclick="broadcastAnnouncement()" class="w-full btn-warn py-3 font-bold text-xs uppercase">[ GLOBAL_BROADCAST ]</button>
-                    <button onclick="openBanList()" class="w-full btn-alert py-3 font-bold text-xs uppercase">[ MANAGE_BLACKLIST ]</button>
+                    <div class="text-[10px] text-red-400 font-bold tracking-widest uppercase">SECURITY_OVERRIDE</div>
+                    <button onclick="broadcastAnnouncement()" class="w-full btn-warn py-3 font-bold text-xs uppercase">[ BROADCAST_BROADCAST ]</button>
+                    <button onclick="openBanList()" class="w-full btn-alert py-3 font-bold text-xs uppercase">[ MANAGE_TEMPORAL_BANS ]</button>
                 </div>
-                <div class="space-y-3 pt-4 border-t border-red-950">
-                    <button onclick="confirmSystemFlush()" class="w-full btn-alert py-2 text-[10px] uppercase bg-red-950/40 font-black">TOTAL_WIPE_EXECUTION</button>
+                <div class="space-y-3 pt-4 border-t border-red-900">
+                    <button onclick="confirmSystemFlush()" class="w-full btn-alert py-2 text-[10px] uppercase bg-red-950/40 font-black">WIPE_CHAT_LOGS</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- BLACKLIST MODAL -->
+    <!-- BAN LIST MODAL -->
     <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[60] flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 alert-border p-6 my-auto relative">
             <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white">X</button>
-            <h2 class="text-lg font-bold alert-text mb-4 text-center">BLACKLISTED_NODES</h2>
+            <h2 class="text-lg font-bold alert-text mb-4 text-center">ACTIVE_RESTRICTION_LOGS</h2>
             <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2"></div>
         </div>
     </div>
 
     <!-- MAIN CHAT UI -->
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
-        <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0">
+        <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0 shadow-lg">
             <div class="flex items-center gap-3 overflow-hidden">
-                <h1 class="font-bold text-xs retro-text leading-none uppercase tracking-tighter">COMM_LINK_12</h1>
+                <h1 class="font-bold text-xs retro-text leading-none uppercase tracking-tighter">COMM_LINK_13</h1>
                 <div class="flex items-center gap-1">
                     <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></span>
-                    <span id="system-status" class="text-[7px] text-green-700 font-bold tracking-widest">UPLINK_STABLE</span>
+                    <span id="system-status" class="text-[7px] text-green-700 font-bold tracking-widest uppercase">Link: Secure</span>
                 </div>
             </div>
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
@@ -194,11 +199,11 @@
             <form onsubmit="handleSendMessage(event)" class="flex gap-2 max-w-6xl mx-auto items-center">
                 <span class="text-green-500 font-bold text-lg">&gt;</span>
                 <input type="text" id="message-input" class="flex-1 bg-transparent border-none focus:ring-0 text-green-400 placeholder-green-900/30 text-xs md:text-sm py-2 focus:outline-none font-mono uppercase" placeholder="TRANSMIT_DATA..." autocomplete="off">
-                <button type="submit" class="text-green-600 hover:text-green-400 font-bold text-[10px] md:text-xs uppercase px-3 py-1 border border-green-900 tracking-tighter transition-all">EXECUTE</button>
+                <button type="submit" class="text-green-600 hover:text-green-400 font-bold text-[10px] md:text-xs uppercase px-3 py-1 border border-green-900 tracking-tighter">EXECUTE</button>
             </form>
             <div class="flex justify-between items-center mt-2 border-t border-green-950 pt-2 opacity-30">
                 <span id="session-info" class="text-[7px] text-green-900 uppercase tracking-widest font-bold">ID: ---</span>
-                <span class="text-[7px] text-green-900 font-mono tracking-tighter">sys_support: support@eugeneevons.com</span>
+                <span class="text-[7px] text-green-900 font-mono tracking-tighter">support@eugeneevons.com</span>
             </div>
         </footer>
     </div>
@@ -206,7 +211,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, deleteUser } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs, setDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
@@ -231,6 +236,7 @@
             chat: document.getElementById('chat-screen'),
             suspendedScreen: document.getElementById('suspended-screen'),
             banReasonDisplay: document.getElementById('ban-reason-display'),
+            banExpiryDisplay: document.getElementById('ban-expiry-display'),
             nicknameModal: document.getElementById('nickname-modal'),
             adminModal: document.getElementById('admin-modal'),
             banListModal: document.getElementById('ban-list-modal'),
@@ -255,12 +261,19 @@
                 banCheckUnsubscribe = onSnapshot(doc(db, 'banned_users', user.uid), (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        els.banReasonDisplay.innerText = "REASON: " + (data.reason || "ACCESS_TERMINATED_BY_ADMIN");
-                        signOut(auth);
-                        els.chat.classList.add('hidden');
-                        els.auth.classList.add('hidden');
-                        els.suspendedScreen.classList.remove('hidden');
-                        els.loading.classList.add('hidden');
+                        const now = Date.now();
+                        const expiresAt = data.expiresAt ? data.expiresAt.toMillis() : Infinity;
+
+                        // If ban is active
+                        if (now < expiresAt) {
+                            els.banReasonDisplay.innerText = "REASON: " + (data.reason || "ACCESS_TERMINATED_BY_ADMIN");
+                            els.banExpiryDisplay.innerText = data.isPermanent ? "EXPIRATION: PERMANENT_VOID" : `EXPIRATION: ${new Date(expiresAt).toLocaleString()}`;
+                            signOut(auth);
+                            els.chat.classList.add('hidden');
+                            els.auth.classList.add('hidden');
+                            els.suspendedScreen.classList.remove('hidden');
+                            els.loading.classList.add('hidden');
+                        }
                     }
                 });
 
@@ -274,8 +287,6 @@
                 }
 
                 if(isModerator) els.adminBtn.classList.remove('hidden');
-
-                // Account decommissioning available for non-guests
                 if (!user.isAnonymous) els.decommissionBtn.classList.remove('hidden');
 
                 els.loading.classList.add('hidden');
@@ -304,47 +315,71 @@
             const confirmation = prompt("DANGER: WIPE AUTHENTICATION FROM DATABASE?\nTYPE 'TERMINATE' TO CONFIRM.");
             if (confirmation !== 'TERMINATE') return;
             try {
-                // native Firebase Auth true delete
                 await deleteUser(currentUser);
-                alert("TERMINAL_WIPE_COMPLETE. ACCOUNT DELETED.");
                 location.reload();
-            } catch (error) { 
-                console.error(error);
-                alert("PROTOCOL_FAULT: RECENT_AUTHENTICATION_REQUIRED.\nPLEASE LOG OUT AND LOG BACK IN TO VALIDATE DELETE ORDER."); 
-            }
+            } catch (error) { alert("PROTOCOL_FAULT: RECENT_AUTHENTICATION_REQUIRED. RE-LOGIN."); }
         };
 
         // --- AUTHORITY FUNCTIONS ---
-        window.openAdminPanel = () => els.adminModal.classList.remove('hidden');
-        window.closeAdminPanel = () => els.adminModal.classList.add('hidden');
-
         window.confirmBan = async (uid, name) => {
             if (uid === currentUser.uid) return alert("SELF_SUSPENSION_BLOCKED");
-            const reason = prompt(`PERMANENTLY VOID UID [${uid}]?\nENTER REASON:`);
+            
+            const reason = prompt(`RESTRICT ACCESS FOR [${name}]?\nENTER REASON:`);
             if (reason === null) return;
+
+            const durationInput = prompt(`ENTER DURATION (e.g. 24H, 7D) OR 'P' FOR PERMANENT:`);
+            if (durationInput === null) return;
+
+            let expiresAt = null;
+            let isPermanent = false;
+
+            if (durationInput.toUpperCase() === 'P') {
+                isPermanent = true;
+            } else {
+                const match = durationInput.match(/^(\d+)([HD])$/i);
+                if (!match) return alert("FORMAT_ERROR: USE 24H, 7D, ETC.");
+                const val = parseInt(match[1]);
+                const unit = match[2].toUpperCase();
+                const now = new Date();
+                if (unit === 'H') now.setHours(now.getHours() + val);
+                if (unit === 'D') now.setDate(now.getDate() + val);
+                expiresAt = Timestamp.fromDate(now);
+            }
+
             try {
-                await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() });
-                alert(`NODE [${name}] SEVERED.`);
+                await setDoc(doc(db, 'banned_users', uid), { 
+                    nickname: name, 
+                    reason: reason.toUpperCase(), 
+                    expiresAt: expiresAt,
+                    isPermanent: isPermanent,
+                    timestamp: serverTimestamp() 
+                });
+                alert(`TEMPORAL_RESTRICTION_EXECUTED.`);
             } catch(e) { alert("FAULT: INSUFFICIENT_CLEARANCE"); }
         };
 
         window.openBanList = async () => {
             els.banListModal.classList.remove('hidden');
-            els.banListContent.innerHTML = '<div class="text-[10px] animate-pulse">QUERYING_BLACKLIST...</div>';
+            els.banListContent.innerHTML = '<div class="text-[10px] animate-pulse uppercase">Querying Temporal Records...</div>';
             try {
                 const snap = await getDocs(collection(db, 'banned_users'));
                 if (snap.empty) return els.banListContent.innerHTML = '<div class="text-[10px] opacity-40 text-center py-8">CLEAR_LOGS: NO_ACTIVE_BANS</div>';
-                els.banListContent.innerHTML = snap.docs.map(d => `
-                    <div class="border border-red-900 bg-red-950/20 p-3 mb-2 flex justify-between items-center group">
-                        <div>
-                            <div class="text-xs font-black text-red-500">${escapeHtml(d.data().nickname || 'UNKNOWN')}</div>
-                            <div class="text-[7px] opacity-30 font-mono">${d.id}</div>
-                            <div class="text-[8px] text-red-900 font-bold uppercase italic">${escapeHtml(d.data().reason)}</div>
+                
+                els.banListContent.innerHTML = snap.docs.map(d => {
+                    const data = d.data();
+                    const expires = data.isPermanent ? "PERMANENT" : (data.expiresAt ? data.expiresAt.toDate().toLocaleString() : "UNKNOWN");
+                    return `
+                        <div class="border border-red-900 bg-red-950/20 p-3 mb-2 flex justify-between items-center">
+                            <div>
+                                <div class="text-xs font-black text-red-500">${escapeHtml(data.nickname || 'NODE')}</div>
+                                <div class="text-[8px] text-red-900 font-bold uppercase italic">REASON: ${escapeHtml(data.reason)}</div>
+                                <div class="text-[7px] opacity-60 font-mono uppercase mt-1">EXPIRES: ${expires}</div>
+                            </div>
+                            <button onclick="unbanUser('${d.id}')" class="btn-retro !border-green-800 !text-green-600 hover:!bg-green-600 hover:!text-black uppercase font-bold">REVOKE</button>
                         </div>
-                        <button onclick="unbanUser('${d.id}')" class="btn-retro !border-green-800 !text-green-600 hover:!bg-green-600 hover:!text-black uppercase font-bold">REVOKE</button>
-                    </div>
-                `).join('');
-            } catch(e) { els.banListContent.innerHTML = `<div class="text-xs text-red-500 uppercase p-4 border border-red-900">PERMISSION_FAULT: CHECK_SECURITY_RULES</div>`; }
+                    `;
+                }).join('');
+            } catch(e) { els.banListContent.innerHTML = `<div class="text-xs text-red-500 uppercase p-4 border border-red-900">PERMISSION_FAULT</div>`; }
         };
 
         window.unbanUser = async (uid) => {
@@ -352,12 +387,11 @@
             try { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); } catch(e) { alert("REVOCATION_FAULT"); }
         };
 
-        // --- CORE UTILS ---
+        // --- ENGINE ---
         window.exportData = () => {
             if (rawMessages.length === 0) return;
             const blob = new Blob([JSON.stringify(rawMessages, null, 2)], { type: 'application/json' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `term_chat_dump.json`;
-            a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup.json`; a.click();
         };
         window.triggerImport = () => els.importInput.click();
         window.handleImport = async (e) => {
@@ -365,7 +399,7 @@
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
-                    const data = JSON.parse(event.result || event.target.result);
+                    const data = JSON.parse(event.target.result);
                     for (const m of data) await addDoc(collection(db, 'messages'), { text: m.text, nickname: m.nickname, uid: m.uid, timestamp: serverTimestamp(), createdAt: Date.now() });
                     alert("PACKETS_RESTORED");
                 } catch (err) { alert("PACKET_CORRUPTION"); }
@@ -378,12 +412,11 @@
             await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", type: 'announcement', timestamp: serverTimestamp() });
         };
         window.confirmSystemFlush = async () => {
-            if(prompt("TYPE 'CONFIRM' TO FLUSH CHAT LOGS") !== 'CONFIRM') return;
+            if(prompt("TYPE 'CONFIRM' TO FLUSH") !== 'CONFIRM') return;
             const snap = await getDocs(collection(db, "messages"));
             snap.forEach(d => deleteDoc(doc(db, "messages", d.id)));
         };
 
-        // --- ENGINE ---
         function subscribeMessages() {
             if (messagesUnsubscribe) messagesUnsubscribe();
             messagesUnsubscribe = onSnapshot(collection(db, 'messages'), (snap) => {
@@ -443,7 +476,7 @@
             try { if (mode === 'login') await signInWithEmailAndPassword(auth, email, password); else await createUserWithEmailAndPassword(auth, email, password); } catch (err) { alert(err.message); }
         };
         window.handleLogout = () => signOut(auth);
-        window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "AUTHORIZE" : "CREATE RECORD"; document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "No credentials? Create record" : "Have account? Login"; };
+        window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "AUTHORIZE" : "CREATE RECORD"; };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
         window.toggleEmailMode = () => { const m = document.getElementById('auth-mode').value; window.showEmailAuth(m === 'login' ? 'signup' : 'login'); };
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
