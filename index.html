@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v3.0 // COMMUNIACTOR</title>
+    <title>TERM-CHAT v3.1 // MODERATOR_EDITION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --terminal-green: #22c55e;
             --terminal-dark: #050505;
             --terminal-glow: 0 0 8px rgba(34, 197, 94, 0.6);
+            --terminal-alert: #ef4444;
         }
         
         body {
@@ -81,7 +82,7 @@
         </div>
     </div>
 
-    <!-- AUTHENTICATION SCREEN -->
+    <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden absolute inset-0 bg-black z-30 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 neon-border p-6 md:p-8 my-auto">
             <div class="text-center mb-8 border-b border-green-900 pb-4">
@@ -118,7 +119,7 @@
         </div>
     </div>
 
-    <!-- NICKNAME/EDIT MODAL -->
+    <!-- MODAL (NICKNAME/EDIT) -->
     <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-sm bg-zinc-950 neon-border p-6 md:p-8 text-center my-auto">
             <h2 id="modal-title" class="text-lg font-bold retro-text mb-4">IDENTITY_PROTOCOL</h2>
@@ -133,21 +134,21 @@
         </div>
     </div>
 
-    <!-- MAIN CHAT INTERFACE -->
+    <!-- MAIN INTERFACE -->
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
-        
         <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-3 overflow-hidden">
                 <div>
                     <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_03</h1>
                     <div class="flex items-center gap-1 mt-1">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                        <span id="cleanup-status" class="text-[7px] text-green-700">SCANNING_FOR_EXPIRATION...</span>
+                        <span id="system-status" class="text-[7px] text-green-700">LINK_SECURE</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
+                <span id="mod-badge" class="hidden text-[8px] bg-red-900 text-white px-2 py-1 rounded font-bold">ADMIN_KEY</span>
                 <button onclick="openNicknameModal()" class="btn-retro"> [ NAME ] </button>
                 <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500 hover:!bg-red-950/20 hover:!text-red-500"> [ EXIT ] </button>
             </div>
@@ -171,7 +172,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
@@ -188,6 +189,7 @@
         const db = getFirestore(app);
 
         let currentUser = null;
+        let isModerator = false;
         let messagesUnsubscribe = null;
         let activeModalAction = null;
 
@@ -201,35 +203,53 @@
             modalInput: document.getElementById('modal-input'),
             modalTitle: document.getElementById('modal-title'),
             modalDesc: document.getElementById('modal-desc'),
-            cleanupStatus: document.getElementById('cleanup-status'),
+            systemStatus: document.getElementById('system-status'),
             sessionInfo: document.getElementById('session-info'),
             authError: document.getElementById('auth-error-msg'),
-            genericForm: document.getElementById('generic-form')
+            genericForm: document.getElementById('generic-form'),
+            modBadge: document.getElementById('mod-badge')
         };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             currentUser = user;
-            els.loading.classList.add('hidden');
             if (user) {
+                // Check Moderator Collection
+                try {
+                    const modRef = doc(db, 'moderators', user.uid);
+                    const modSnap = await getDoc(modRef);
+                    isModerator = modSnap.exists();
+                    
+                    if(isModerator) {
+                        els.modBadge.classList.remove('hidden');
+                        performCleanup(); // Only mods run the cleanup script
+                    } else {
+                        els.modBadge.classList.add('hidden');
+                    }
+                } catch(e) { console.error("Mod Check Failed", e); }
+
+                els.loading.classList.add('hidden');
                 els.auth.classList.add('hidden');
                 els.sessionInfo.innerText = `ID: ${user.displayName || 'GUEST'}`;
+                
                 if (user.displayName) {
                     els.nicknameModal.classList.add('hidden');
                     els.chat.classList.remove('hidden');
                     subscribeMessages();
-                    performCleanup();
                 } else {
                     openNicknameModal();
                 }
             } else {
+                isModerator = false;
                 if (messagesUnsubscribe) messagesUnsubscribe();
+                els.loading.classList.add('hidden');
                 els.chat.classList.add('hidden');
                 els.auth.classList.remove('hidden');
             }
         });
 
-        // 30-Day Auto Cleanup Logic
+        // 30-Day Auto Cleanup Logic (MODERATORS ONLY)
         async function performCleanup() {
+            els.systemStatus.innerText = "ADMIN: RUNNING_PURGE_PROTOCOL...";
             try {
                 const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
                 const querySnapshot = await getDocs(collection(db, "messages"));
@@ -237,15 +257,18 @@
                 
                 querySnapshot.forEach(async (d) => {
                     const data = d.data();
-                    const ts = data.timestamp?.toMillis() || data.createdAt; // Handle both types
+                    const ts = data.timestamp?.toMillis() || data.createdAt;
                     if (ts && ts < thirtyDaysAgo) {
                         await deleteDoc(doc(db, "messages", d.id));
                         deletedCount++;
                     }
                 });
-                els.cleanupStatus.innerText = `SCRUB_COMPLETE: ${deletedCount} PURGED`;
-                setTimeout(() => els.cleanupStatus.innerText = 'UPLINK_STABLE', 5000);
-            } catch (e) { console.error("Cleanup Error", e); }
+                setTimeout(() => els.systemStatus.innerText = `PURGE_COMPLETE: ${deletedCount} DELETED`, 2000);
+                setTimeout(() => els.systemStatus.innerText = "ADMIN_ACCESS_GRANTED", 5000);
+            } catch (e) { 
+                console.error("Cleanup Error", e);
+                els.systemStatus.innerText = "PURGE_ERROR";
+            }
         }
 
         function subscribeMessages() {
@@ -262,6 +285,9 @@
             const atBottom = els.messageFeed.scrollHeight - els.messageFeed.scrollTop <= els.messageFeed.clientHeight + 100;
             els.messageFeed.innerHTML = messages.map(msg => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
+                const canEdit = isMe;
+                const canDelete = isMe || isModerator; // Mods can delete anything
+                
                 const date = msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt || Date.now());
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                 
@@ -273,12 +299,10 @@
                                 <span class="text-[9px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'}">
                                     [${msg.nickname}]${msg.edited ? '*' : ''}
                                 </span>
-                                ${isMe ? `
-                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[8px] text-green-700 hover:text-green-400">[E]</button>
-                                        <button onclick="confirmDelete('${msg.id}')" class="text-[8px] text-red-900 hover:text-red-500">[X]</button>
-                                    </div>
-                                ` : ''}
+                                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    ${canEdit ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[8px] text-green-700 hover:text-green-400">[E]</button>` : ''}
+                                    ${canDelete ? `<button onclick="confirmDelete('${msg.id}')" class="text-[8px] text-red-900 hover:text-red-500 font-bold">[${isModerator && !isMe ? 'MOD_DEL' : 'X'}]</button>` : ''}
+                                </div>
                             </div>
                             <div class="text-xs break-words p-2 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'} leading-relaxed">
                                 ${escapeHtml(msg.text)}
@@ -300,20 +324,19 @@
                     nickname: currentUser.displayName,
                     uid: currentUser.uid,
                     timestamp: serverTimestamp(),
-                    createdAt: Date.now() // Fallback for local calc
+                    createdAt: Date.now()
                 });
                 els.messageInput.value = '';
                 els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
             } catch (err) { console.error("Transmission error:", err); }
         };
 
-        // Modal Logic for Nickname & Editing
         window.openNicknameModal = () => {
             activeModalAction = async (val) => {
                 await updateProfile(currentUser, { displayName: val });
                 els.sessionInfo.innerText = `ID: ${val}`;
                 closeModal();
-                subscribeMessages();
+                subscribeMessages(); // Refresh to update names in UI if necessary
             };
             els.modalTitle.innerText = "IDENTITY_PROTOCOL";
             els.modalDesc.innerText = "Enter system alias for terminal identification.";
@@ -339,14 +362,14 @@
         };
 
         window.closeModal = () => els.nicknameModal.classList.add('hidden');
-
+        
         els.genericForm.onsubmit = async (e) => {
             e.preventDefault();
             const val = els.modalInput.value.trim();
             if (val && activeModalAction) await activeModalAction(val);
         };
 
-        // Auth Logic
+        // Auth
         window.handleGoogleSignIn = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (err) { showError(err.message); } };
         window.handleGuestSignIn = async () => { try { await signInAnonymously(auth); } catch (err) { showError(err.message); } };
         window.handleEmailSubmit = async (e) => {
@@ -362,13 +385,11 @@
         window.handleLogout = () => signOut(auth);
         window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); setMode(mode); };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
-        function setMode(m) {
-            document.getElementById('auth-mode').value = m;
-            document.getElementById('email-submit-btn').innerText = m === 'login' ? "LOGIN" : "CREATE RECORD";
-        }
+        function setMode(m) { document.getElementById('auth-mode').value = m; document.getElementById('email-submit-btn').innerText = m === 'login' ? "LOGIN" : "CREATE RECORD"; }
         function showError(m) { els.authError.innerText = "!! ERROR: " + m; els.authError.classList.remove('hidden'); }
         function escapeHtml(t) { return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
     </script>
 </body>
 </html>
+
 
