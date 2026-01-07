@@ -16,8 +16,11 @@
             background-color: #000;
             color: var(--terminal-green);
             font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
             text-transform: uppercase;
+            margin: 0;
+            padding: 0;
+            height: 100dvh; /* Dynamic viewport height for mobile browsers */
+            overflow: hidden; /* We handle scrolling in specific containers */
         }
 
         .scanline::after {
@@ -39,10 +42,11 @@
 
         .btn-retro {
             border: 1px solid var(--terminal-green);
-            padding: 4px 12px;
+            padding: 6px 12px;
             font-size: 10px;
             transition: all 0.2s;
             background: rgba(0, 20, 0, 0.5);
+            white-space: nowrap;
         }
 
         .btn-retro:hover {
@@ -51,7 +55,8 @@
             box-shadow: var(--terminal-glow);
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        /* Responsive custom scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #001100; }
         ::-webkit-scrollbar-thumb { background: #15803d; }
 
@@ -71,21 +76,26 @@
             50% { opacity: 1; }
             100% { opacity: 0.99; }
         }
+
+        /* Prevent content from being hidden behind keyboard on mobile */
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col relative scanline crt-flicker">
+<body class="w-screen flex flex-col relative scanline crt-flicker">
 
     <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-40 text-center">
+    <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-50 text-center">
         <div>
             <div class="retro-text text-2xl font-bold animate-pulse">[ INITIALIZING UPLINK... ]</div>
             <div class="text-[10px] mt-2 opacity-50">NODE: COMMUNIACTOR_SECURE_V2</div>
         </div>
     </div>
 
-    <!-- AUTHENTICATION SCREEN -->
-    <div id="auth-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-30 p-4">
-        <div class="w-full max-w-md bg-zinc-950 neon-border p-8">
+    <!-- AUTHENTICATION SCREEN (SCROLLABLE) -->
+    <div id="auth-screen" class="hidden absolute inset-0 bg-black z-30 flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-md bg-zinc-950 neon-border p-6 md:p-8 my-auto">
             <div class="text-center mb-8 border-b border-green-900 pb-4">
                 <h1 class="text-2xl font-bold retro-text mb-1 tracking-tighter">TERM-CHAT.EXE</h1>
                 <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_ESTABLISHED</p>
@@ -100,18 +110,18 @@
                 <button onclick="showEmailAuth('login')" class="w-full border border-green-800 py-3 hover:bg-green-900/30 transition-all font-bold text-xs">
                     [ ACCESS_VIA_EMAIL ]
                 </button>
-                <button onclick="handleGuestSignIn()" class="w-full text-green-900 hover:text-green-500 text-[10px] uppercase transition-colors">
+                <button onclick="handleGuestSignIn()" class="w-full text-green-900 hover:text-green-500 text-[10px] uppercase transition-colors p-2">
                     &gt; Execute Guest Mode &lt;
                 </button>
             </div>
 
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
                 <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white">&lt;&lt; BACK</button>
-                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none focus:border-green-500 text-sm" placeholder="EMAIL_ADDR" required>
-                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none focus:border-green-500 text-sm" placeholder="PASS_CODE" required>
+                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none focus:border-green-500 text-sm" placeholder="EMAIL_ADDR" required>
+                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none focus:border-green-500 text-sm" placeholder="PASS_CODE" required>
                 <input type="hidden" id="auth-mode" value="login">
                 <button type="submit" id="email-submit-btn" class="w-full bg-green-500/10 border border-green-500 py-3 font-bold hover:bg-green-500 hover:text-black transition-all text-xs">LOGIN</button>
-                <button type="button" id="toggle-auth-mode-btn" onclick="toggleEmailMode()" class="w-full text-[10px] text-green-800 hover:text-green-500 underline uppercase">Create Record</button>
+                <button type="button" id="toggle-auth-mode-btn" onclick="toggleEmailMode()" class="w-full text-[10px] text-green-800 hover:text-green-400 underline uppercase p-2">Create Record</button>
             </form>
 
             <div class="mt-8 text-center border-t border-green-900 pt-4">
@@ -120,68 +130,68 @@
         </div>
     </div>
 
-    <!-- NICKNAME MODAL (IDENTITY PROTOCOL) -->
-    <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex items-center justify-center p-4">
-        <div class="w-full max-w-sm bg-zinc-950 neon-border p-8 text-center relative">
+    <!-- NICKNAME MODAL (SCROLLABLE OVERLAY) -->
+    <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-sm bg-zinc-950 neon-border p-6 md:p-8 text-center my-auto">
             <h2 class="text-lg font-bold retro-text mb-4">IDENTITY_PROTOCOL</h2>
             <p class="text-[10px] text-green-800 mb-6">Enter system alias for terminal identification.</p>
             <form onsubmit="handleNicknameSubmit(event)" class="space-y-6">
                 <input type="text" id="nickname-input" class="w-full bg-transparent border-b-2 border-green-500 p-2 text-center text-xl text-green-500 focus:outline-none" placeholder="HANDLE" maxlength="15" required autofocus>
                 <div class="flex flex-col gap-2">
                     <button type="submit" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black font-bold transition-all text-xs">CONFIRM_IDENTITY</button>
-                    <button type="button" id="cancel-nickname" onclick="closeNicknameModal()" class="hidden text-[10px] text-green-900 hover:text-red-500">Cancel</button>
+                    <button type="button" id="cancel-nickname" onclick="closeNicknameModal()" class="hidden text-[10px] text-green-900 hover:text-red-500 p-2 uppercase">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MAIN CHAT INTERFACE -->
-    <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black">
+    <!-- MAIN CHAT INTERFACE (FIXED LAYOUT WITH SCROLLABLE CONTENT) -->
+    <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         
-        <!-- TOP HUD BAR -->
-        <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex flex-wrap items-center justify-between gap-4 z-10 shadow-lg">
-            <div class="flex items-center gap-4">
-                <div class="flex flex-col">
-                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_ALPHA</h1>
+        <!-- TOP HUD BAR (FIXED) -->
+        <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="flex-shrink-0">
+                    <h1 class="font-bold text-[10px] md:text-xs retro-text leading-none uppercase truncate">COMM_LINK_ALPHA</h1>
                     <div class="flex items-center gap-1 mt-1">
-                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></span>
-                        <span class="text-[8px] text-green-700 tracking-tighter">SECURE_CONNECTION_STABLE</span>
+                        <span class="w-1 h-1 md:w-1.5 md:h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-[7px] md:text-[8px] text-green-700 truncate">STABLE_SECURE_LINK</span>
                     </div>
                 </div>
-                <div class="hidden md:block h-8 w-[1px] bg-green-900 mx-2"></div>
-                <div class="flex flex-col">
-                    <span class="text-[8px] text-green-900 font-bold">OPERATOR_ID</span>
-                    <span id="user-display-name" class="text-xs font-bold retro-text text-green-400 leading-none">---</span>
+                <div class="hidden sm:block h-8 w-[1px] bg-green-900 flex-shrink-0"></div>
+                <div class="hidden sm:flex flex-col overflow-hidden">
+                    <span class="text-[7px] text-green-900 font-bold uppercase">OP_ID</span>
+                    <span id="user-display-name" class="text-[10px] md:text-xs font-bold retro-text text-green-400 truncate">---</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <button onclick="openNicknameModal(true)" class="btn-retro">
-                    [ CHANGE_NAME ]
+                <button onclick="openNicknameModal(true)" class="btn-retro" title="Change Identity">
+                    [ ID ]
                 </button>
                 <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500 hover:!bg-red-950/20 hover:!text-red-500">
-                    [ SIGN_OUT ]
+                    [ EXIT ]
                 </button>
             </div>
         </header>
 
-        <!-- MESSAGE STREAM -->
-        <main id="message-feed" class="flex-1 overflow-y-auto p-4 space-y-2 font-mono bg-[rgba(0,10,0,0.3)]">
+        <!-- MESSAGE STREAM (SCROLLABLE) -->
+        <main id="message-feed" class="flex-1 overflow-y-auto p-4 space-y-2 font-mono bg-[rgba(0,10,0,0.3)] scroll-smooth">
             <!-- Messages stream in here -->
         </main>
 
-        <!-- INPUT CONSOLE -->
-        <footer class="bg-zinc-950 border-t-2 border-green-500 p-4">
-            <form onsubmit="handleSendMessage(event)" class="flex gap-3 max-w-6xl mx-auto items-center relative">
+        <!-- INPUT CONSOLE (FIXED AT BOTTOM) -->
+        <footer class="bg-zinc-950 border-t-2 border-green-500 p-3 md:p-4 shrink-0 safe-area-bottom">
+            <form onsubmit="handleSendMessage(event)" class="flex gap-2 max-w-6xl mx-auto items-center">
                 <span class="text-green-500 font-bold text-lg">&gt;</span>
-                <input type="text" id="message-input" class="flex-1 bg-transparent border-none focus:ring-0 text-green-400 placeholder-green-900/40 text-sm py-1 focus:outline-none" placeholder="TRANSMIT_DATA_HERE..." autocomplete="off">
-                <button type="submit" id="send-btn" class="text-green-600 hover:text-green-400 font-bold text-xs transition-all uppercase px-4 border border-green-900 hover:border-green-400 py-1">
-                    EXECUTE
+                <input type="text" id="message-input" class="flex-1 bg-transparent border-none focus:ring-0 text-green-400 placeholder-green-900/30 text-xs md:text-sm py-2 focus:outline-none font-mono" placeholder="TRANSMIT_DATA..." autocomplete="off">
+                <button type="submit" id="send-btn" class="text-green-600 hover:text-green-400 font-bold text-[10px] md:text-xs transition-all uppercase px-3 py-1 border border-green-900 hover:border-green-400">
+                    EXEC
                 </button>
             </form>
-            <div class="flex justify-between items-center mt-3 border-t border-green-950 pt-2">
-                <span class="text-[7px] text-green-900 tracking-[0.2em]">ENCRYPTION_LEVEL: AES-256-BIT</span>
-                <span class="text-[7px] text-green-900">SUPPORT: support@eugeneevons.com</span>
+            <div class="hidden md:flex justify-between items-center mt-2 border-t border-green-950 pt-2 opacity-30">
+                <span class="text-[7px] text-green-900 tracking-[0.2em]">ENCR: AES-256</span>
+                <span class="text-[7px] text-green-900 font-mono">support@eugeneevons.com</span>
             </div>
         </footer>
     </div>
@@ -191,7 +201,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // --- AUTH CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
             authDomain: "communiacationtor.firebaseapp.com",
@@ -224,7 +233,6 @@
             authEmailForm: document.getElementById('auth-email-form')
         };
 
-        // --- AUTH STATE LISTENER ---
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             els.loading.classList.add('hidden');
@@ -246,7 +254,6 @@
             }
         });
 
-        // --- MESSAGE STREAMING ---
         function subscribeMessages() {
             if (messagesUnsubscribe) messagesUnsubscribe();
             const msgsRef = collection(db, 'messages');
@@ -257,6 +264,8 @@
         }
 
         function render(messages) {
+            const atBottom = els.messageFeed.scrollHeight - els.messageFeed.scrollTop <= els.messageFeed.clientHeight + 100;
+            
             els.messageFeed.innerHTML = messages.map(msg => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
                 return `
@@ -270,10 +279,12 @@
                     </div>
                 `;
             }).join('');
-            els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
+
+            if (atBottom) {
+                els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
+            }
         }
 
-        // --- EVENT HANDLERS ---
         window.handleSendMessage = async (e) => {
             e.preventDefault();
             const text = els.messageInput.value.trim();
@@ -282,10 +293,11 @@
                 await addDoc(collection(db, 'messages'), {
                     text,
                     nickname: currentUser.displayName,
-                    uid: currentUser.uid, // Hidden link to account
+                    uid: currentUser.uid,
                     timestamp: Date.now()
                 });
                 els.messageInput.value = '';
+                els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
             } catch (err) { console.error("Transmission error:", err); }
         };
 
