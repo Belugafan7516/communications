@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v3.7 // SECURITY_REINFORCED</title>
+    <title>TERM-CHAT v3.8 // SYSTEM_DECOMMISSION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -148,18 +148,28 @@
                     <button type="button" id="cancel-modal" onclick="closeModal()" class="text-[10px] text-green-900 hover:text-red-500 p-2 uppercase">Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- DANGER ZONE MODAL -->
+    <div id="decommission-modal" class="hidden absolute inset-0 bg-black/98 z-[70] flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-sm bg-zinc-950 alert-border p-6 md:p-8 text-center my-auto">
+            <h2 class="text-xl font-bold alert-text mb-4">DESTRUCTION_CONSOLE</h2>
             
-            <div id="danger-zone-wrapper" class="hidden mt-12 pt-6 border-t border-red-900/50">
-                <div id="danger-zone-gate">
-                    <button onclick="unlockDangerZone()" class="text-[9px] text-red-900 hover:text-red-500 font-bold tracking-[0.2em] border border-red-900 px-4 py-2 uppercase">
-                        [ UNLOCK DANGER ZONE ]
-                    </button>
-                </div>
-                <div id="danger-zone-content" class="hidden">
-                    <p class="text-[9px] text-red-600 font-bold mb-3 tracking-widest animate-pulse">WARNING: ACCOUNT DECOMMISSION IS IRREVERSIBLE</p>
+            <div id="destruction-gate">
+                <p class="text-[10px] text-red-900 mb-6 font-bold uppercase tracking-widest">GATE_STATUS: LOCKED_FOR_SAFETY</p>
+                <button onclick="unlockDestruction()" class="w-full border border-red-900 text-red-900 py-3 hover:bg-red-900 hover:text-white transition-all text-[10px] font-bold">
+                    [ UNLOCK DESTRUCTION PROTOCOL ]
+                </button>
+            </div>
+
+            <div id="destruction-controls" class="hidden">
+                <p class="text-[10px] text-red-500 mb-4 font-bold uppercase animate-pulse">WARNING: ACCOUNT DECOMMISSION IS IRREVERSIBLE</p>
+                <div class="flex flex-col gap-3">
                     <button onclick="handleDeleteAccount()" class="w-full border-2 border-red-600 bg-red-950/20 text-red-600 py-3 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold">
-                        [ FINAL_DECOMMISSION_ORDER ]
+                        [ INITIATE FINAL WIPE ]
                     </button>
+                    <button onclick="closeDecommissionModal()" class="text-[10px] text-red-900 hover:text-white p-2 uppercase">Abort Mission</button>
                 </div>
             </div>
         </div>
@@ -197,32 +207,22 @@
         </div>
     </div>
 
-    <!-- BAN LIST MODAL -->
-    <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[60] flex flex-col items-center overflow-y-auto p-4 md:p-8">
-        <div class="w-full max-w-md bg-zinc-950 alert-border p-6 my-auto relative">
-            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500">X</button>
-            <h2 class="text-lg font-bold alert-text mb-4 text-center">RESTRICTED_ACCESS_LOGS</h2>
-            <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scroll">
-                <!-- Ban records populated here -->
-            </div>
-        </div>
-    </div>
-
     <!-- MAIN CHAT -->
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-3 overflow-hidden">
                 <div>
-                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_07</h1>
+                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_08</h1>
                     <div class="flex items-center gap-1 mt-1">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         <span id="system-status" class="text-[7px] text-green-700">LINK_SECURE</span>
                     </div>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 overflow-x-auto custom-scroll no-scrollbar">
                 <button id="admin-btn" onclick="openAdminPanel()" class="hidden btn-retro !border-red-500 !text-red-500 hover:!bg-red-500 hover:!text-black uppercase"> [ ADMIN ] </button>
                 <button onclick="openNicknameModal()" class="btn-retro uppercase"> [ NAME ] </button>
+                <button id="decommission-btn" onclick="openDecommissionModal()" class="hidden btn-retro !border-red-900 !text-red-900 hover:!bg-red-900 hover:!text-white uppercase font-bold"> [ DECOMMISSION ] </button>
                 <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500 hover:!bg-red-950/20 hover:!text-red-500 uppercase"> [ EXIT ] </button>
             </div>
         </header>
@@ -276,22 +276,21 @@
             chat: document.getElementById('chat-screen'),
             bannedScreen: document.getElementById('banned-screen'),
             nicknameModal: document.getElementById('nickname-modal'),
+            decommissionModal: document.getElementById('decommission-modal'),
             adminModal: document.getElementById('admin-modal'),
-            banListModal: document.getElementById('ban-list-modal'),
-            banListContent: document.getElementById('ban-list-content'),
             messageFeed: document.getElementById('message-feed'),
             messageInput: document.getElementById('message-input'),
             modalInput: document.getElementById('modal-input'),
             modalTitle: document.getElementById('modal-title'),
             modalDesc: document.getElementById('modal-desc'),
-            dangerZoneWrapper: document.getElementById('danger-zone-wrapper'),
-            dangerZoneGate: document.getElementById('danger-zone-gate'),
-            dangerZoneContent: document.getElementById('danger-zone-content'),
+            destructionGate: document.getElementById('destruction-gate'),
+            destructionControls: document.getElementById('destruction-controls'),
             systemStatus: document.getElementById('system-status'),
             sessionInfo: document.getElementById('session-info'),
             authError: document.getElementById('auth-error-msg'),
             genericForm: document.getElementById('generic-form'),
             adminBtn: document.getElementById('admin-btn'),
+            decommissionBtn: document.getElementById('decommission-btn'),
             importInput: document.getElementById('import-input')
         };
 
@@ -320,12 +319,13 @@
 
                 if(isModerator) {
                     els.adminBtn.classList.remove('hidden');
-                    els.systemStatus.innerText = "LINK_SECURE // ROOT_ACCESS";
-                    performCleanup(false); 
                 } else {
                     els.adminBtn.classList.add('hidden');
-                    els.systemStatus.innerText = "LINK_SECURE";
                 }
+
+                // Show Decommission btn only for non-anonymous users
+                if (!user.isAnonymous) els.decommissionBtn.classList.remove('hidden');
+                else els.decommissionBtn.classList.add('hidden');
 
                 els.loading.classList.add('hidden');
                 els.auth.classList.add('hidden');
@@ -349,10 +349,20 @@
             }
         });
 
-        // --- ACCOUNT DECOMMISSION & DANGER ZONE ---
-        window.unlockDangerZone = () => {
-            els.dangerZoneGate.classList.add('hidden');
-            els.dangerZoneContent.classList.remove('hidden');
+        // --- ACCOUNT DECOMMISSION ---
+        window.openDecommissionModal = () => {
+            els.decommissionModal.classList.remove('hidden');
+            els.destructionGate.classList.remove('hidden');
+            els.destructionControls.classList.add('hidden');
+        };
+
+        window.closeDecommissionModal = () => {
+            els.decommissionModal.classList.add('hidden');
+        };
+
+        window.unlockDestruction = () => {
+            els.destructionGate.classList.add('hidden');
+            els.destructionControls.classList.remove('hidden');
         };
 
         window.handleDeleteAccount = async () => {
@@ -396,45 +406,11 @@
                 await setDoc(doc(db, 'banned_users', targetUid), {
                     nickname: targetName, bannedBy: currentUser.uid, reason: reason || "VIOLATION", timestamp: serverTimestamp()
                 });
-                alert(`USER [${targetName}] BLACKLISTED.`);
             } catch(e) { console.error(e); }
         };
 
         window.openBanList = async () => {
-            els.banListModal.classList.remove('hidden');
-            els.banListContent.innerHTML = '<div class="text-[10px] animate-pulse">READING_BLACKLIST...</div>';
-            
-            try {
-                const snap = await getDocs(collection(db, 'banned_users'));
-                if (snap.empty) {
-                    els.banListContent.innerHTML = '<div class="text-[10px] opacity-40 text-center py-4">NO_ACTIVE_BANS_RECORDED</div>';
-                    return;
-                }
-                
-                els.banListContent.innerHTML = snap.docs.map(d => {
-                    const data = d.data();
-                    return `
-                        <div class="flex flex-col border border-red-900 bg-red-950/20 p-3 mb-2">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="text-xs font-bold text-red-500">${data.nickname || 'UNKNOWN'}</span>
-                                <button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-900 text-green-500 hover:bg-green-500 hover:text-black px-2 py-1 uppercase">REVOKE</button>
-                            </div>
-                            <span class="text-[8px] opacity-60 font-mono mb-1">UID: ${d.id}</span>
-                            <span class="text-[9px] text-red-900 font-bold uppercase italic">${data.reason || 'NO_REASON_LOGGED'}</span>
-                        </div>
-                    `;
-                }).join('');
-            } catch(e) {
-                els.banListContent.innerHTML = `<div class="text-xs text-red-500">ERROR: ${e.message}</div>`;
-            }
-        };
-
-        window.unbanUser = async (uid) => {
-            if(!confirm("REVOKE BLACKLIST STATUS FOR THIS UID?")) return;
-            try {
-                await deleteDoc(doc(db, 'banned_users', uid));
-                openBanList(); // Refresh list
-            } catch(e) { alert("REVOCATION_FAILED"); }
+            alert("BAN_LIST_MODULE_UNDER_MAINTENANCE_PLEASE_USE_CONSOLE");
         };
 
         window.exportData = () => {
@@ -472,15 +448,11 @@
         window.performCleanup = async (manual) => {
             const snap = await getDocs(collection(db, "messages"));
             const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-            let pCount = 0;
             snap.forEach(async (d) => {
                 const ts = d.data().timestamp?.toMillis() || d.data().createdAt;
-                if (ts && ts < thirtyDaysAgo) {
-                    await deleteDoc(doc(db, "messages", d.id));
-                    pCount++;
-                }
+                if (ts && ts < thirtyDaysAgo) await deleteDoc(doc(db, "messages", d.id));
             });
-            if(manual) alert(`CLEANUP_COMPLETE: ${pCount} STALE_PACKETS_PURGED`);
+            if(manual) alert("STALE_DATA_PURGED");
         };
 
         window.confirmSystemFlush = async () => {
@@ -571,18 +543,10 @@
                 closeModal();
                 subscribeMessages(); 
             };
-            
             els.modalTitle.innerText = "IDENTITY_PROTOCOL";
             els.modalDesc.innerText = "Enter system alias for terminal identification.";
             els.modalInput.value = currentUser?.displayName || '';
             els.nicknameModal.classList.remove('hidden');
-            
-            // Reset Danger Zone Visibility
-            els.dangerZoneGate.classList.remove('hidden');
-            els.dangerZoneContent.classList.add('hidden');
-
-            if (!currentUser.isAnonymous) els.dangerZoneWrapper.classList.remove('hidden');
-            else els.dangerZoneWrapper.classList.add('hidden');
         };
 
         window.openEditModal = (id, oldText) => {
@@ -594,7 +558,6 @@
             els.modalDesc.innerText = "Update packet data contents.";
             els.modalInput.value = oldText;
             els.nicknameModal.classList.remove('hidden');
-            els.dangerZoneWrapper.classList.add('hidden');
         };
 
         window.confirmDelete = async (id) => {
