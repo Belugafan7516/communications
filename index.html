@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v4.0 // SYSTEM_STABILITY_FIX</title>
+    <title>TERM-CHAT v4.1 // AUTHORITY_ESTABLISHED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -63,21 +63,21 @@
 <body class="w-screen flex flex-col relative scanline crt-flicker">
 
     <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-50 text-center">
+    <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-[100] text-center">
         <div>
-            <div class="retro-text text-2xl font-bold animate-pulse">[ SCANNING SECURITY PROTOCOLS... ]</div>
-            <div class="text-[10px] mt-2 opacity-50">AUTHORIZING ACCESS TO COMMUNIACTOR_ROOT</div>
+            <div class="retro-text text-2xl font-bold animate-pulse">[ ESTABLISHING ENCRYPTED UPLINK... ]</div>
+            <div class="text-[10px] mt-2 opacity-50">BYPASSING GATEWAY: COMMUNIACATOR_V4</div>
         </div>
     </div>
 
     <!-- SUSPENDED SCREEN -->
-    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[100] text-center p-8">
-        <div class="border-4 border-red-600 p-8 shadow-[0_0_30px_red] bg-black">
-            <div class="text-5xl font-black text-red-600 mb-4 tracking-tighter">SUSPENDED</div>
+    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[90] text-center p-8">
+        <div class="border-4 border-red-600 p-8 shadow-[0_0_40px_red] bg-black max-w-lg">
+            <div class="text-5xl font-black text-red-600 mb-4 tracking-tighter">ACCESS_DENIED</div>
             <div class="h-1 bg-red-600 w-full mb-6"></div>
-            <p class="text-red-400 font-mono mb-8 text-sm">YOUR ACCOUNT HAS BEEN PERMANENTLY SUSPENDED FROM THE TERMINAL NETWORK.</p>
-            <div class="text-[10px] text-red-900 font-bold">REASON: SECURITY_VIOLATION_DETECTED</div>
-            <button onclick="location.reload()" class="mt-10 border border-red-600 text-red-600 px-6 py-2 hover:bg-red-600 hover:text-black transition-all">RE-VALIDATE CREDENTIALS</button>
+            <p class="text-red-400 font-mono mb-8 text-sm">YOUR TERMINAL UID HAS BEEN BLACKLISTED BY ROOT ADMINISTRATION.</p>
+            <div id="ban-reason-display" class="text-xs text-red-900 border border-red-900 p-4 mb-8 uppercase font-bold italic">REASON: UNKNOWN_VIOLATION</div>
+            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-6 py-2 hover:bg-red-600 hover:text-black transition-all">RE-SYNC ATTEMPT</button>
         </div>
     </div>
 
@@ -99,34 +99,23 @@
                 <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-sm" placeholder="EMAIL_ADDR" required>
                 <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-sm" placeholder="PASS_CODE" required>
                 <input type="hidden" id="auth-mode" value="login">
-                <button type="submit" id="email-submit-btn" class="w-full border border-green-500 py-3 font-bold hover:bg-green-500 hover:text-black transition-all text-xs">LOGIN</button>
-                <button type="button" onclick="toggleEmailMode()" class="w-full text-[10px] text-green-800 underline uppercase p-2">Create Record</button>
+                <button type="submit" id="email-submit-btn" class="w-full border border-green-500 py-3 font-bold hover:bg-green-500 hover:text-black transition-all text-xs uppercase">AUTHORIZE</button>
+                <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="w-full text-[10px] text-green-800 underline uppercase p-2">Create Record</button>
             </form>
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- MODAL -->
     <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-sm bg-zinc-950 neon-border p-6 md:p-8 text-center my-auto">
-            <h2 id="modal-title" class="text-lg font-bold retro-text mb-4">IDENTITY_PROTOCOL</h2>
+            <h2 id="modal-title" class="text-lg font-bold retro-text mb-4 uppercase">IDENTITY_PROTOCOL</h2>
             <form id="generic-form" class="space-y-6">
-                <input type="text" id="modal-input" class="w-full bg-transparent border-b-2 border-green-500 p-2 text-center text-xl text-green-500 focus:outline-none uppercase" placeholder="VALUE" required autofocus>
+                <input type="text" id="modal-input" class="w-full bg-transparent border-b-2 border-green-500 p-2 text-center text-xl text-green-500 focus:outline-none uppercase" placeholder="ENTER_VALUE" required autofocus>
                 <div class="flex flex-col gap-2">
-                    <button type="submit" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black font-bold text-xs">CONFIRM_EXECUTION</button>
-                    <button type="button" onclick="closeModal()" class="text-[10px] text-green-900 hover:text-red-500 p-2 uppercase">Cancel</button>
+                    <button type="submit" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black font-bold text-xs uppercase">EXECUTE</button>
+                    <button type="button" onclick="closeModal()" class="text-[10px] text-green-900 hover:text-red-500 p-2 uppercase">Abort</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <div id="decommission-modal" class="hidden absolute inset-0 bg-black/98 z-[70] flex flex-col items-center overflow-y-auto p-4 md:p-8">
-        <div class="w-full max-w-sm bg-zinc-950 alert-border p-6 md:p-8 text-center my-auto">
-            <h2 class="text-xl font-bold alert-text mb-4">DESTRUCTION_CONSOLE</h2>
-            <p class="text-[10px] text-red-500 mb-6 font-bold uppercase animate-pulse">WARNING: SYSTEM WIPE IS PERMANENT</p>
-            <div class="flex flex-col gap-3">
-                <button onclick="handleDeleteAccount()" class="w-full border-2 border-red-600 bg-red-950/20 text-red-600 py-3 hover:bg-red-600 hover:text-white font-bold text-xs">[ FINAL_DECOMMISSION_ORDER ]</button>
-                <button onclick="document.getElementById('decommission-modal').classList.add('hidden')" class="text-[10px] text-green-800 hover:text-white p-2 uppercase">Abort</button>
-            </div>
         </div>
     </div>
 
@@ -134,55 +123,57 @@
     <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-50 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 alert-border p-6 md:p-8 my-auto relative">
             <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
-            <h2 class="text-xl font-bold alert-text mb-2 text-center">ROOT_ACCESS_CONSOLE</h2>
+            <h2 class="text-xl font-bold alert-text mb-2 text-center">ROOT_AUTHORITY_CONSOLE</h2>
             <div class="h-px bg-red-900 w-full mb-6"></div>
             <div class="space-y-6">
                 <div class="space-y-3">
-                    <div class="text-[10px] text-red-400 font-bold">DATA_SYNC</div>
+                    <div class="text-[10px] text-red-400 font-bold tracking-widest">DATA_ARCHIVE</div>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="exportData()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">BACKUP</button>
-                        <button onclick="triggerImport()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">RESTORE</button>
+                        <button onclick="exportData()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">DOWNLOAD_BACKUP</button>
+                        <button onclick="triggerImport()" class="btn-retro !border-green-600 !text-green-500 hover:!bg-green-600">UPLOAD_RECOVERY</button>
                     </div>
                     <input type="file" id="import-input" class="hidden" accept=".json" onchange="handleImport(event)">
                 </div>
                 <div class="space-y-3">
-                    <div class="text-[10px] text-red-400 font-bold">MODERATION</div>
-                    <button onclick="broadcastAnnouncement()" class="w-full btn-warn py-3 font-bold text-xs uppercase">[ BROADCAST_MSG ]</button>
-                    <button onclick="openBanList()" class="w-full btn-alert py-3 font-bold text-xs uppercase">[ VIEW_BAN_LIST ]</button>
+                    <div class="text-[10px] text-red-400 font-bold tracking-widest">SECURITY_ENFORCEMENT</div>
+                    <button onclick="broadcastAnnouncement()" class="w-full btn-warn py-3 font-bold text-xs uppercase">[ GLOBAL_BROADCAST ]</button>
+                    <button onclick="openBanList()" class="w-full btn-alert py-3 font-bold text-xs uppercase">[ MANAGE_BLACKLIST ]</button>
                 </div>
                 <div class="space-y-3">
-                    <div class="text-[10px] text-red-400 font-bold">SYSTEM</div>
-                    <button onclick="performCleanup(true)" class="w-full btn-retro py-2 text-[10px] uppercase text-green-600 border-green-900">PURGE_OLD_DATA</button>
-                    <button onclick="confirmSystemFlush()" class="w-full btn-alert py-2 text-[10px] uppercase bg-red-950/40">GLOBAL_WIPE</button>
+                    <div class="text-[10px] text-red-400 font-bold tracking-widest">TERMINAL_CLEANUP</div>
+                    <button onclick="performCleanup(true)" class="w-full btn-retro py-2 text-[10px] uppercase text-green-600 border-green-900">PURGE_STALE_DATA</button>
+                    <button onclick="confirmSystemFlush()" class="w-full btn-alert py-2 text-[10px] uppercase bg-red-950/40">TOTAL_WIPE_PROTOCOL</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- BAN LIST MODAL -->
+    <!-- BAN MANAGEMENT MODAL -->
     <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[60] flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 alert-border p-6 my-auto relative">
-            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500">X</button>
-            <h2 class="text-lg font-bold alert-text mb-4 text-center">RESTRICTED_ACCESS_LOGS</h2>
-            <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2"></div>
+            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white">X</button>
+            <h2 class="text-lg font-bold alert-text mb-4 text-center">BLACKLISTED_NODES</h2>
+            <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Records list -->
+            </div>
         </div>
     </div>
 
-    <!-- MAIN CHAT UI -->
+    <!-- MAIN CHAT -->
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-3 overflow-hidden">
-                <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_10</h1>
+                <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_11</h1>
                 <div class="flex items-center gap-1">
                     <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></span>
-                    <span id="system-status" class="text-[7px] text-green-700 font-bold">STABLE</span>
+                    <span id="system-status" class="text-[7px] text-green-700 font-bold">UPLINK_STABLE</span>
                 </div>
             </div>
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                <button id="admin-btn" onclick="openAdminPanel()" class="hidden btn-retro !border-red-500 !text-red-500 hover:!bg-red-500 uppercase"> [ ADMIN ] </button>
-                <button onclick="openNicknameModal()" class="btn-retro uppercase"> [ NAME ] </button>
-                <button id="decommission-btn" onclick="document.getElementById('decommission-modal').classList.remove('hidden')" class="hidden btn-retro !border-red-900 !text-red-900 hover:!bg-red-900 uppercase"> [ WIPE ] </button>
-                <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500 uppercase"> [ EXIT ] </button>
+                <button id="admin-btn" onclick="openAdminPanel()" class="hidden btn-retro !border-red-500 !text-red-500 hover:!bg-red-500"> [ ADMIN ] </button>
+                <button onclick="openNicknameModal()" class="btn-retro"> [ NAME ] </button>
+                <button id="decommission-btn" onclick="handleFinalAccountPrompt()" class="hidden btn-retro !border-red-900 !text-red-900 hover:!bg-red-900"> [ WIPE ] </button>
+                <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500"> [ EXIT ] </button>
             </div>
         </header>
 
@@ -195,8 +186,8 @@
                 <button type="submit" class="text-green-600 hover:text-green-400 font-bold text-[10px] md:text-xs uppercase px-3 py-1 border border-green-900">EXEC</button>
             </form>
             <div class="flex justify-between items-center mt-2 border-t border-green-950 pt-2 opacity-30">
-                <span id="session-info" class="text-[7px] text-green-900 uppercase">ID: ---</span>
-                <span class="text-[7px] text-green-900 font-mono">support@eugeneevons.com</span>
+                <span id="session-info" class="text-[7px] text-green-900 uppercase tracking-tighter">ID: ---</span>
+                <span class="text-[7px] text-green-900 font-mono tracking-widest">support@eugeneevons.com</span>
             </div>
         </footer>
     </div>
@@ -228,6 +219,7 @@
             auth: document.getElementById('auth-screen'),
             chat: document.getElementById('chat-screen'),
             suspendedScreen: document.getElementById('suspended-screen'),
+            banReasonDisplay: document.getElementById('ban-reason-display'),
             nicknameModal: document.getElementById('nickname-modal'),
             adminModal: document.getElementById('admin-modal'),
             banListModal: document.getElementById('ban-list-modal'),
@@ -247,21 +239,21 @@
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                // 1. Suspension Check (Check the specific document only to avoid Permission Denied on collection)
+                // Real-time Ban Check for Current User
                 if (banCheckUnsubscribe) banCheckUnsubscribe();
-                try {
-                    banCheckUnsubscribe = onSnapshot(doc(db, 'banned_users', user.uid), (docSnap) => {
-                        if (docSnap.exists()) {
-                            signOut(auth);
-                            els.chat.classList.add('hidden');
-                            els.auth.classList.add('hidden');
-                            els.suspendedScreen.classList.remove('hidden');
-                            els.loading.classList.add('hidden');
-                        }
-                    });
-                } catch(e) { console.warn("Ban listener failed - check rules."); }
+                banCheckUnsubscribe = onSnapshot(doc(db, 'banned_users', user.uid), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        els.banReasonDisplay.innerText = "REASON: " + (data.reason || "VIOLATION_OF_PROTOCOL");
+                        signOut(auth);
+                        els.chat.classList.add('hidden');
+                        els.auth.classList.add('hidden');
+                        els.suspendedScreen.classList.remove('hidden');
+                        els.loading.classList.add('hidden');
+                    }
+                });
 
-                // 2. Mod Status
+                // Mod Authority Detection
                 isModerator = (user.email === ADMIN_EMAIL);
                 if (!isModerator) {
                     try {
@@ -279,7 +271,7 @@
 
                 els.loading.classList.add('hidden');
                 els.auth.classList.add('hidden');
-                els.sessionInfo.innerText = `ID: ${user.displayName || 'GUEST'}`;
+                els.sessionInfo.innerText = `UID: ${user.uid.substring(0,8)}... [${user.displayName || 'SET_ID'}]`;
                 
                 if (user.displayName) {
                     els.nicknameModal.classList.add('hidden');
@@ -297,7 +289,66 @@
             }
         });
 
-        // --- ACCOUNT ---
+        // --- AUTHORITY FUNCTIONS ---
+
+        window.confirmBan = async (uid, name) => {
+            if (uid === currentUser.uid) return alert("SELF_TERMINATION_BLOCKED");
+            const reason = prompt(`PERMANENTLY BLACKLIST USER [${name}]?\nENTER TERMINATION REASON:`);
+            if (reason === null) return;
+            try {
+                // We write a specific document to 'banned_users' with the user's UID as ID
+                await setDoc(doc(db, 'banned_users', uid), {
+                    nickname: name,
+                    bannedBy: currentUser.uid,
+                    reason: reason.toUpperCase() || "UNSPECIFIED_PROTOCOL_VIOLATION",
+                    timestamp: serverTimestamp()
+                });
+                alert(`USER [${name}] SEVERED FROM NETWORK.`);
+            } catch(e) { 
+                console.error(e);
+                alert("AUTHORITY_ERROR: INSUFFICIENT_CLEARANCE_OR_NETWORK_FAIL"); 
+            }
+        };
+
+        window.openBanList = async () => {
+            els.banListModal.classList.remove('hidden');
+            els.banListContent.innerHTML = '<div class="text-[10px] animate-pulse">QUERYING_BLACKLIST_DATABASE...</div>';
+            try {
+                const snap = await getDocs(collection(db, 'banned_users'));
+                if (snap.empty) {
+                    els.banListContent.innerHTML = '<div class="text-[10px] opacity-40 text-center py-8">CLEAN_RECORD: NO_ACTIVE_BANS</div>';
+                    return;
+                }
+                els.banListContent.innerHTML = snap.docs.map(d => {
+                    const data = d.data();
+                    return `
+                        <div class="border border-red-900 bg-red-950/20 p-3 mb-2 flex justify-between items-center group">
+                            <div>
+                                <div class="text-xs font-bold text-red-500">${escapeHtml(data.nickname || 'UNKNOWN_SUB')}</div>
+                                <div class="text-[7px] opacity-30 font-mono mb-1">${d.id}</div>
+                                <div class="text-[9px] text-red-900 font-bold uppercase italic">${escapeHtml(data.reason)}</div>
+                            </div>
+                            <button onclick="unbanUser('${d.id}')" class="btn-retro !border-green-800 !text-green-600 hover:!bg-green-600 hover:!text-black uppercase font-black">REVOKE_ACCESS</button>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) { 
+                els.banListContent.innerHTML = `<div class="text-xs text-red-500 p-4 border border-red-900 uppercase">PERMISSION_FAULT: CHECK_FIRESTORE_RULES_FOR_BANNED_USERS</div>`; 
+            }
+        };
+
+        window.unbanUser = async (uid) => {
+            if(!confirm("RESTORE TERMINAL ACCESS FOR THIS UID?")) return;
+            try { 
+                await deleteDoc(doc(db, 'banned_users', uid)); 
+                openBanList(); // Refresh list immediately
+            } catch(e) { alert("REVOCATION_FAULT"); }
+        };
+
+        // --- ACCOUNT DECOMMISSION ---
+        window.handleFinalAccountPrompt = () => {
+             document.getElementById('decommission-modal').classList.remove('hidden');
+        };
         window.handleDeleteAccount = async () => {
             if (!currentUser) return;
             const confirmation = prompt("DANGER: WIPE AUTHENTICATION?\nTYPE 'TERMINATE' TO CONFIRM.");
@@ -308,7 +359,7 @@
             } catch (error) { alert("PROTOCOL ERROR: RECENT LOGIN REQUIRED."); }
         };
 
-        // --- ADMIN ---
+        // --- ADMIN PANEL CONTROLS ---
         window.openAdminPanel = () => els.adminModal.classList.remove('hidden');
         window.closeAdminPanel = () => els.adminModal.classList.add('hidden');
 
@@ -317,45 +368,11 @@
             if (!text) return;
             try {
                 await addDoc(collection(db, 'messages'), {
-                    text, nickname: "SYSTEM_ANNOUNCEMENT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), createdAt: Date.now()
+                    text, nickname: "SYSTEM_ROOT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), createdAt: Date.now()
                 });
-            } catch(e) { alert("PERMISSION_DENIED"); }
+            } catch(e) { alert("TRANSMISSION_FAULT"); }
         };
 
-        window.confirmBan = async (uid, name) => {
-            if (uid === currentUser.uid) return alert("SELF_BAN_BLOCKED");
-            const reason = prompt(`SUSPEND USER [${name}]?\nREASON:`);
-            if (reason === null) return;
-            try {
-                await setDoc(doc(db, 'banned_users', uid), { nickname: name, bannedBy: currentUser.uid, reason, timestamp: serverTimestamp() });
-                alert("USER_SUSPENDED");
-            } catch(e) { alert("PERMISSION_DENIED: CHECK_RULES"); }
-        };
-
-        window.openBanList = async () => {
-            els.banListModal.classList.remove('hidden');
-            els.banListContent.innerHTML = '<div class="text-[10px] animate-pulse">READING_RECORDS...</div>';
-            try {
-                const snap = await getDocs(collection(db, 'banned_users'));
-                if (snap.empty) return els.banListContent.innerHTML = '<div class="text-[10px] opacity-40 text-center py-4">NO_BANS</div>';
-                els.banListContent.innerHTML = snap.docs.map(d => `
-                    <div class="border border-red-900 bg-red-950/20 p-2 mb-2 flex justify-between items-center">
-                        <div>
-                            <div class="text-xs font-bold text-red-500">${escapeHtml(d.data().nickname || 'UNKNOWN')}</div>
-                            <div class="text-[7px] opacity-40 font-mono">${d.id}</div>
-                        </div>
-                        <button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-900 text-green-500 px-2 py-1 uppercase font-bold hover:bg-green-600 hover:text-black transition-all">REVOKE</button>
-                    </div>
-                `).join('');
-            } catch(e) { els.banListContent.innerHTML = `<div class="text-xs text-red-500">ERROR: PERMISSION_DENIED. SET FIRESTORE RULES FOR 'banned_users'.</div>`; }
-        };
-
-        window.unbanUser = async (uid) => {
-            if(!confirm("REVOKE SUSPENSION?")) return;
-            try { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); } catch(e) { alert("REVOCATION_FAILED"); }
-        };
-
-        // --- DATA ---
         window.exportData = () => {
             if (rawMessages.length === 0) return;
             const blob = new Blob([JSON.stringify(rawMessages, null, 2)], { type: 'application/json' });
@@ -375,19 +392,24 @@
             };
             reader.readAsText(file);
         };
+
         window.performCleanup = async (manual) => {
-            const snap = await getDocs(collection(db, "messages"));
-            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-            snap.forEach(async (d) => { if ((d.data().timestamp?.toMillis() || d.data().createdAt) < thirtyDaysAgo) await deleteDoc(doc(db, "messages", d.id)); });
-            if(manual) alert("STALE_PACKETS_PURGED");
+            try {
+                const snap = await getDocs(collection(db, "messages"));
+                const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+                let count = 0;
+                snap.forEach(async (d) => { if ((d.data().timestamp?.toMillis() || d.data().createdAt) < thirtyDaysAgo) { await deleteDoc(doc(db, "messages", d.id)); count++; } });
+                if(manual) alert(`CLEANUP_COMPLETE: ${count} PURGED`);
+            } catch(e) { if(manual) alert("CLEANUP_FAULT"); }
         };
+
         window.confirmSystemFlush = async () => {
-            if(prompt("TYPE 'CONFIRM' TO FLUSH") !== 'CONFIRM') return;
+            if(prompt("TYPE 'CONFIRM' TO FLUSH DATABASE") !== 'CONFIRM') return;
             const snap = await getDocs(collection(db, "messages"));
             snap.forEach(d => deleteDoc(doc(db, "messages", d.id)));
         };
 
-        // --- CORE ---
+        // --- CHAT ENGINE ---
         function subscribeMessages() {
             if (messagesUnsubscribe) messagesUnsubscribe();
             messagesUnsubscribe = onSnapshot(collection(db, 'messages'), (snap) => {
@@ -398,25 +420,25 @@
 
         function render(messages) {
             const atBottom = els.messageFeed.scrollHeight - els.messageFeed.scrollTop <= els.messageFeed.clientHeight + 100;
-            let html = `<div class="mb-4 text-center border-y border-yellow-600 bg-yellow-900/10 py-4"><div class="text-yellow-500 font-bold text-sm mb-1">SYSTEM_ROOT</div><div class="text-yellow-200 text-[9px] leading-relaxed max-w-lg mx-auto px-2">WELCOME TO TERM-CHAT, COMPUTER. BE RESPECTFUL AND DO NOT BREAK RULES. ACCESS MAY BE SUSPENDED AT ANY TIME.</div></div>`;
+            let html = `<div class="mb-4 text-center border-y border-yellow-600 bg-yellow-900/10 py-4"><div class="text-yellow-500 font-bold text-sm mb-1 uppercase tracking-tighter">SECURITY_PROTOCOL</div><div class="text-yellow-200 text-[9px] leading-relaxed max-w-lg mx-auto px-2">WELCOME TO TERM-CHAT, COMPUTER. BE RESPECTFUL AND DO NOT BREAK RULES. WE MAY TERMINATE YOUR ACCESS TO TERM-CHAT AT ANY TIME.</div></div>`;
             html += messages.map(msg => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
-                if (msg.type === 'announcement') return `<div class="my-4 text-center border border-yellow-500/50 bg-yellow-900/20 p-2 mx-4"><div class="text-[9px] text-yellow-600 font-bold mb-1">BROADCAST</div><div class="text-yellow-400 font-bold text-sm uppercase">${escapeHtml(msg.text)}</div></div>`;
+                if (msg.type === 'announcement') return `<div class="my-4 text-center border-2 border-yellow-500/50 bg-yellow-900/30 p-3 mx-4 shadow-[0_0_10px_rgba(234,179,8,0.2)]"><div class="text-[9px] text-yellow-500 font-bold mb-1 tracking-widest">SYSTEM_BROADCAST</div><div class="text-yellow-100 font-bold text-xs uppercase">${escapeHtml(msg.text)}</div></div>`;
                 const date = msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt || Date.now());
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                 return `
                     <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 group">
                         <div class="max-w-[85%]">
                             <div class="flex items-center gap-2 mb-0.5 ${isMe ? 'justify-end' : ''} flex-wrap">
-                                <span class="text-[8px] text-green-900 font-bold">${timeStr}</span>
+                                <span class="text-[8px] text-green-900 font-bold tracking-tighter">${timeStr}</span>
                                 <span class="text-[9px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'}">[${escapeHtml(msg.nickname)}]${msg.edited ? '*' : ''}</span>
                                 <div class="flex gap-2">
-                                    ${isMe ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[9px] text-green-600 font-bold p-1">[E]</button>` : ''}
-                                    ${(isMe || isModerator) ? `<button onclick="confirmDelete('${msg.id}')" class="text-[9px] text-red-800 font-bold p-1">[${isModerator && !isMe ? 'DEL' : 'X'}]</button>` : ''}
-                                    ${(isModerator && !isMe) ? `<button onclick="confirmBan('${msg.uid}', '${escapeHtml(msg.nickname)}')" class="text-[9px] text-red-500 bg-red-900/30 px-1 font-bold">[SUSPEND]</button>` : ''}
+                                    ${isMe ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(msg.text)}')" class="text-[9px] text-green-600 font-bold hover:text-white transition-colors">[E]</button>` : ''}
+                                    ${(isMe || isModerator) ? `<button onclick="confirmDelete('${msg.id}')" class="text-[9px] text-red-800 font-bold hover:text-red-400 transition-colors">[${isModerator && !isMe ? 'DEL' : 'X'}]</button>` : ''}
+                                    ${(isModerator && !isMe) ? `<button onclick="confirmBan('${msg.uid}', '${escapeHtml(msg.nickname)}')" class="text-[9px] text-red-500 bg-red-900/30 px-1 font-bold hover:bg-red-600 hover:text-white">[SUSPEND]</button>` : ''}
                                 </div>
                             </div>
-                            <div class="text-xs break-words p-2 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'}">${escapeHtml(msg.text)}</div>
+                            <div class="text-xs break-words p-2 border ${isMe ? 'border-green-500/50 bg-green-900/10 text-green-100' : 'border-green-900 bg-black'} shadow-sm leading-relaxed">${escapeHtml(msg.text)}</div>
                         </div>
                     </div>
                 `;
@@ -431,16 +453,16 @@
         };
 
         window.openNicknameModal = () => {
-            activeModalAction = async (val) => { await updateProfile(currentUser, { displayName: val }); els.sessionInfo.innerText = `ID: ${val}`; closeModal(); subscribeMessages(); };
+            activeModalAction = async (val) => { await updateProfile(currentUser, { displayName: val }); els.sessionInfo.innerText = `ID: ${currentUser.uid.substring(0,8)}... [${val}]`; closeModal(); subscribeMessages(); };
             els.modalTitle.innerText = "IDENTITY_PROTOCOL"; els.modalInput.value = currentUser?.displayName || ''; els.nicknameModal.classList.remove('hidden');
         };
 
         window.openEditModal = (id, oldText) => {
             activeModalAction = async (val) => { await updateDoc(doc(db, "messages", id), { text: val, edited: true }); closeModal(); };
-            els.modalTitle.innerText = "MODIFY_TRANSMISSION"; els.modalInput.value = oldText; els.nicknameModal.classList.remove('hidden');
+            els.modalTitle.innerText = "MODIFY_PACKET"; els.modalInput.value = oldText; els.nicknameModal.classList.remove('hidden');
         };
 
-        window.confirmDelete = async (id) => { if (confirm("PURGE PACKET?")) await deleteDoc(doc(db, "messages", id)); };
+        window.confirmDelete = async (id) => { if (confirm("PURGE DATA PACKET?")) await deleteDoc(doc(db, "messages", id)); };
         window.closeModal = () => els.nicknameModal.classList.add('hidden');
         document.getElementById('generic-form').onsubmit = async (e) => { e.preventDefault(); const val = els.modalInput.value.trim(); if (val && activeModalAction) await activeModalAction(val); };
         window.handleGoogleSignIn = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (err) { alert(err.message); } };
@@ -450,7 +472,7 @@
             try { if (mode === 'login') await signInWithEmailAndPassword(auth, email, password); else await createUserWithEmailAndPassword(auth, email, password); } catch (err) { alert(err.message); }
         };
         window.handleLogout = () => signOut(auth);
-        window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "LOGIN" : "CREATE RECORD"; };
+        window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "LOGIN" : "CREATE RECORD"; document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "No credentials? Create record" : "Have account? Login"; };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
         window.toggleEmailMode = () => { const m = document.getElementById('auth-mode').value; window.showEmailAuth(m === 'login' ? 'signup' : 'login'); };
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
