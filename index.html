@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v3.8 // SYSTEM_DECOMMISSION</title>
+    <title>TERM-CHAT v3.9 // BAN_SYSTEM_FIXED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -40,8 +40,7 @@
         
         .neon-border { border: 2px solid var(--terminal-green); box-shadow: var(--terminal-glow); }
         .alert-border { border: 2px solid var(--terminal-alert); box-shadow: var(--terminal-alert-glow); }
-        .warn-border { border: 2px solid var(--terminal-yellow); box-shadow: 0 0 8px rgba(234, 179, 8, 0.6); }
-
+        
         .btn-retro {
             border: 1px solid var(--terminal-green);
             padding: 6px 12px;
@@ -50,7 +49,6 @@
             white-space: nowrap;
             cursor: pointer;
         }
-
         .btn-retro:hover { background: var(--terminal-green); color: black; box-shadow: var(--terminal-glow); }
 
         .btn-alert {
@@ -59,7 +57,6 @@
             background: rgba(20, 0, 0, 0.5);
             cursor: pointer;
         }
-        
         .btn-alert:hover { background: var(--terminal-alert); color: black; box-shadow: var(--terminal-alert-glow); }
 
         .btn-warn {
@@ -68,7 +65,6 @@
             background: rgba(20, 20, 0, 0.5);
             cursor: pointer;
         }
-        
         .btn-warn:hover { background: var(--terminal-yellow); color: black; box-shadow: 0 0 8px rgba(234, 179, 8, 0.6); }
 
         ::-webkit-scrollbar { width: 4px; }
@@ -161,6 +157,7 @@
                 <button onclick="unlockDestruction()" class="w-full border border-red-900 text-red-900 py-3 hover:bg-red-900 hover:text-white transition-all text-[10px] font-bold">
                     [ UNLOCK DESTRUCTION PROTOCOL ]
                 </button>
+                <button onclick="closeDecommissionModal()" class="w-full text-[10px] text-green-800 hover:text-green-500 mt-4 uppercase">Abort</button>
             </div>
 
             <div id="destruction-controls" class="hidden">
@@ -169,7 +166,7 @@
                     <button onclick="handleDeleteAccount()" class="w-full border-2 border-red-600 bg-red-950/20 text-red-600 py-3 hover:bg-red-600 hover:text-white transition-all text-[10px] font-bold">
                         [ INITIATE FINAL WIPE ]
                     </button>
-                    <button onclick="closeDecommissionModal()" class="text-[10px] text-red-900 hover:text-white p-2 uppercase">Abort Mission</button>
+                    <button onclick="closeDecommissionModal()" class="text-[10px] text-green-800 hover:text-white p-2 uppercase">Abort Mission</button>
                 </div>
             </div>
         </div>
@@ -207,12 +204,23 @@
         </div>
     </div>
 
+    <!-- BAN LIST MODAL -->
+    <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[60] flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-md bg-zinc-950 alert-border p-6 my-auto relative">
+            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
+            <h2 class="text-lg font-bold alert-text mb-4 text-center">RESTRICTED_ACCESS_LOGS</h2>
+            <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scroll">
+                <!-- Ban records populated here -->
+            </div>
+        </div>
+    </div>
+
     <!-- MAIN CHAT -->
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-3 overflow-hidden">
                 <div>
-                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_08</h1>
+                    <h1 class="font-bold text-xs retro-text leading-none uppercase">COMM_LINK_09</h1>
                     <div class="flex items-center gap-1 mt-1">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         <span id="system-status" class="text-[7px] text-green-700">LINK_SECURE</span>
@@ -278,6 +286,8 @@
             nicknameModal: document.getElementById('nickname-modal'),
             decommissionModal: document.getElementById('decommission-modal'),
             adminModal: document.getElementById('admin-modal'),
+            banListModal: document.getElementById('ban-list-modal'),
+            banListContent: document.getElementById('ban-list-content'),
             messageFeed: document.getElementById('message-feed'),
             messageInput: document.getElementById('message-input'),
             modalInput: document.getElementById('modal-input'),
@@ -297,7 +307,6 @@
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                // 1. Real-time Ban Check
                 if (banCheckUnsubscribe) banCheckUnsubscribe();
                 banCheckUnsubscribe = onSnapshot(doc(db, 'banned_users', user.uid), (docSnap) => {
                     if (docSnap.exists()) {
@@ -308,7 +317,6 @@
                     }
                 });
 
-                // 2. Mod Status
                 isModerator = (user.email === ADMIN_EMAIL);
                 if (!isModerator) {
                     try {
@@ -319,11 +327,13 @@
 
                 if(isModerator) {
                     els.adminBtn.classList.remove('hidden');
+                    els.systemStatus.innerText = "LINK_SECURE // ROOT_ACCESS";
+                    performCleanup(false); 
                 } else {
                     els.adminBtn.classList.add('hidden');
+                    els.systemStatus.innerText = "LINK_SECURE";
                 }
 
-                // Show Decommission btn only for non-anonymous users
                 if (!user.isAnonymous) els.decommissionBtn.classList.remove('hidden');
                 else els.decommissionBtn.classList.add('hidden');
 
@@ -356,10 +366,7 @@
             els.destructionControls.classList.add('hidden');
         };
 
-        window.closeDecommissionModal = () => {
-            els.decommissionModal.classList.add('hidden');
-        };
-
+        window.closeDecommissionModal = () => els.decommissionModal.classList.add('hidden');
         window.unlockDestruction = () => {
             els.destructionGate.classList.add('hidden');
             els.destructionControls.classList.remove('hidden');
@@ -406,11 +413,50 @@
                 await setDoc(doc(db, 'banned_users', targetUid), {
                     nickname: targetName, bannedBy: currentUser.uid, reason: reason || "VIOLATION", timestamp: serverTimestamp()
                 });
+                alert(`USER [${targetName}] BLACKLISTED.`);
             } catch(e) { console.error(e); }
         };
 
+        // --- FIXED BAN LIST ---
         window.openBanList = async () => {
-            alert("BAN_LIST_MODULE_UNDER_MAINTENANCE_PLEASE_USE_CONSOLE");
+            els.banListModal.classList.remove('hidden');
+            els.banListContent.innerHTML = '<div class="text-[10px] animate-pulse">READING_BLACKLIST...</div>';
+            
+            try {
+                const snap = await getDocs(collection(db, 'banned_users'));
+                if (snap.empty) {
+                    els.banListContent.innerHTML = '<div class="text-[10px] opacity-40 text-center py-4">NO_ACTIVE_BANS_RECORDED</div>';
+                    return;
+                }
+                
+                els.banListContent.innerHTML = snap.docs.map(d => {
+                    const data = d.data();
+                    const reason = data.reason || 'NO_REASON_LOGGED';
+                    const name = data.nickname || 'UNKNOWN';
+                    
+                    return `
+                        <div class="flex flex-col border border-red-900 bg-red-950/20 p-3 mb-2">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-xs font-bold text-red-500">${escapeHtml(name)}</span>
+                                <button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-900 text-green-500 hover:bg-green-500 hover:text-black px-2 py-1 uppercase font-bold">REVOKE</button>
+                            </div>
+                            <span class="text-[8px] opacity-60 font-mono mb-1">UID: ${d.id}</span>
+                            <span class="text-[9px] text-red-900 font-bold uppercase italic">REASON: ${escapeHtml(reason)}</span>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {
+                console.error("Ban List Error:", e);
+                els.banListContent.innerHTML = `<div class="text-xs text-red-500">ERROR: ${e.message}</div>`;
+            }
+        };
+
+        window.unbanUser = async (uid) => {
+            if(!confirm("REVOKE BLACKLIST STATUS FOR THIS UID?")) return;
+            try {
+                await deleteDoc(doc(db, 'banned_users', uid));
+                openBanList(); // Refresh list immediately
+            } catch(e) { alert("REVOCATION_FAILED: " + e.message); }
         };
 
         window.exportData = () => {
@@ -448,11 +494,15 @@
         window.performCleanup = async (manual) => {
             const snap = await getDocs(collection(db, "messages"));
             const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            let pCount = 0;
             snap.forEach(async (d) => {
                 const ts = d.data().timestamp?.toMillis() || d.data().createdAt;
-                if (ts && ts < thirtyDaysAgo) await deleteDoc(doc(db, "messages", d.id));
+                if (ts && ts < thirtyDaysAgo) {
+                    await deleteDoc(doc(db, "messages", d.id));
+                    pCount++;
+                }
             });
-            if(manual) alert("STALE_DATA_PURGED");
+            if(manual) alert(`CLEANUP_COMPLETE: ${pCount} STALE_PACKETS_PURGED`);
         };
 
         window.confirmSystemFlush = async () => {
@@ -591,4 +641,5 @@
     </script>
 </body>
 </html>
+
 
