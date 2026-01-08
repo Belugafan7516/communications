@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v5.1 // CRYPTO_STABILITY_FIX</title>
+    <title>TERM-CHAT v5.2 // DEBUGGED_CORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -69,8 +69,8 @@
     <!-- LOADING -->
     <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-[150] text-center">
         <div>
-            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ DUAL_KEY_GENERATION... ]</div>
-            <div id="loading-status" class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Initializing RSA-OAEP & RSASSA-PKCS1</div>
+            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ SYSTEM_REBOOT_v5.2 ]</div>
+            <div id="loading-status" class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Recompiling Execution Order...</div>
         </div>
     </div>
 
@@ -79,7 +79,7 @@
         <div class="w-full max-w-md bg-zinc-950 neon-border p-6 md:p-8 my-auto">
             <div class="text-center mb-8 border-b border-green-900 pb-4">
                 <h1 class="text-2xl font-bold retro-text mb-1 tracking-tighter">TERM-CHAT.EXE</h1>
-                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_v5.1</p>
+                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_v5.2</p>
             </div>
             <div id="auth-error-msg" class="hidden mb-6 p-4 border border-red-600 bg-red-950/20 text-red-500 text-[10px] uppercase font-bold text-center">!! AUTH_FAILURE !!</div>
             <div id="auth-landing" class="space-y-3">
@@ -102,7 +102,7 @@
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-2 sm:p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-2 overflow-hidden">
-                <h1 class="font-bold text-[9px] sm:text-xs retro-text uppercase truncate tracking-tighter">COMM_LINK_21</h1>
+                <h1 class="font-bold text-[9px] sm:text-xs retro-text uppercase truncate tracking-tighter">COMM_LINK_22</h1>
                 <div class="flex items-center gap-1">
                     <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
                     <span id="system-status" class="text-[6px] sm:text-[7px] text-green-700 font-bold uppercase">ENCRYPTED</span>
@@ -139,7 +139,6 @@
                 <div class="space-y-2">
                     <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">ENCRYPTION_MGMT</div>
                     <button onclick="adminRekeyChannel()" class="w-full btn-alert py-2 text-[9px] uppercase bg-green-900/20 text-green-500 border-green-600 font-bold">[ RE-KEY CHANNEL FOR NEW USERS ]</button>
-                    <p class="text-[7px] text-green-900 mt-1">* REQUIRES_ADMIN_TO_DISTRIBUTE_KEYS</p>
                 </div>
                 <div class="space-y-2">
                     <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">SECURITY</div>
@@ -177,7 +176,7 @@
     <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[110] flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 alert-border p-4 my-auto relative">
             <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-1 right-3 text-red-500 font-bold text-xs">X</button>
-            <h2 class="text-sm font-bold alert-text mb-4 text-center uppercase tracking-widest">BLACKLIST</h2>
+            <h2 class="text-sm font-bold alert-text mb-4 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2>
             <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
         </div>
     </div>
@@ -212,9 +211,9 @@
         const db = getFirestore(app);
 
         const ADMIN_EMAIL = 'leeeugene1574@gmail.com';
-        const APP_VERSION = '5.1';
+        const APP_VERSION = '5.2';
         
-        let currentUser = null, isModerator = false, messagesUnsubscribe = null, banCheckUnsubscribe = null, activeModalAction = null;
+        let currentUser = null, isModerator = false, messagesUnsubscribe = null, banCheckUnsubscribe = null, activeModalAction = null, rawMessages = [];
         let encKeyPair = null, sigKeyPair = null, masterKey = null;
 
         const els = {
@@ -239,19 +238,69 @@
             importInput: document.getElementById('import-input')
         };
 
+        // --- DEFINED BEFORE USE ---
+        
+        function subscribeMessages() {
+            if (messagesUnsubscribe) messagesUnsubscribe();
+            messagesUnsubscribe = onSnapshot(collection(db, 'messages'), async (snap) => {
+                const messages = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.timestamp?.toMillis?.() || a.createdAt || 0) - (b.timestamp?.toMillis?.() || b.createdAt || 0));
+                rawMessages = messages; 
+                await render(messages);
+            });
+        }
+
+        async function render(messages) {
+            const atBottom = els.messageFeed.scrollHeight - els.messageFeed.scrollTop <= els.messageFeed.clientHeight + 100;
+            const htmlPromises = messages.map(async (msg) => {
+                const isMe = currentUser && msg.uid === currentUser.uid;
+                if (msg.type === 'announcement') return `<div class="my-4 text-center border-2 border-yellow-500 bg-yellow-900/20 p-2 mx-4 text-[8px] font-bold text-yellow-500 uppercase">BROADCAST: ${escapeHtml(msg.text)}</div>`;
+                
+                let text = "Encrypted...";
+                if (msg.payload && msg.iv) text = await decryptContent(msg.payload, msg.iv);
+                else text = msg.text; 
+
+                let integrity = "";
+                if (msg.sig) {
+                    const valid = await verifySignature(text, msg.sig, msg.uid);
+                    integrity = valid ? '<span class="text-green-500 text-[6px] ml-1">[SIG_OK]</span>' : '<span class="text-red-500 text-[6px] ml-1 animate-pulse">[SIG_FAIL]</span>';
+                }
+
+                const timeStr = (msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
+                
+                return `
+                    <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 group">
+                        <div class="max-w-[88%]">
+                            <div class="flex items-center gap-1 mb-0.5 ${isMe ? 'justify-end' : ''} flex-wrap">
+                                <span class="text-[6px] text-green-900 font-bold">${timeStr}</span>
+                                <span class="text-[8px] uppercase font-black ${isMe ? 'text-green-300' : 'text-green-800'}">[${escapeHtml(msg.nickname)}]</span>
+                                ${integrity}
+                                <div class="flex gap-1 ml-1">
+                                    ${isMe ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(text)}')" class="text-[7px] text-green-600 font-bold uppercase">[E]</button>` : ''}
+                                    ${(isMe || isModerator) ? `<button onclick="confirmDelete('${msg.id}')" class="text-[7px] text-red-800 font-bold uppercase">[X]</button>` : ''}
+                                </div>
+                            </div>
+                            <div class="text-[10px] break-words p-1.5 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'} shadow-sm leading-tight">${escapeHtml(text)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            const htmlItems = await Promise.all(htmlPromises);
+            els.messageFeed.innerHTML = htmlItems.join('');
+            if(atBottom) els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
+        }
+
         // --- CRYPTO CORE ---
         async function initCryptoIdentity(uid) {
+            console.log("Crypto: Initializing identity for " + uid);
             els.loadingStatus.innerText = "CHECKING_KEY_INTEGRITY...";
             
-            // Version check to clear old keys
             if (localStorage.getItem('term_version') !== APP_VERSION) {
-                console.log("Upgrading Security Protocols...");
+                console.log("Crypto: Upgrading version, clearing old keys.");
                 localStorage.removeItem(`v5_enc_${uid}`);
                 localStorage.removeItem(`v5_sig_${uid}`);
                 localStorage.setItem('term_version', APP_VERSION);
             }
 
-            // 1. Encryption Key (RSA-OAEP)
             const storedEnc = localStorage.getItem(`v5_enc_${uid}`);
             if (storedEnc) {
                 const data = JSON.parse(storedEnc);
@@ -260,17 +309,15 @@
                     publicKey: await crypto.subtle.importKey("jwk", data.pub, { name: "RSA-OAEP", hash: "SHA-256" }, true, ["encrypt"])
                 };
             } else {
+                console.log("Crypto: Generating Encryption Keys...");
                 els.loadingStatus.innerText = "GENERATING_ENC_KEYS...";
-                encKeyPair = await crypto.subtle.generateKey({
-                    name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256"
-                }, true, ["encrypt", "decrypt"]);
+                encKeyPair = await crypto.subtle.generateKey({ name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256" }, true, ["encrypt", "decrypt"]);
                 localStorage.setItem(`v5_enc_${uid}`, JSON.stringify({
                     pub: await crypto.subtle.exportKey("jwk", encKeyPair.publicKey),
                     priv: await crypto.subtle.exportKey("jwk", encKeyPair.privateKey)
                 }));
             }
 
-            // 2. Signing Key (RSASSA-PKCS1-v1_5)
             const storedSig = localStorage.getItem(`v5_sig_${uid}`);
             if (storedSig) {
                 const data = JSON.parse(storedSig);
@@ -279,17 +326,15 @@
                     publicKey: await crypto.subtle.importKey("jwk", data.pub, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["verify"])
                 };
             } else {
+                console.log("Crypto: Generating Signing Keys...");
                 els.loadingStatus.innerText = "GENERATING_SIG_KEYS...";
-                sigKeyPair = await crypto.subtle.generateKey({
-                    name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256"
-                }, true, ["sign", "verify"]);
+                sigKeyPair = await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256" }, true, ["sign", "verify"]);
                 localStorage.setItem(`v5_sig_${uid}`, JSON.stringify({
                     pub: await crypto.subtle.exportKey("jwk", sigKeyPair.publicKey),
                     priv: await crypto.subtle.exportKey("jwk", sigKeyPair.privateKey)
                 }));
             }
 
-            // 3. Publish Public Keys
             els.loadingStatus.innerText = "SYNCING_PUBLIC_REGISTRY...";
             await setDoc(doc(db, 'public_keys', uid), {
                 encKey: await crypto.subtle.exportKey("jwk", encKeyPair.publicKey),
@@ -297,25 +342,25 @@
                 registeredAt: Date.now()
             });
 
-            // 4. Retrieve Channel Master Key
             await getMasterKey(uid);
         }
 
         async function getMasterKey(uid) {
+            console.log("Crypto: Fetching Master Key...");
             els.loadingStatus.innerText = "DECRYPTING_CHANNEL_KEY...";
             const keyRef = doc(db, 'vault', 'channel_key');
             const keySnap = await getDoc(keyRef);
             
             if (!keySnap.exists()) {
                 if (isModerator) {
-                    // Admin generates first master key
+                    console.log("Crypto: Admin generating initial Master Key...");
                     const newKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
                     const rawKey = await crypto.subtle.exportKey("raw", newKey);
                     const encryptedForAdmin = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, encKeyPair.publicKey, rawKey);
                     await setDoc(keyRef, { participants: { [uid]: b64encode(encryptedForAdmin) } });
                     masterKey = newKey;
                 } else {
-                    console.warn("WAITING FOR ADMIN RE-KEY");
+                    console.warn("Crypto: Waiting for Admin Re-Key...");
                 }
             } else {
                 const data = keySnap.data();
@@ -324,13 +369,14 @@
                         const encryptedBytes = b64decode(data.participants[uid]);
                         const rawKey = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, encKeyPair.privateKey, encryptedBytes);
                         masterKey = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
+                        console.log("Crypto: Master Key Decrypted Successfully.");
                     } catch(e) { console.error("Key Decrypt Fail", e); }
                 }
             }
         }
 
         async function encryptContent(text) {
-            if (!masterKey) return { encrypted: b64encode(new TextEncoder().encode(text)), iv: '' }; // Fallback (should prevent)
+            if (!masterKey) return { encrypted: b64encode(new TextEncoder().encode(text)), iv: '' }; 
             const iv = crypto.getRandomValues(new Uint8Array(12));
             const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, masterKey, new TextEncoder().encode(text));
             return { encrypted: b64encode(encrypted), iv: b64encode(iv) };
@@ -358,18 +404,27 @@
             } catch(e) { return false; }
         }
 
+        function triggerDeadlock(reason) {
+            els.banReasonDisplay.innerText = "REASON: " + (reason || "ACCESS_DENIED");
+            signOut(auth);
+            els.chat.classList.add('hidden');
+            els.auth.classList.add('hidden');
+            els.loading.classList.add('hidden');
+            els.suspendedScreen.classList.remove('hidden');
+        }
+
         // --- SESSION ---
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 isModerator = (user.email === ADMIN_EMAIL);
                 if (!isModerator) {
-                    // Check bans
+                    if (banCheckUnsubscribe) banCheckUnsubscribe();
                     banCheckUnsubscribe = onSnapshot(doc(db, 'banned_users', user.uid), (s) => { if(s.exists()) triggerDeadlock(s.data().reason); });
-                } else {
-                    els.adminBtn.classList.remove('hidden');
                 }
-                if(!user.isAnonymous) els.decommissionBtn.classList.remove('hidden');
+                
+                if (isModerator) els.adminBtn.classList.remove('hidden');
+                if (!user.isAnonymous) els.decommissionBtn.classList.remove('hidden');
 
                 try {
                     await initCryptoIdentity(user.uid);
@@ -379,9 +434,10 @@
                         els.chat.classList.remove('hidden');
                         subscribeMessages();
                     } else { openNicknameModal(); }
-                    els.sessionInfo.innerText = `UID: ${user.uid.substring(0,6)}.. // DUAL_KEY_ACTIVE`;
+                    els.sessionInfo.innerText = `UID: ${user.uid.substring(0,6)}.. // KEYS_ACTIVE`;
                 } catch(e) { 
                     alert("CRYPTO INIT FAILED: " + e.message); 
+                    console.error(e);
                     localStorage.clear(); location.reload();
                 }
             } else {
@@ -391,16 +447,23 @@
             }
         });
 
-        // --- ADMIN RE-KEY ---
+        // --- GLOBAL ACTIONS ---
+        window.handleSendMessage = async (e) => {
+            e.preventDefault(); const text = els.messageInput.value.trim(); if (!text) return;
+            const { encrypted, iv } = await encryptContent(text);
+            const sig = await signMessage(text);
+            await addDoc(collection(db, 'messages'), { payload: encrypted, iv, sig, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), createdAt: Date.now(), history: [] });
+            els.messageInput.value = '';
+        };
+
         window.adminRekeyChannel = async () => {
-            if (!masterKey) return alert("ADMIN HAS NO MASTER KEY YET");
+            if (!masterKey) return alert("ADMIN HAS NO MASTER KEY");
             els.loading.classList.remove('hidden');
-            els.loadingStatus.innerText = "DISTRIBUTING_KEYS...";
+            els.loadingStatus.innerText = "ENCRYPTING_KEYS_FOR_USERS...";
             try {
                 const rawMaster = await crypto.subtle.exportKey("raw", masterKey);
                 const publicKeysSnap = await getDocs(collection(db, 'public_keys'));
                 const participants = {};
-                
                 for (const doc of publicKeysSnap.docs) {
                     const uid = doc.id;
                     const data = doc.data();
@@ -411,66 +474,11 @@
                     }
                 }
                 await setDoc(doc(db, 'vault', 'channel_key'), { participants });
-                alert("CHANNEL RE-KEYED FOR " + Object.keys(participants).length + " USERS");
-            } catch(e) { alert("REKEY FAILED: " + e.message); }
+                alert("RE-KEY SUCCESSFUL");
+            } catch(e) { alert("REKEY ERROR: " + e.message); }
             els.loading.classList.add('hidden');
         };
 
-        // --- ACTIONS ---
-        window.handleSendMessage = async (e) => {
-            e.preventDefault(); const text = els.messageInput.value.trim(); if (!text) return;
-            const { encrypted, iv } = await encryptContent(text);
-            const sig = await signMessage(text);
-            await addDoc(collection(db, 'messages'), { payload: encrypted, iv, sig, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), createdAt: Date.now(), history: [] });
-            els.messageInput.value = '';
-        };
-
-        async function render(messages) {
-            const atBottom = els.messageFeed.scrollHeight - els.messageFeed.scrollTop <= els.messageFeed.clientHeight + 100;
-            const htmlPromises = messages.map(async (msg) => {
-                const isMe = currentUser && msg.uid === currentUser.uid;
-                if (msg.type === 'announcement') return `<div class="my-4 text-center border-2 border-yellow-500 bg-yellow-900/20 p-2 mx-4 text-[8px] font-bold text-yellow-500 uppercase">BROADCAST: ${escapeHtml(msg.text)}</div>`;
-                
-                let text = "Encrypted...";
-                if (msg.payload && msg.iv) text = await decryptContent(msg.payload, msg.iv);
-                else text = msg.text; // Legacy/Fallback
-
-                let integrity = "";
-                if (msg.sig) {
-                    const valid = await verifySignature(text, msg.sig, msg.uid);
-                    integrity = valid ? '<span class="text-green-500 text-[6px] ml-1">[SIG_OK]</span>' : '<span class="text-red-500 text-[6px] ml-1 animate-pulse">[SIG_FAIL]</span>';
-                }
-
-                const timeStr = (msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
-                
-                return `
-                    <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 group">
-                        <div class="max-w-[88%]">
-                            <div class="flex items-center gap-1 mb-0.5 ${isMe ? 'justify-end' : ''} flex-wrap">
-                                <span class="text-[6px] text-green-900 font-bold">${timeStr}</span>
-                                <span class="text-[8px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'}">[${escapeHtml(msg.nickname)}]</span>
-                                ${integrity}
-                                <div class="flex gap-1">
-                                    ${isMe ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(text)}')" class="text-[7px] text-green-600 font-bold">[E]</button>` : ''}
-                                    ${(isMe || isModerator) ? `<button onclick="confirmDelete('${msg.id}')" class="text-[7px] text-red-800 font-bold">[X]</button>` : ''}
-                                </div>
-                            </div>
-                            <div class="text-[10px] break-words p-1.5 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'} shadow-sm leading-tight">${escapeHtml(text)}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            const htmlItems = await Promise.all(htmlPromises);
-            els.messageFeed.innerHTML = htmlItems.join('');
-            if(atBottom) els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
-        }
-
-        // --- UTILS ---
-        function b64encode(buf) { return btoa(String.fromCharCode(...new Uint8Array(buf))); }
-        function b64decode(str) { return new Uint8Array(atob(str).split("").map(c => c.charCodeAt(0))).buffer; }
-        function triggerDeadlock(r) { els.suspendedScreen.classList.remove('hidden'); document.getElementById('ban-reason-display').innerText = r; }
-        
         window.openEditModal = async (id, oldText) => {
             activeModalAction = async (newVal) => {
                 if (newVal === oldText) return closeModal();
@@ -482,16 +490,20 @@
             els.modalTitle.innerText = "MODIFY_PACKET"; els.modalInput.value = oldText; els.nicknameModal.classList.remove('hidden');
         };
 
+        window.openNicknameModal = () => {
+            activeModalAction = async (val) => { await updateProfile(currentUser, { displayName: val }); els.sessionInfo.innerText = `UID: ${currentUser.uid.substring(0,6)}.. [${val}]`; closeModal(); location.reload(); };
+            els.modalTitle.innerText = "ID_SYNC"; els.nicknameModal.classList.remove('hidden');
+        };
+
         window.confirmDelete = async (id) => { if (confirm("PURGE?")) await deleteDoc(doc(db, "messages", id)); };
+        window.closeModal = () => els.nicknameModal.classList.add('hidden');
+        document.getElementById('generic-form').onsubmit = async (e) => { e.preventDefault(); await activeModalAction(els.modalInput.value.trim()); };
         window.handleGoogleSignIn = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
         window.handleGuestSignIn = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
         window.handleEmailSubmit = async (e) => {
             e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value;
             try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else await createUserWithEmailAndPassword(auth, email, pass); } catch(e) { alert(e.message); }
         };
-        window.openNicknameModal = () => { activeModalAction = async (v) => { await updateProfile(currentUser, { displayName: v }); closeModal(); location.reload(); }; els.modalTitle.innerText = "ID_SET"; els.nicknameModal.classList.remove('hidden'); };
-        window.closeModal = () => els.nicknameModal.classList.add('hidden');
-        document.getElementById('generic-form').onsubmit = async (e) => { e.preventDefault(); await activeModalAction(els.modalInput.value.trim()); };
         window.handleLogout = () => signOut(auth);
         window.openAdminPanel = () => els.adminModal.classList.remove('hidden');
         window.closeAdminPanel = () => els.adminModal.classList.add('hidden');
@@ -500,13 +512,14 @@
         window.openBanList = async () => { els.banListModal.classList.remove('hidden'); const s = await getDocs(collection(db, 'banned_users')); els.banListContent.innerHTML = s.docs.map(d => `<div class="border border-red-900 p-2 mb-1 flex justify-between"><span class="text-xs text-red-500">${d.data().nickname}</span><button onclick="unbanUser('${d.id}')" class="text-[8px] border border-green-800 text-green-500 px-2">UNBAN</button></div>`).join('') || "NO_BANS"; };
         window.unbanUser = async (id) => { await deleteDoc(doc(db, 'banned_users', id)); openBanList(); };
         window.broadcastAnnouncement = async () => { const t = prompt("MSG:"); if(t) await addDoc(collection(db, 'messages'), { text: t, type: 'announcement', timestamp: serverTimestamp() }); };
-        window.exportData = () => { alert("USE_PREV_VERSION_FOR_DUMP"); }; // Shortened for space
+        window.exportData = () => { alert("USE_PREV_VERSION_FOR_DUMP"); };
         window.triggerImport = () => els.importInput.click();
-        window.handleImport = () => alert("IMPORT_DISABLED_IN_V5.1");
         window.confirmSystemFlush = async () => { if(confirm("FLUSH ALL?")) { const s = await getDocs(collection(db,'messages')); s.forEach(d=>deleteDoc(d.ref)); } };
         window.toggleEmailMode = () => { const m = document.getElementById('auth-mode').value; window.showEmailAuth(m==='login'?'signup':'login'); };
         window.showEmailAuth = (m) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = m; document.getElementById('email-submit-btn').innerText = m==='login'?"LOGIN":"REGISTER"; };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
+        function b64encode(buf) { return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+        function b64decode(str) { return new Uint8Array(atob(str).split("").map(c => c.charCodeAt(0))).buffer; }
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
     </script>
 </body>
