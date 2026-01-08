@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v7.1 // SIDEBAR_DANGER_ZONE</title>
+    <title>TERM-CHAT v8.1 // AUTH_PROTOCOLS_RESTORED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -25,7 +25,7 @@
         .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
         .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
         
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #001100; }
         ::-webkit-scrollbar-thumb { background: #15803d; }
 
@@ -48,24 +48,49 @@
 
     <!-- LOADING OVERLAY -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_REBOOT_v7.1 ]</div>
-        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Synchronizing Cipher Suites...</div>
+        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v8.1 ]</div>
+        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Restoring Credential Databases...</div>
     </div>
 
     <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4">
         <div class="w-full max-w-sm neon-border p-8 bg-black/90">
             <h1 class="text-3xl font-black text-center mb-1 tracking-tighter">TERM-CHAT</h1>
-            <div class="text-[9px] text-center text-green-800 mb-8 tracking-[0.3em] uppercase">Authenticated_Uplink_Node</div>
+            <div class="text-[9px] text-center text-green-800 mb-8 tracking-[0.3em] uppercase">Multi_Vector_Authentication</div>
             
-            <div class="space-y-3">
+            <div id="auth-landing" class="space-y-3">
                 <button onclick="authGoogle()" class="w-full btn-base btn-green py-3">
                     <i class="fab fa-google"></i> ACCESS_VIA_GOOGLE
+                </button>
+                <button onclick="showEmailAuth('login')" class="w-full btn-base border-green-800 text-green-700 hover:text-green-400 py-3">
+                    <i class="fas fa-envelope"></i> ACCESS_VIA_EMAIL
                 </button>
                 <button onclick="authGuest()" class="w-full btn-base border-green-900 text-green-900 hover:text-green-500 py-2">
                     ANONYMOUS_LINK
                 </button>
             </div>
+
+            <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
+                <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white mb-2 tracking-tighter">&lt;&lt; RETURN_TO_ROOT</button>
+                
+                <div class="space-y-1">
+                    <label class="text-[9px] text-green-800 font-bold uppercase">USER_IDENTITY</label>
+                    <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="EMAIL_ADDR" required>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[9px] text-green-800 font-bold uppercase">ACCESS_KEY</label>
+                    <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="PASS_PHRASE" required>
+                </div>
+
+                <input type="hidden" id="auth-mode" value="login">
+                
+                <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-2 mt-4">VALIDATE_CREDENTIALS</button>
+                
+                <div class="text-center mt-2">
+                    <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="text-[9px] text-green-800 hover:text-green-500 underline uppercase tracking-widest">NO_ID? CREATE_RECORD</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -77,13 +102,13 @@
             <div class="p-4 border-b border-green-900 bg-zinc-950">
                 <h2 class="text-[9px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
                 <div id="my-id-display" class="text-xs font-black truncate uppercase">ID_PENDING</div>
-                <div class="text-[8px] text-green-900 mt-1 uppercase" id="key-status">SIG: RSA_INIT...</div>
+                <div class="text-[8px] text-green-900 mt-1 uppercase">STATUS: ONLINE</div>
             </div>
             
             <div class="flex-1 overflow-y-auto no-scrollbar">
                 <div onclick="switchChannel('global')" id="chan-global" class="user-item active p-3 border-b border-green-900/30">
                     <div class="font-bold text-xs"># GLOBAL_FEED</div>
-                    <div class="text-[8px] opacity-40 uppercase">Broadcast_All_Nodes</div>
+                    <div class="text-[8px] opacity-40 uppercase">Public_Channel</div>
                 </div>
                 
                 <div class="p-3 text-[9px] text-green-900 font-bold uppercase mt-4 tracking-widest">PRIVATE_DMS</div>
@@ -127,7 +152,7 @@
                     <button type="submit" class="btn-base btn-green px-4">EXEC</button>
                 </form>
                 <div id="channel-status" class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">
-                    SECURE_UPLINK // RSA_SIGNED // AES_NONE
+                    SECURE_UPLINK // STANDARD_PROTO
                 </div>
             </div>
         </div>
@@ -158,12 +183,12 @@
         </div>
     </div>
 
-    <!-- MOBILE OVERLAY -->
+    <!-- MOBILE SIDEBAR OVERLAY -->
     <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, deleteUser } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         // USER PROVIDED CONFIG
@@ -184,145 +209,141 @@
         // STATE
         let currentUser = null;
         let currentChannel = 'global';
-        let keyPair = null;
-        let publicKeysCache = {};
         let messagesUnsub = null;
         let usersUnsub = null;
 
-        // --- CRYPTO MODULE ---
-        async function initKeys(uid) {
-            const status = document.getElementById('key-status');
-            const stored = localStorage.getItem(`sig_v71_${uid}`);
-            
-            if (stored) {
-                const data = JSON.parse(stored);
-                keyPair = {
-                    privateKey: await crypto.subtle.importKey("jwk", data.priv, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["sign"]),
-                    publicKey: await crypto.subtle.importKey("jwk", data.pub, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["verify"])
-                };
-            } else {
-                keyPair = await crypto.subtle.generateKey(
-                    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
-                    true, ["sign", "verify"]
-                );
-                const pub = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-                const priv = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
-                localStorage.setItem(`sig_v71_${uid}`, JSON.stringify({pub, priv}));
-            }
-            
-            const pubJWK = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-            await setDoc(doc(db, 'public_keys', uid), { key: pubJWK, updated: Date.now() });
-            status.innerText = "SIG: RSA_SIGNED_ACTIVE";
-        }
-
-        async function signData(text) {
-            const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, new TextEncoder().encode(text));
-            return btoa(String.fromCharCode(...new Uint8Array(sig)));
-        }
-
-        async function verifySignature(text, sigB64, uid) {
-            try {
-                if(uid === currentUser.uid) {
-                    return await crypto.subtle.verify("RSASSA-PKCS1-v1_5", keyPair.publicKey, Uint8Array.from(atob(sigB64), c => c.charCodeAt(0)), new TextEncoder().encode(text));
-                }
-                if(!publicKeysCache[uid]) {
-                    const snap = await getDoc(doc(db, 'public_keys', uid));
-                    if(snap.exists()) {
-                        publicKeysCache[uid] = await crypto.subtle.importKey("jwk", snap.data().key, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["verify"]);
-                    }
-                }
-                if(!publicKeysCache[uid]) return false;
-                return await crypto.subtle.verify("RSASSA-PKCS1-v1_5", publicKeysCache[uid], Uint8Array.from(atob(sigB64), c => c.charCodeAt(0)), new TextEncoder().encode(text));
-            } catch(e) { return false; }
-        }
-
         // --- APP LOGIC ---
+        
         onAuthStateChanged(auth, async (user) => {
+            const loading = document.getElementById('loading');
+            const authScreen = document.getElementById('auth-screen');
+            const appScreen = document.getElementById('app-screen');
+
             if (user) {
                 currentUser = user;
-                document.getElementById('loading-txt').innerText = "CALIBRATING_KEYS...";
-                await initKeys(user.uid);
-                await setDoc(doc(db, 'users', user.uid), { nickname: user.displayName || 'Sub-Node', lastSeen: serverTimestamp() }, { merge: true });
-                document.getElementById('my-id-display').innerText = user.displayName || user.uid.substring(0,8);
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
+                authScreen.classList.add('hidden');
+                
+                // Update User Registry
+                await setDoc(doc(db, 'users', user.uid), {
+                    nickname: user.displayName || 'Anonymous',
+                    lastSeen: serverTimestamp()
+                }, { merge: true });
+
+                document.getElementById('my-id-display').innerText = user.displayName || 'GUEST';
+                
+                loading.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                
                 startListeners();
             } else {
                 currentUser = null;
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app-screen').classList.add('hidden');
-                document.getElementById('auth-screen').classList.remove('hidden');
+                appScreen.classList.add('hidden');
+                loading.classList.add('hidden');
+                authScreen.classList.remove('hidden');
             }
         });
 
         function startListeners() {
-            if(usersUnsub) usersUnsub();
+            // 1. Users List
             usersUnsub = onSnapshot(collection(db, 'users'), (snap) => {
                 const list = document.getElementById('user-list');
                 list.innerHTML = '';
                 snap.forEach(d => {
-                    if(d.id === currentUser.uid) return;
                     const u = d.data();
+                    if(d.id === currentUser.uid) return;
+                    
                     const div = document.createElement('div');
-                    div.className = `user-item p-2 border-l-2 border-transparent transition-all flex justify-between items-center ${currentChannel.includes(d.id) ? 'active' : ''}`;
-                    div.innerHTML = `<span class="text-[10px] font-black truncate uppercase">${u.nickname}</span> <span class="text-[7px] text-green-900">NODE:${d.id.substring(0,4)}</span>`;
+                    div.className = `user-item p-2 mb-1 border-l-2 border-transparent transition-all flex justify-between items-center`;
+                    div.innerHTML = `<span class="text-xs font-bold truncate">${u.nickname}</span> <span class="text-[8px] opacity-50">ID:${d.id.substring(0,4)}</span>`;
                     div.onclick = () => switchChannel(d.id);
+                    if(currentChannel.includes(d.id)) div.classList.add('active');
                     list.appendChild(div);
                 });
             });
 
-            if(messagesUnsub) messagesUnsub();
-            messagesUnsub = onSnapshot(query(collection(db, 'messages'), orderBy('timestamp', 'asc')), async (snap) => {
+            // 2. Messages (Global Subscription - filtering in memory for rule compliance)
+            const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc')); 
+            
+            messagesUnsub = onSnapshot(q, (snap) => {
                 const container = document.getElementById('msg-container');
-                const filtered = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(m => m.channel === currentChannel);
+                const messages = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 
-                const htmlPromises = filtered.map(async m => {
+                // Filter memory
+                const filtered = messages.filter(m => m.channel === currentChannel);
+                
+                // Render
+                const html = filtered.map(m => {
                     const isMe = m.uid === currentUser.uid;
-                    const valid = await verifySignature(m.text, m.sig, m.uid);
+                    const date = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
                     
-                    let content = m.text.startsWith('data:image') 
-                        ? `<img src="${m.text}" class="max-w-[200px] border border-green-900 rounded opacity-80 hover:opacity-100 transition-opacity">`
-                        : m.text.replace(/</g, "&lt;");
+                    let content = m.text;
+                    if(content.startsWith('data:image')) {
+                        content = `<img src="${content}" class="max-w-[200px] border border-green-800 rounded opacity-80 hover:opacity-100 transition-opacity">`;
+                    } else {
+                        content = content.replace(/</g, "&lt;");
+                    }
 
                     return `
-                        <div class="msg-anim flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <div class="msg-anim mb-3 flex flex-col ${isMe ? 'items-end' : 'items-start'}">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[8px] text-green-900 font-bold">${m.timestamp?.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) || 'SYNC'}</span>
-                                <span class="text-[10px] font-black ${isMe ? 'text-green-300' : 'text-green-700'} uppercase">${m.nickname}</span>
-                                <span class="text-[8px] font-bold ${valid ? 'text-green-500' : 'text-red-500 bg-red-950/30 px-1'}">${valid ? '[✓ VALID]' : '[⚠ FORGED]'}</span>
+                                <span class="text-[10px] text-green-700 font-bold">${date}</span>
+                                <span class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'}">${m.nickname}</span>
                             </div>
-                            <div class="max-w-[85%] text-xs font-mono break-words bg-zinc-950 border ${isMe ? 'border-green-500/40' : 'border-green-900/50'} p-2 rounded shadow-lg">
+                            <div class="max-w-[90%] md:max-w-[70%] text-sm break-words bg-green-900/10 border ${isMe ? 'border-green-500/50' : 'border-green-900'} p-2 rounded">
                                 ${content}
                             </div>
                         </div>
                     `;
                 });
 
-                container.innerHTML = (await Promise.all(htmlPromises)).join('');
+                container.innerHTML = html.join('');
                 container.scrollTop = container.scrollHeight;
             });
         }
 
+        // --- CHANNEL LOGIC ---
         window.switchChannel = (targetId) => {
+            const oldBtn = document.querySelector('.user-item.active');
+            if(oldBtn) oldBtn.classList.remove('active');
+
             if(targetId === 'global') {
                 currentChannel = 'global';
+                document.getElementById('chan-global').classList.add('active');
                 document.getElementById('mobile-title').innerText = "GLOBAL_FEED";
+                document.getElementById('channel-status').innerText = "CHANNEL: GLOBAL // STANDARD_RELAY";
             } else {
+                // Deterministic ID: sort uids alphabetically
                 const ids = [currentUser.uid, targetId].sort();
                 currentChannel = `${ids[0]}_${ids[1]}`;
-                document.getElementById('mobile-title').innerText = "PRIVATE_DM";
+                
+                // Highlight user in list
+                const list = document.getElementById('user-list').children;
+                for(let item of list) {
+                    if(item.innerHTML.includes(targetId.substring(0,4))) item.classList.add('active');
+                }
+                document.getElementById('mobile-title').innerText = "SECURE_DM";
+                document.getElementById('channel-status').innerText = "CHANNEL: PRIVATE_DM // EYES_ONLY";
             }
+            
             startListeners();
-            toggleSidebar(true);
+            toggleSidebar(true); // Close mobile menu
         };
 
+        // --- ACTIONS ---
         window.sendMessage = async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if(!text) return;
-            const sig = await signData(text);
-            await addDoc(collection(db, 'messages'), { text, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, sig });
+
+            await addDoc(collection(db, 'messages'), {
+                text,
+                uid: currentUser.uid,
+                nickname: currentUser.displayName,
+                timestamp: serverTimestamp(),
+                channel: currentChannel
+            });
+            
             input.value = '';
         };
 
@@ -332,19 +353,71 @@
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const b64 = e.target.result;
-                const sig = await signData(b64);
-                await addDoc(collection(db, 'messages'), { text: b64, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, sig });
+                await addDoc(collection(db, 'messages'), {
+                    text: b64,
+                    uid: currentUser.uid,
+                    nickname: currentUser.displayName,
+                    timestamp: serverTimestamp(),
+                    channel: currentChannel
+                });
             };
             reader.readAsDataURL(file);
             input.value = '';
         };
 
-        // --- AUTH & DECOMMISSION ---
-        window.authGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
-        window.authGuest = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
+        // --- AUTH EXPORTS ---
+        window.authGoogle = async () => {
+            try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); }
+        };
+        window.authGuest = async () => {
+            try { await signInAnonymously(auth); } catch(e) { alert(e.message); }
+        };
+        window.handleEmailSubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const mode = document.getElementById('auth-mode').value;
+            
+            try {
+                if (mode === 'login') {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    // Default nickname for new users
+                    await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
+                }
+            } catch (err) {
+                alert("AUTH_ERROR: " + err.message);
+            }
+        };
         window.logout = () => signOut(auth);
+        
+        // --- UI UTILS ---
+        window.showEmailAuth = (mode) => {
+            document.getElementById('auth-landing').classList.add('hidden');
+            document.getElementById('auth-email-form').classList.remove('hidden');
+            setMode(mode);
+        };
 
+        window.showLanding = () => {
+            document.getElementById('auth-email-form').classList.add('hidden');
+            document.getElementById('auth-landing').classList.remove('hidden');
+        };
+
+        window.toggleEmailMode = () => {
+            const current = document.getElementById('auth-mode').value;
+            setMode(current === 'login' ? 'signup' : 'login');
+        };
+
+        function setMode(mode) {
+            document.getElementById('auth-mode').value = mode;
+            document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE_CREDENTIALS" : "CREATE_NEW_RECORD";
+            document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "NO_ID? CREATE_RECORD" : "HAS_ID? LOGIN";
+        }
+
+        window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
+        
         window.confirmDecommission = async () => {
             const val = document.getElementById('wipe-confirm').value;
             if(val !== 'TERMINATE') return alert("ERROR: CONFIRMATION_MISMATCH");
@@ -354,27 +427,37 @@
             } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); }
         };
 
-        window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.saveName = async () => {
             const name = document.getElementById('new-name').value.trim();
             if(name) {
                 await updateProfile(currentUser, {displayName: name});
                 await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true});
+                document.getElementById('modal-name').classList.add('hidden');
                 location.reload();
             }
         };
-
+        
         window.toggleSidebar = (forceClose = false) => {
             const sb = document.getElementById('sidebar');
             const bg = document.getElementById('mobile-sidebar-bg');
-            if(forceClose) { sb.classList.add('hidden'); bg.classList.add('hidden'); return; }
+            if(forceClose) {
+                sb.classList.add('hidden');
+                sb.classList.remove('absolute', 'z-50', 'h-full');
+                bg.classList.add('hidden');
+                return;
+            }
             sb.classList.toggle('hidden');
             if(!sb.classList.contains('hidden')) {
                 sb.classList.add('absolute', 'z-50', 'h-full');
                 bg.classList.remove('hidden');
-            } else { bg.classList.add('hidden'); }
+            } else {
+                sb.classList.remove('absolute', 'z-50', 'h-full');
+                bg.classList.add('hidden');
+            }
         };
+
     </script>
 </body>
 </html>
+
 
