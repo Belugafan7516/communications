@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v4.6 // MOBILE_OPTIMIZED</title>
+    <title>TERM-CHAT v4.7 // SECURE_TRANSACTION_PROTOCOL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -86,8 +86,8 @@
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-[150] text-center">
         <div>
-            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ BOOTING_CORE_V4.6 ]</div>
-            <div class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Responsive UI Optimization Enabled</div>
+            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ VERIFYING_SIGNATURES... ]</div>
+            <div class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Secure Protocol v4.7 // Integrity Check Active</div>
         </div>
     </div>
 
@@ -202,7 +202,7 @@
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-2 sm:p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-2 overflow-hidden">
-                <h1 class="font-bold text-[9px] sm:text-xs retro-text leading-none uppercase truncate tracking-tighter">COMM_LINK_16</h1>
+                <h1 class="font-bold text-[9px] sm:text-xs retro-text leading-none uppercase truncate tracking-tighter">COMM_LINK_17</h1>
                 <div class="flex items-center gap-1">
                     <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse shadow-[0_0_3px_#22c55e]"></span>
                     <span id="system-status" class="text-[6px] sm:text-[7px] text-green-700 font-bold uppercase">SECURE</span>
@@ -274,6 +274,25 @@
             importInput: document.getElementById('import-input')
         };
 
+        // --- ERROR HANDLING PROTOCOL ---
+        function handleTransactionError(error, actionName) {
+            console.error(`TRANSACTION_FAILED: ${actionName}`, error);
+            let msg = "UNKNOWN_SYSTEM_FAULT";
+            
+            if (error.code) {
+                if (error.code.includes("permission-denied")) msg = "ACCESS_DENIED: INSUFFICIENT_CLEARANCE_OR_SUSPENDED";
+                else if (error.code.includes("unauthenticated")) msg = "AUTH_SIG_INVALID: RE-LOGIN_REQUIRED";
+                else if (error.code.includes("cancelled")) msg = "OPERATION_ABORTED";
+                else if (error.code.includes("network")) msg = "UPLINK_UNSTABLE";
+                else msg = `ERR_CODE: ${error.code.toUpperCase()}`;
+            } else if (error.message) {
+                if (error.message.toLowerCase().includes("signature")) msg = "CRITICAL_ERROR: INVALID_SIGNATURE";
+                else msg = error.message.toUpperCase();
+            }
+            
+            alert(`!! EXECUTION_HALTED: ${actionName} !!\n\nSTATUS: ${msg}\n\nACTION VOIDED.`);
+        }
+
         async function verifyClearance(uid) {
             if (!uid) return false;
             if (currentUser && currentUser.email === ADMIN_EMAIL) return true;
@@ -343,7 +362,7 @@
             try {
                 await deleteUser(currentUser);
                 location.reload();
-            } catch (error) { alert("ERROR: RECENT LOGIN REQUIRED."); }
+            } catch (error) { handleTransactionError(error, "DECOMMISSION"); }
         };
 
         // --- AUTHORITY ---
@@ -357,7 +376,7 @@
             try {
                 await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() });
                 alert("NODE_BLACKLISTED");
-            } catch(e) { alert("FAULT: ACCESS_DENIED"); }
+            } catch(e) { handleTransactionError(e, "SUSPENSION_PROTOCOL"); }
         };
 
         window.openBanList = async () => {
@@ -375,12 +394,15 @@
                         <button onclick="unbanUser('${d.id}')" class="btn-retro !border-green-800 !text-green-600 px-2 py-1 ml-2">REVOKE</button>
                     </div>
                 `).join('');
-            } catch(e) { els.banListContent.innerHTML = "DENIED"; }
+            } catch(e) { 
+                els.banListContent.innerHTML = "ACCESS_DENIED"; 
+                handleTransactionError(e, "READ_BLACKLIST");
+            }
         };
 
         window.unbanUser = async (uid) => {
             if(!confirm("RESTORE UPLINK?")) return;
-            try { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); } catch(e) { alert("FAULT"); }
+            try { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); } catch(e) { handleTransactionError(e, "REVOKE_BAN"); }
         };
 
         // --- DATA TOOLS ---
@@ -397,18 +419,23 @@
                     const data = JSON.parse(event.target.result);
                     for (const m of data) await addDoc(collection(db, 'messages'), { text: m.text, nickname: m.nickname, uid: m.uid, timestamp: serverTimestamp(), createdAt: Date.now(), history: m.history || [] });
                     alert("RESTORED");
-                } catch (err) { alert("CORRUPT"); }
+                } catch (err) { handleTransactionError(err, "DATA_IMPORT"); }
             };
             reader.readAsText(file);
         };
         window.broadcastAnnouncement = async () => {
             const text = prompt("GLOBAL BROADCAST:");
-            if (text) await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", type: 'announcement', timestamp: serverTimestamp() });
+            if (!text) return;
+            try {
+                await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", type: 'announcement', timestamp: serverTimestamp() });
+            } catch (err) { handleTransactionError(err, "BROADCAST"); }
         };
         window.confirmSystemFlush = async () => {
             if(prompt("TYPE 'CONFIRM' TO FLUSH LOGS") !== 'CONFIRM') return;
-            const snap = await getDocs(collection(db, "messages"));
-            snap.forEach(d => deleteDoc(doc(db, "messages", d.id)));
+            try {
+                const snap = await getDocs(collection(db, "messages"));
+                snap.forEach(d => deleteDoc(doc(db, "messages", d.id)));
+            } catch (err) { handleTransactionError(err, "SYSTEM_FLUSH"); }
         };
 
         // --- ENGINE ---
@@ -425,7 +452,7 @@
             let html = `<div class="mb-4 text-center border-y border-yellow-600 bg-yellow-900/10 py-4 animate-pulse"><div class="text-yellow-500 font-black text-[10px] mb-1 tracking-widest uppercase">TERMINAL_NOTICE</div><div class="text-yellow-200 text-[8px] leading-relaxed max-w-lg mx-auto px-4 uppercase tracking-tighter">WELCOME TO TERM-CHAT, COMPUTER. BE RESPECTFUL AND DO NOT BREAK RULES. ACCESS MAY BE TERMINATED AT ANY TIME.</div></div>`;
             html += messages.map(msg => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
-                if (msg.type === 'announcement') return `<div class="my-6 text-center border-2 border-yellow-500 bg-yellow-900/40 p-4 mx-4 shadow-[0_0_20px_rgba(234,179,8,0.2)]"><div class="text-[8px] text-yellow-500 font-black mb-1 uppercase tracking-[0.4em]">SYSTEM_BROADCAST</div><div class="text-yellow-100 font-bold text-[10px] uppercase tracking-tight leading-relaxed">${escapeHtml(msg.text)}</div></div>`;
+                if (msg.type === 'announcement') return `<div class="my-6 text-center border-2 border-yellow-500 bg-yellow-900/40 p-4 mx-4 shadow-[0_0_20px_rgba(234,179,8,0.2)]"><div class="text-[9px] text-yellow-500 font-black mb-1 uppercase tracking-[0.4em]">SYSTEM_BROADCAST</div><div class="text-yellow-100 font-bold text-[10px] uppercase tracking-tight leading-relaxed">${escapeHtml(msg.text)}</div></div>`;
                 const date = msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt || Date.now());
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                 return `
@@ -452,7 +479,7 @@
         window.handleSendMessage = async (e) => {
             e.preventDefault(); const text = els.messageInput.value.trim(); if (!text || !currentUser) return;
             if (!(await verifyClearance(currentUser.uid))) return;
-            try { await addDoc(collection(db, 'messages'), { text, nickname: currentUser.displayName, uid: currentUser.uid, timestamp: serverTimestamp(), createdAt: Date.now(), history: [] }); els.messageInput.value = ''; } catch (err) { alert("DATA_FAULT"); }
+            try { await addDoc(collection(db, 'messages'), { text, nickname: currentUser.displayName, uid: currentUser.uid, timestamp: serverTimestamp(), createdAt: Date.now(), history: [] }); els.messageInput.value = ''; } catch (err) { handleTransactionError(err, "TRANSMISSION"); }
         };
         window.openNicknameModal = () => {
             activeModalAction = async (val) => { await updateProfile(currentUser, { displayName: val }); els.sessionInfo.innerText = `UID: ${currentUser.uid.substring(0,6)}.. [${val}]`; closeModal(); subscribeMessages(); };
@@ -468,11 +495,24 @@
             };
             els.modalTitle.innerText = "MODIFY_PACKET"; els.modalInput.value = oldText; els.nicknameModal.classList.remove('hidden');
         };
-        window.confirmDelete = async (id) => { if (confirm("PURGE DATA?")) await deleteDoc(doc(db, "messages", id)); };
+        window.confirmDelete = async (id) => { 
+            if (confirm("PURGE DATA PACKET?")) {
+                try {
+                    await deleteDoc(doc(db, "messages", id));
+                } catch(err) { handleTransactionError(err, "DELETE_PACKET"); }
+            }
+        };
         window.closeModal = () => els.nicknameModal.classList.add('hidden');
-        document.getElementById('generic-form').onsubmit = async (e) => { e.preventDefault(); const val = els.modalInput.value.trim(); if (val && activeModalAction) await activeModalAction(val); };
-        window.handleGoogleSignIn = async () => { try { const res = await signInWithPopup(auth, new GoogleAuthProvider()); if (!(await verifyClearance(res.user.uid))) return; } catch (err) { alert(err.message); } };
-        window.handleGuestSignIn = async () => { try { await signInAnonymously(auth); } catch (err) { alert(err.message); } };
+        document.getElementById('generic-form').onsubmit = async (e) => { 
+            e.preventDefault(); const val = els.modalInput.value.trim(); 
+            if (val && activeModalAction) {
+                try {
+                    await activeModalAction(val); 
+                } catch(err) { handleTransactionError(err, "MODAL_EXECUTION"); }
+            }
+        };
+        window.handleGoogleSignIn = async () => { try { const res = await signInWithPopup(auth, new GoogleAuthProvider()); if (!(await verifyClearance(res.user.uid))) return; } catch (err) { handleTransactionError(err, "AUTH_GOOGLE"); } };
+        window.handleGuestSignIn = async () => { try { await signInAnonymously(auth); } catch (err) { handleTransactionError(err, "AUTH_GUEST"); } };
         window.handleEmailSubmit = async (e) => {
             e.preventDefault(); const email = document.getElementById('email-input').value, password = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value;
             try { 
@@ -480,7 +520,7 @@
                 if (mode === 'login') res = await signInWithEmailAndPassword(auth, email, password); 
                 else res = await createUserWithEmailAndPassword(auth, email, password);
                 if (!(await verifyClearance(res.user.uid))) return;
-            } catch (err) { alert(err.message); }
+            } catch (err) { handleTransactionError(err, "AUTH_CREDENTIALS"); }
         };
         window.handleLogout = () => signOut(auth);
         window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE" : "CREATE"; };
@@ -490,4 +530,5 @@
     </script>
 </body>
 </html>
+
 
