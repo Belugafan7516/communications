@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v7.0 // SIGNED_DMS</title>
+    <title>TERM-CHAT v7.1 // SIDEBAR_DANGER_ZONE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -12,10 +12,10 @@
             --term-bg: #050505;
             --term-glow: 0 0 10px rgba(34, 197, 94, 0.4);
             --term-alert: #ef4444;
+            --term-alert-bg: rgba(239, 68, 68, 0.1);
         }
         body { background: var(--term-bg); color: var(--term-green); font-family: 'Courier New', monospace; overflow: hidden; }
         
-        /* CRT Scanline */
         .scanline::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
@@ -25,13 +25,12 @@
         .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
         .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
         
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #001100; }
         ::-webkit-scrollbar-thumb { background: #15803d; }
 
         .btn-base {
-            @apply border px-3 py-1 text-xs font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2;
+            @apply border px-3 py-1 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2;
         }
         .btn-green { @apply border-green-600 text-green-500 hover:bg-green-600 hover:text-black; }
         .btn-red { @apply border-red-600 text-red-500 hover:bg-red-600 hover:text-black; }
@@ -41,28 +40,30 @@
 
         .msg-anim { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col scanline">
 
     <!-- LOADING OVERLAY -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v7.0 ]</div>
-        <div id="loading-txt" class="text-xs text-green-800 mt-2 font-mono">INITIALIZING_CRYPTO_ENGINE...</div>
+        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_REBOOT_v7.1 ]</div>
+        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Synchronizing Cipher Suites...</div>
     </div>
 
     <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4">
-        <div class="w-full max-w-md neon-border p-8 bg-black/90">
-            <h1 class="text-3xl font-bold text-center mb-2">TERM-CHAT</h1>
-            <div class="text-xs text-center text-green-800 mb-8 tracking-widest">SECURE_SIGNED_CHANNEL</div>
+        <div class="w-full max-w-sm neon-border p-8 bg-black/90">
+            <h1 class="text-3xl font-black text-center mb-1 tracking-tighter">TERM-CHAT</h1>
+            <div class="text-[9px] text-center text-green-800 mb-8 tracking-[0.3em] uppercase">Authenticated_Uplink_Node</div>
             
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <button onclick="authGoogle()" class="w-full btn-base btn-green py-3">
-                    <i class="fab fa-google"></i> AUTH_GOOGLE
+                    <i class="fab fa-google"></i> ACCESS_VIA_GOOGLE
                 </button>
-                <button onclick="authGuest()" class="w-full btn-base border-green-900 text-green-800 hover:text-green-500 py-2">
-                    GUEST_ACCESS
+                <button onclick="authGuest()" class="w-full btn-base border-green-900 text-green-900 hover:text-green-500 py-2">
+                    ANONYMOUS_LINK
                 </button>
             </div>
         </div>
@@ -71,58 +72,76 @@
     <!-- MAIN APP -->
     <div id="app-screen" class="hidden flex h-full w-full">
         
-        <!-- SIDEBAR (Users/Channels) -->
-        <div id="sidebar" class="w-64 border-r border-green-900 bg-black flex flex-col hidden md:flex">
-            <div class="p-4 border-b border-green-900">
-                <h2 class="text-xs font-bold text-green-700 uppercase tracking-widest mb-1">CURRENT_IDENTITY</h2>
-                <div id="my-id-display" class="text-sm font-bold truncate">LOADING...</div>
-                <div class="text-[9px] text-green-800 mt-1" id="key-status">KEY: GENERATING...</div>
+        <!-- SIDEBAR -->
+        <div id="sidebar" class="w-64 border-r border-green-900 bg-black flex flex-col hidden md:flex shrink-0">
+            <div class="p-4 border-b border-green-900 bg-zinc-950">
+                <h2 class="text-[9px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
+                <div id="my-id-display" class="text-xs font-black truncate uppercase">ID_PENDING</div>
+                <div class="text-[8px] text-green-900 mt-1 uppercase" id="key-status">SIG: RSA_INIT...</div>
             </div>
             
-            <div class="flex-1 overflow-y-auto">
-                <div onclick="switchChannel('global')" id="chan-global" class="user-item active p-3 border-b border-green-900/50">
-                    <div class="font-bold text-sm"># GLOBAL_FEED</div>
-                    <div class="text-[9px] opacity-50">PUBLIC_BROADCAST</div>
+            <div class="flex-1 overflow-y-auto no-scrollbar">
+                <div onclick="switchChannel('global')" id="chan-global" class="user-item active p-3 border-b border-green-900/30">
+                    <div class="font-bold text-xs"># GLOBAL_FEED</div>
+                    <div class="text-[8px] opacity-40 uppercase">Broadcast_All_Nodes</div>
                 </div>
                 
-                <div class="p-2 text-[9px] text-green-800 font-bold uppercase mt-4 px-3">DETECTED_NODES (DMs)</div>
-                <div id="user-list" class="space-y-1 p-2">
-                    <!-- Users injected here -->
+                <div class="p-3 text-[9px] text-green-900 font-bold uppercase mt-4 tracking-widest">PRIVATE_DMS</div>
+                <div id="user-list" class="space-y-0.5 px-2">
+                    <!-- Dynamic Users -->
                 </div>
             </div>
 
-            <div class="p-3 border-t border-green-900 space-y-2">
-                <button onclick="openNameModal()" class="w-full btn-base btn-green text-[10px]">SET_ALIAS</button>
-                <button onclick="logout()" class="w-full btn-base btn-red text-[10px]">TERMINATE</button>
+            <!-- DANGER ZONE: ATTACHED TO SIDEBAR -->
+            <div class="p-4 bg-red-950/10 border-t border-red-900/50">
+                <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
+                <div class="space-y-2">
+                    <button onclick="openNameModal()" class="w-full btn-base btn-green !py-1.5">REASSIGN_ALIAS</button>
+                    <button onclick="openDecommissionModal()" class="w-full btn-base btn-red !py-1.5">DECOMMISSION_NODE</button>
+                </div>
+                <button onclick="logout()" class="w-full text-[8px] text-zinc-700 hover:text-white mt-4 uppercase tracking-tighter italic">Terminate_Connection</button>
             </div>
         </div>
 
         <!-- CHAT AREA -->
         <div class="flex-1 flex flex-col bg-black relative">
             <!-- Mobile Header -->
-            <div class="md:hidden h-12 border-b border-green-900 flex items-center justify-between px-4 shrink-0">
+            <div class="md:hidden h-12 border-b border-green-900 bg-zinc-950 flex items-center justify-between px-4 shrink-0">
                 <button onclick="toggleSidebar()" class="text-green-500"><i class="fas fa-bars"></i></button>
-                <span id="mobile-title" class="font-bold text-sm">GLOBAL_FEED</span>
+                <span id="mobile-title" class="font-bold text-xs tracking-widest">GLOBAL_FEED</span>
                 <span class="w-4"></span>
             </div>
 
             <!-- Messages -->
-            <div id="msg-container" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scroll">
-                <!-- Messages go here -->
+            <div id="msg-container" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll">
+                <!-- Data packets render here -->
             </div>
 
             <!-- Input -->
-            <div class="p-3 border-t border-green-900 bg-black shrink-0">
-                <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto">
-                    <span class="py-2 font-bold text-lg">&gt;</span>
-                    <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-sm font-mono placeholder-green-900" placeholder="DATA_PACKET..." autocomplete="off">
-                    <button type="button" onclick="document.getElementById('file-input').click()" class="btn-base border-green-800 text-green-700 px-2">IMG</button>
+            <div class="p-3 border-t border-green-900 bg-zinc-950 shrink-0">
+                <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center">
+                    <span class="font-bold text-lg text-green-500">&gt;</span>
+                    <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-xs font-mono placeholder-green-950 uppercase" placeholder="TRANSMIT_DATA..." autocomplete="off">
+                    <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 px-2 py-1 border border-green-900 text-[10px]">IMG</button>
                     <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
-                    <button type="submit" class="btn-base btn-green">SEND</button>
+                    <button type="submit" class="btn-base btn-green px-4">EXEC</button>
                 </form>
-                <div id="channel-status" class="text-[9px] text-center text-green-900 mt-2 uppercase tracking-widest">
-                    CHANNEL: GLOBAL // ENCRYPTION: NONE // SIGNATURE: RSA-2048
+                <div id="channel-status" class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">
+                    SECURE_UPLINK // RSA_SIGNED // AES_NONE
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DECOMMISSION -->
+    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/98 z-[110] flex items-center justify-center p-4">
+        <div class="w-full max-w-xs alert-border p-6 bg-black text-center">
+            <h3 class="text-red-500 font-black text-lg mb-2">CRITICAL_ALERT</h3>
+            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">THIS ACTION PERMANENTLY PURGES YOUR IDENTITY FROM THE DATABASE. RECOVERY IS IMPOSSIBLE.</p>
+            <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase" placeholder="TYPE 'TERMINATE'">
+            <div class="flex flex-col gap-2">
+                <button onclick="confirmDecommission()" class="btn-base btn-red py-2">EXECUTE_FINAL_WIPE</button>
+                <button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort_Mission</button>
             </div>
         </div>
     </div>
@@ -130,30 +149,32 @@
     <!-- MODAL: NICKNAME -->
     <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
         <div class="w-full max-w-sm neon-border p-6 bg-black">
-            <h3 class="text-lg font-bold mb-4">IDENTITY_CONFIGURATION</h3>
-            <input id="new-name" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-4 outline-none text-center uppercase" placeholder="ENTER_ALIAS">
+            <h3 class="text-xs font-bold mb-4 tracking-widest text-green-800 uppercase">IDENT_UPDATE_PROTOCOL</h3>
+            <input id="new-name" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-6 outline-none text-center text-sm uppercase" placeholder="ENTER_NEW_ALIAS">
             <div class="flex gap-2">
-                <button onclick="saveName()" class="flex-1 btn-base btn-green">CONFIRM</button>
-                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base btn-red">CANCEL</button>
+                <button onclick="saveName()" class="flex-1 btn-base btn-green py-2">UPDATE</button>
+                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button>
             </div>
         </div>
     </div>
 
-    <!-- MOBILE SIDEBAR OVERLAY -->
-    <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/80 z-40"></div>
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, deleteUser } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
+        // USER PROVIDED CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
             authDomain: "communiacationtor.firebaseapp.com",
             projectId: "communiacationtor",
             storageBucket: "communiacationtor.firebasestorage.app",
             messagingSenderId: "493961543278",
-            appId: "1:493961543278:web:3b2e092de12d8acf01f07f"
+            appId: "1:493961543278:web:3b2e092de12d8acf01f07f",
+            measurementId: "G-EQNY39VP5Q"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -164,7 +185,6 @@
         let currentUser = null;
         let currentChannel = 'global';
         let keyPair = null;
-        let knownUsers = {};
         let publicKeysCache = {};
         let messagesUnsub = null;
         let usersUnsub = null;
@@ -172,217 +192,137 @@
         // --- CRYPTO MODULE ---
         async function initKeys(uid) {
             const status = document.getElementById('key-status');
-            const stored = localStorage.getItem(`sig_keys_${uid}`);
+            const stored = localStorage.getItem(`sig_v71_${uid}`);
             
             if (stored) {
                 const data = JSON.parse(stored);
                 keyPair = {
-                    privateKey: await window.crypto.subtle.importKey("jwk", data.priv, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["sign"]),
-                    publicKey: await window.crypto.subtle.importKey("jwk", data.pub, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["verify"])
+                    privateKey: await crypto.subtle.importKey("jwk", data.priv, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["sign"]),
+                    publicKey: await crypto.subtle.importKey("jwk", data.pub, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["verify"])
                 };
             } else {
-                keyPair = await window.crypto.subtle.generateKey(
+                keyPair = await crypto.subtle.generateKey(
                     { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
                     true, ["sign", "verify"]
                 );
-                const pub = await window.crypto.subtle.exportKey("jwk", keyPair.publicKey);
-                const priv = await window.crypto.subtle.exportKey("jwk", keyPair.privateKey);
-                localStorage.setItem(`sig_keys_${uid}`, JSON.stringify({pub, priv}));
+                const pub = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+                const priv = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+                localStorage.setItem(`sig_v71_${uid}`, JSON.stringify({pub, priv}));
             }
             
-            // Publish Public Key
-            const pubJWK = await window.crypto.subtle.exportKey("jwk", keyPair.publicKey);
+            const pubJWK = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
             await setDoc(doc(db, 'public_keys', uid), { key: pubJWK, updated: Date.now() });
-            status.innerText = "KEY: SIGNATURE_ACTIVE";
+            status.innerText = "SIG: RSA_SIGNED_ACTIVE";
         }
 
         async function signData(text) {
-            const enc = new TextEncoder();
-            const sig = await window.crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, enc.encode(text));
+            const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, new TextEncoder().encode(text));
             return btoa(String.fromCharCode(...new Uint8Array(sig)));
         }
 
         async function verifySignature(text, sigB64, uid) {
             try {
-                // Optimization: Self-verify
                 if(uid === currentUser.uid) {
-                    const sig = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
-                    return await window.crypto.subtle.verify("RSASSA-PKCS1-v1_5", keyPair.publicKey, sig, new TextEncoder().encode(text));
+                    return await crypto.subtle.verify("RSASSA-PKCS1-v1_5", keyPair.publicKey, Uint8Array.from(atob(sigB64), c => c.charCodeAt(0)), new TextEncoder().encode(text));
                 }
-
-                // Fetch Key
                 if(!publicKeysCache[uid]) {
                     const snap = await getDoc(doc(db, 'public_keys', uid));
                     if(snap.exists()) {
-                        publicKeysCache[uid] = await window.crypto.subtle.importKey("jwk", snap.data().key, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["verify"]);
+                        publicKeysCache[uid] = await crypto.subtle.importKey("jwk", snap.data().key, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, true, ["verify"]);
                     }
                 }
-                
                 if(!publicKeysCache[uid]) return false;
-
-                const sig = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
-                return await window.crypto.subtle.verify("RSASSA-PKCS1-v1_5", publicKeysCache[uid], sig, new TextEncoder().encode(text));
-            } catch(e) { console.error(e); return false; }
+                return await crypto.subtle.verify("RSASSA-PKCS1-v1_5", publicKeysCache[uid], Uint8Array.from(atob(sigB64), c => c.charCodeAt(0)), new TextEncoder().encode(text));
+            } catch(e) { return false; }
         }
 
         // --- APP LOGIC ---
-        
         onAuthStateChanged(auth, async (user) => {
-            const loading = document.getElementById('loading');
-            const authScreen = document.getElementById('auth-screen');
-            const appScreen = document.getElementById('app-screen');
-
             if (user) {
                 currentUser = user;
-                authScreen.classList.add('hidden');
-                document.getElementById('loading-txt').innerText = "GENERATING_KEYS...";
-                
+                document.getElementById('loading-txt').innerText = "CALIBRATING_KEYS...";
                 await initKeys(user.uid);
-                
-                // Update User Registry
-                await setDoc(doc(db, 'users', user.uid), {
-                    nickname: user.displayName || 'Anonymous',
-                    lastSeen: serverTimestamp()
-                }, { merge: true });
-
-                document.getElementById('my-id-display').innerText = user.displayName || 'GUEST';
-                
-                loading.classList.add('hidden');
-                appScreen.classList.remove('hidden');
-                
+                await setDoc(doc(db, 'users', user.uid), { nickname: user.displayName || 'Sub-Node', lastSeen: serverTimestamp() }, { merge: true });
+                document.getElementById('my-id-display').innerText = user.displayName || user.uid.substring(0,8);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
                 startListeners();
             } else {
                 currentUser = null;
-                appScreen.classList.add('hidden');
-                loading.classList.add('hidden');
-                authScreen.classList.remove('hidden');
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
             }
         });
 
         function startListeners() {
-            // 1. Users List
+            if(usersUnsub) usersUnsub();
             usersUnsub = onSnapshot(collection(db, 'users'), (snap) => {
                 const list = document.getElementById('user-list');
                 list.innerHTML = '';
                 snap.forEach(d => {
-                    const u = d.data();
                     if(d.id === currentUser.uid) return;
-                    
+                    const u = d.data();
                     const div = document.createElement('div');
-                    div.className = `user-item p-2 mb-1 border-l-2 border-transparent transition-all flex justify-between items-center`;
-                    div.innerHTML = `<span class="text-xs font-bold truncate">${u.nickname}</span> <span class="text-[8px] opacity-50">ID:${d.id.substring(0,4)}</span>`;
+                    div.className = `user-item p-2 border-l-2 border-transparent transition-all flex justify-between items-center ${currentChannel.includes(d.id) ? 'active' : ''}`;
+                    div.innerHTML = `<span class="text-[10px] font-black truncate uppercase">${u.nickname}</span> <span class="text-[7px] text-green-900">NODE:${d.id.substring(0,4)}</span>`;
                     div.onclick = () => switchChannel(d.id);
-                    if(currentChannel.includes(d.id)) div.classList.add('active');
                     list.appendChild(div);
                 });
             });
 
-            // 2. Messages (Global Subscription - filtering in memory for rule compliance)
-            // Ideally we'd use where('channel', '==', currentChannel) but to avoid index issues with complex sorting
-            // we will query simply.
-            const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc')); // removed limit to allow full history load
-            
-            messagesUnsub = onSnapshot(q, async (snap) => {
+            if(messagesUnsub) messagesUnsub();
+            messagesUnsub = onSnapshot(query(collection(db, 'messages'), orderBy('timestamp', 'asc')), async (snap) => {
                 const container = document.getElementById('msg-container');
-                const messages = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                const filtered = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(m => m.channel === currentChannel);
                 
-                // Filter memory
-                const filtered = messages.filter(m => m.channel === currentChannel);
-                
-                // Render
                 const htmlPromises = filtered.map(async m => {
                     const isMe = m.uid === currentUser.uid;
-                    const date = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
+                    const valid = await verifySignature(m.text, m.sig, m.uid);
                     
-                    let content = m.text;
-                    if(content.startsWith('data:image')) {
-                        content = `<img src="${content}" class="max-w-[200px] border border-green-800 rounded opacity-80 hover:opacity-100 transition-opacity">`;
-                    } else {
-                        content = content.replace(/</g, "&lt;");
-                    }
-
-                    // Verify Sig
-                    let sigBadge = `<span class="text-[9px] text-yellow-600 animate-pulse">[VERIFYING...]</span>`;
-                    if(m.sig) {
-                        const valid = await verifySignature(m.text, m.sig, m.uid);
-                        if(valid) sigBadge = `<span class="text-[9px] text-green-500 font-bold" title="Signature Validated">[✓ VALID]</span>`;
-                        else sigBadge = `<span class="text-[9px] text-red-500 font-bold bg-red-900/20 px-1" title="Signature Mismatch">[⚠ FORGED]</span>`;
-                    } else {
-                        sigBadge = `<span class="text-[9px] opacity-30">[UNSIGNED]</span>`;
-                    }
+                    let content = m.text.startsWith('data:image') 
+                        ? `<img src="${m.text}" class="max-w-[200px] border border-green-900 rounded opacity-80 hover:opacity-100 transition-opacity">`
+                        : m.text.replace(/</g, "&lt;");
 
                     return `
-                        <div class="msg-anim mb-3 flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <div class="msg-anim flex flex-col ${isMe ? 'items-end' : 'items-start'}">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] text-green-700 font-bold">${date}</span>
-                                <span class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'}">${m.nickname}</span>
-                                ${sigBadge}
+                                <span class="text-[8px] text-green-900 font-bold">${m.timestamp?.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) || 'SYNC'}</span>
+                                <span class="text-[10px] font-black ${isMe ? 'text-green-300' : 'text-green-700'} uppercase">${m.nickname}</span>
+                                <span class="text-[8px] font-bold ${valid ? 'text-green-500' : 'text-red-500 bg-red-950/30 px-1'}">${valid ? '[✓ VALID]' : '[⚠ FORGED]'}</span>
                             </div>
-                            <div class="max-w-[90%] md:max-w-[70%] text-sm break-words bg-green-900/10 border ${isMe ? 'border-green-500/50' : 'border-green-900'} p-2 rounded">
+                            <div class="max-w-[85%] text-xs font-mono break-words bg-zinc-950 border ${isMe ? 'border-green-500/40' : 'border-green-900/50'} p-2 rounded shadow-lg">
                                 ${content}
                             </div>
                         </div>
                     `;
                 });
 
-                const html = await Promise.all(htmlPromises);
-                container.innerHTML = html.join('');
+                container.innerHTML = (await Promise.all(htmlPromises)).join('');
                 container.scrollTop = container.scrollHeight;
             });
         }
 
-        // --- CHANNEL LOGIC ---
         window.switchChannel = (targetId) => {
-            const oldBtn = document.querySelector('.user-item.active');
-            if(oldBtn) oldBtn.classList.remove('active');
-
             if(targetId === 'global') {
                 currentChannel = 'global';
-                document.getElementById('chan-global').classList.add('active');
                 document.getElementById('mobile-title').innerText = "GLOBAL_FEED";
-                document.getElementById('channel-status').innerText = "CHANNEL: GLOBAL // SIGNATURES: ENFORCED";
             } else {
-                // Deterministic ID: sort uids alphabetically
                 const ids = [currentUser.uid, targetId].sort();
                 currentChannel = `${ids[0]}_${ids[1]}`;
-                
-                // Highlight user in list
-                const list = document.getElementById('user-list').children;
-                for(let item of list) {
-                    if(item.innerHTML.includes(targetId.substring(0,4))) item.classList.add('active');
-                }
-                document.getElementById('mobile-title').innerText = "SECURE_DM";
-                document.getElementById('channel-status').innerText = "CHANNEL: PRIVATE_DM // E2E_SIGNED";
+                document.getElementById('mobile-title').innerText = "PRIVATE_DM";
             }
-            
-            // Re-trigger render by forcing a "fake" update or just waiting for snapshot? 
-            // Better to recreate listener or just filter existing snapshot? 
-            // For simplicity in this architecture, we restart the listener or just force logic.
-            // Since we filter inside onSnapshot, we need to trigger it. 
-            // Ideally we just keep the snapshot active and re-render.
-            // Let's just re-render manually if we had the data stored, but for now restarting listener is safest.
             startListeners();
-            toggleSidebar(); // Close mobile menu
+            toggleSidebar(true);
         };
 
-        // --- ACTIONS ---
         window.sendMessage = async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if(!text) return;
-
             const sig = await signData(text);
-            
-            await addDoc(collection(db, 'messages'), {
-                text,
-                uid: currentUser.uid,
-                nickname: currentUser.displayName,
-                timestamp: serverTimestamp(),
-                channel: currentChannel,
-                sig
-            });
-            
+            await addDoc(collection(db, 'messages'), { text, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, sig });
             input.value = '';
         };
 
@@ -393,55 +333,48 @@
             reader.onload = async (e) => {
                 const b64 = e.target.result;
                 const sig = await signData(b64);
-                await addDoc(collection(db, 'messages'), {
-                    text: b64,
-                    uid: currentUser.uid,
-                    nickname: currentUser.displayName,
-                    timestamp: serverTimestamp(),
-                    channel: currentChannel,
-                    sig
-                });
+                await addDoc(collection(db, 'messages'), { text: b64, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, sig });
             };
             reader.readAsDataURL(file);
             input.value = '';
         };
 
-        // --- AUTH EXPORTS ---
-        window.authGoogle = async () => {
-            try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); }
-        };
-        window.authGuest = async () => {
-            try { await signInAnonymously(auth); } catch(e) { alert(e.message); }
-        };
+        // --- AUTH & DECOMMISSION ---
+        window.authGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
+        window.authGuest = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
         window.logout = () => signOut(auth);
-        
-        // --- UI UTILS ---
+
+        window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
+        window.confirmDecommission = async () => {
+            const val = document.getElementById('wipe-confirm').value;
+            if(val !== 'TERMINATE') return alert("ERROR: CONFIRMATION_MISMATCH");
+            try {
+                await deleteUser(currentUser);
+                location.reload();
+            } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); }
+        };
+
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.saveName = async () => {
             const name = document.getElementById('new-name').value.trim();
             if(name) {
                 await updateProfile(currentUser, {displayName: name});
                 await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true});
-                document.getElementById('modal-name').classList.add('hidden');
                 location.reload();
             }
         };
-        window.toggleSidebar = () => {
+
+        window.toggleSidebar = (forceClose = false) => {
             const sb = document.getElementById('sidebar');
             const bg = document.getElementById('mobile-sidebar-bg');
+            if(forceClose) { sb.classList.add('hidden'); bg.classList.add('hidden'); return; }
             sb.classList.toggle('hidden');
-            // Force flex on mobile when active
             if(!sb.classList.contains('hidden')) {
                 sb.classList.add('absolute', 'z-50', 'h-full');
                 bg.classList.remove('hidden');
-            } else {
-                sb.classList.remove('absolute', 'z-50', 'h-full');
-                bg.classList.add('hidden');
-            }
+            } else { bg.classList.add('hidden'); }
         };
-
     </script>
 </body>
 </html>
-
 
