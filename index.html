@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v5.2 // DEBUGGED_CORE</title>
+    <title>TERM-CHAT v5.3 // SIG_VERIFICATION_PATCH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -69,8 +69,8 @@
     <!-- LOADING -->
     <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-[150] text-center">
         <div>
-            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ SYSTEM_REBOOT_v5.2 ]</div>
-            <div id="loading-status" class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Recompiling Execution Order...</div>
+            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ SYSTEM_PATCH_v5.3 ]</div>
+            <div id="loading-status" class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Optimizing Verification Logic...</div>
         </div>
     </div>
 
@@ -79,7 +79,7 @@
         <div class="w-full max-w-md bg-zinc-950 neon-border p-6 md:p-8 my-auto">
             <div class="text-center mb-8 border-b border-green-900 pb-4">
                 <h1 class="text-2xl font-bold retro-text mb-1 tracking-tighter">TERM-CHAT.EXE</h1>
-                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_v5.2</p>
+                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_v5.3</p>
             </div>
             <div id="auth-error-msg" class="hidden mb-6 p-4 border border-red-600 bg-red-950/20 text-red-500 text-[10px] uppercase font-bold text-center">!! AUTH_FAILURE !!</div>
             <div id="auth-landing" class="space-y-3">
@@ -102,7 +102,7 @@
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-2 sm:p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-2 overflow-hidden">
-                <h1 class="font-bold text-[9px] sm:text-xs retro-text uppercase truncate tracking-tighter">COMM_LINK_22</h1>
+                <h1 class="font-bold text-[9px] sm:text-xs retro-text uppercase truncate tracking-tighter">COMM_LINK_23</h1>
                 <div class="flex items-center gap-1">
                     <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
                     <span id="system-status" class="text-[6px] sm:text-[7px] text-green-700 font-bold uppercase">ENCRYPTED</span>
@@ -129,30 +129,7 @@
         </footer>
     </div>
 
-    <!-- ADMIN MODAL -->
-    <div id="admin-modal" class="hidden absolute inset-0 bg-black/98 z-[100] flex flex-col items-center overflow-y-auto p-4 md:p-8">
-        <div class="w-full max-w-md bg-zinc-950 alert-border p-6 md:p-8 my-auto relative">
-            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
-            <h2 class="text-xl font-bold alert-text mb-2 text-center uppercase tracking-tighter">ROOT_ACCESS</h2>
-            <div class="h-px bg-red-900 w-full mb-6"></div>
-            <div class="space-y-6">
-                <div class="space-y-2">
-                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">ENCRYPTION_MGMT</div>
-                    <button onclick="adminRekeyChannel()" class="w-full btn-alert py-2 text-[9px] uppercase bg-green-900/20 text-green-500 border-green-600 font-bold">[ RE-KEY CHANNEL FOR NEW USERS ]</button>
-                </div>
-                <div class="space-y-2">
-                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">SECURITY</div>
-                    <button onclick="openBanList()" class="w-full btn-alert py-2 text-[9px] uppercase">[ BLACKLIST_MGMT ]</button>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="exportData()" class="btn-retro uppercase">BACKUP</button>
-                    <button onclick="confirmSystemFlush()" class="btn-alert uppercase text-[8px]">WIPE_LOGS</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- OTHER MODALS -->
+    <!-- MODALS -->
     <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-sm bg-zinc-950 neon-border p-6 md:p-8 text-center my-auto">
             <h2 id="modal-title" class="text-lg font-bold retro-text mb-4 uppercase tracking-widest">ID_PROTOCOL</h2>
@@ -160,9 +137,27 @@
                 <input type="text" id="modal-input" class="w-full bg-transparent border-b-2 border-green-500 p-2 text-center text-lg text-green-500 focus:outline-none uppercase" placeholder="VALUE" required autofocus>
                 <div class="flex flex-col gap-2">
                     <button type="submit" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black font-bold text-xs uppercase">EXECUTE</button>
+                    <button type="button" onclick="resyncKeys()" class="text-[10px] text-yellow-500 hover:text-yellow-300 p-2 uppercase font-bold tracking-widest">[ RE-SYNC KEYS ]</button>
                     <button type="button" onclick="closeModal()" class="text-[9px] text-green-900 hover:text-red-500 p-2 uppercase font-bold">Abort</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MISC -->
+    <div id="admin-modal" class="hidden absolute inset-0 bg-black/98 z-[100] flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-md bg-zinc-950 alert-border p-6 md:p-8 my-auto relative">
+            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
+            <h2 class="text-xl font-bold alert-text mb-2 text-center uppercase tracking-tighter">ROOT_ACCESS</h2>
+            <div class="h-px bg-red-900 w-full mb-6"></div>
+            <div class="space-y-6">
+                <button onclick="adminRekeyChannel()" class="w-full btn-alert py-2 text-[9px] uppercase bg-green-900/20 text-green-500 border-green-600 font-bold">[ RE-KEY CHANNEL ]</button>
+                <button onclick="openBanList()" class="w-full btn-alert py-2 text-[9px] uppercase">[ BLACKLIST_MGMT ]</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportData()" class="btn-retro uppercase">BACKUP</button>
+                    <button onclick="confirmSystemFlush()" class="btn-alert uppercase text-[8px]">WIPE_LOGS</button>
+                </div>
+            </div>
         </div>
     </div>
     <div id="decommission-modal" class="hidden absolute inset-0 bg-black/98 z-[110] flex flex-col items-center overflow-y-auto p-4 md:p-8">
@@ -211,7 +206,7 @@
         const db = getFirestore(app);
 
         const ADMIN_EMAIL = 'leeeugene1574@gmail.com';
-        const APP_VERSION = '5.2';
+        const APP_VERSION = '5.3';
         
         let currentUser = null, isModerator = false, messagesUnsubscribe = null, banCheckUnsubscribe = null, activeModalAction = null, rawMessages = [];
         let encKeyPair = null, sigKeyPair = null, masterKey = null;
@@ -291,11 +286,8 @@
 
         // --- CRYPTO CORE ---
         async function initCryptoIdentity(uid) {
-            console.log("Crypto: Initializing identity for " + uid);
             els.loadingStatus.innerText = "CHECKING_KEY_INTEGRITY...";
-            
             if (localStorage.getItem('term_version') !== APP_VERSION) {
-                console.log("Crypto: Upgrading version, clearing old keys.");
                 localStorage.removeItem(`v5_enc_${uid}`);
                 localStorage.removeItem(`v5_sig_${uid}`);
                 localStorage.setItem('term_version', APP_VERSION);
@@ -309,7 +301,6 @@
                     publicKey: await crypto.subtle.importKey("jwk", data.pub, { name: "RSA-OAEP", hash: "SHA-256" }, true, ["encrypt"])
                 };
             } else {
-                console.log("Crypto: Generating Encryption Keys...");
                 els.loadingStatus.innerText = "GENERATING_ENC_KEYS...";
                 encKeyPair = await crypto.subtle.generateKey({ name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256" }, true, ["encrypt", "decrypt"]);
                 localStorage.setItem(`v5_enc_${uid}`, JSON.stringify({
@@ -326,7 +317,6 @@
                     publicKey: await crypto.subtle.importKey("jwk", data.pub, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["verify"])
                 };
             } else {
-                console.log("Crypto: Generating Signing Keys...");
                 els.loadingStatus.innerText = "GENERATING_SIG_KEYS...";
                 sigKeyPair = await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256" }, true, ["sign", "verify"]);
                 localStorage.setItem(`v5_sig_${uid}`, JSON.stringify({
@@ -346,21 +336,19 @@
         }
 
         async function getMasterKey(uid) {
-            console.log("Crypto: Fetching Master Key...");
             els.loadingStatus.innerText = "DECRYPTING_CHANNEL_KEY...";
             const keyRef = doc(db, 'vault', 'channel_key');
             const keySnap = await getDoc(keyRef);
             
             if (!keySnap.exists()) {
                 if (isModerator) {
-                    console.log("Crypto: Admin generating initial Master Key...");
                     const newKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
                     const rawKey = await crypto.subtle.exportKey("raw", newKey);
                     const encryptedForAdmin = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, encKeyPair.publicKey, rawKey);
                     await setDoc(keyRef, { participants: { [uid]: b64encode(encryptedForAdmin) } });
                     masterKey = newKey;
                 } else {
-                    console.warn("Crypto: Waiting for Admin Re-Key...");
+                    console.warn("WAITING FOR ADMIN RE-KEY");
                 }
             } else {
                 const data = keySnap.data();
@@ -369,7 +357,6 @@
                         const encryptedBytes = b64decode(data.participants[uid]);
                         const rawKey = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, encKeyPair.privateKey, encryptedBytes);
                         masterKey = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
-                        console.log("Crypto: Master Key Decrypted Successfully.");
                     } catch(e) { console.error("Key Decrypt Fail", e); }
                 }
             }
@@ -396,6 +383,13 @@
         }
 
         async function verifySignature(text, sigB64, uid) {
+            // OPTIMIZATION: If self, use local key to avoid DB latency mismatch
+            if (currentUser && uid === currentUser.uid && sigKeyPair) {
+                try {
+                    return await crypto.subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, sigKeyPair.publicKey, b64decode(sigB64), new TextEncoder().encode(text));
+                } catch(e) { return false; }
+            }
+
             try {
                 const pubDoc = await getDoc(doc(db, 'public_keys', uid));
                 if (!pubDoc.exists()) return false;
@@ -448,6 +442,14 @@
         });
 
         // --- GLOBAL ACTIONS ---
+        window.resyncKeys = async () => {
+            if(!currentUser) return;
+            localStorage.removeItem(`v5_enc_${currentUser.uid}`);
+            localStorage.removeItem(`v5_sig_${currentUser.uid}`);
+            alert("KEYS CLEARED. RE-INITIALIZING...");
+            location.reload();
+        };
+
         window.handleSendMessage = async (e) => {
             e.preventDefault(); const text = els.messageInput.value.trim(); if (!text) return;
             const { encrypted, iv } = await encryptContent(text);
