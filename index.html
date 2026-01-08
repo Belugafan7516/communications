@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v9.0 // PLAINTEXT_CORE</title>
+    <title>TERM-CHAT v9.1 // SOCIAL_UPGRADE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
             --term-green: #22c55e;
+            --term-yellow: #eab308;
             --term-bg: #050505;
             --term-glow: 0 0 10px rgba(34, 197, 94, 0.4);
             --term-alert: #ef4444;
@@ -42,14 +43,22 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Ping/Mention Highlight */
+        .mention-highlight {
+            background-color: rgba(234, 179, 8, 0.2);
+            color: #fca5a5;
+            border: 1px solid #eab308;
+        }
+        .nickname-link:hover { text-decoration: underline; cursor: pointer; color: #fff; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col scanline">
 
     <!-- LOADING OVERLAY -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v9.0 ]</div>
-        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Connecting to Database...</div>
+        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v9.1 ]</div>
+        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Loading Social Modules...</div>
     </div>
 
     <!-- AUTH SCREEN -->
@@ -72,21 +81,10 @@
 
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
                 <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white mb-2 tracking-tighter">&lt;&lt; RETURN_TO_ROOT</button>
-                
-                <div class="space-y-1">
-                    <label class="text-[9px] text-green-800 font-bold uppercase">USER_IDENTITY</label>
-                    <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="EMAIL_ADDR" required>
-                </div>
-                
-                <div class="space-y-1">
-                    <label class="text-[9px] text-green-800 font-bold uppercase">ACCESS_KEY</label>
-                    <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="PASS_PHRASE" required>
-                </div>
-
+                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="EMAIL_ADDR" required>
+                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="PASS_PHRASE" required>
                 <input type="hidden" id="auth-mode" value="login">
-                
                 <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-2 mt-4">VALIDATE_CREDENTIALS</button>
-                
                 <div class="text-center mt-2">
                     <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="text-[9px] text-green-800 hover:text-green-500 underline uppercase tracking-widest">NO_ID? CREATE_RECORD</button>
                 </div>
@@ -111,7 +109,7 @@
                     <div class="text-[8px] opacity-40 uppercase">Public_Channel</div>
                 </div>
                 
-                <div class="p-3 text-[9px] text-green-900 font-bold uppercase mt-4 tracking-widest">PRIVATE_DMS</div>
+                <div class="p-3 text-[9px] text-green-900 font-bold uppercase mt-4 tracking-widest">ACTIVE_NODES</div>
                 <div id="user-list" class="space-y-0.5 px-2">
                     <!-- Dynamic Users -->
                 </div>
@@ -152,7 +150,7 @@
                     <button type="submit" class="btn-base btn-green px-4">EXEC</button>
                 </form>
                 <div id="channel-status" class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">
-                    SECURE_UPLINK // UNENCRYPTED
+                    SECURE_UPLINK // STANDARD_PROTO
                 </div>
             </div>
         </div>
@@ -189,9 +187,8 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, limit, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-        // USER PROVIDED CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
             authDomain: "communiacationtor.firebaseapp.com",
@@ -206,14 +203,23 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // STATE
         let currentUser = null;
         let currentChannel = 'global';
         let messagesUnsub = null;
         let usersUnsub = null;
 
-        // --- APP LOGIC ---
-        
+        // --- DIAGNOSTIC STARTUP ---
+        (async function checkDatabase() {
+            try {
+                const testRef = doc(db, '_diagnostics', 'connectivity_check');
+                await setDoc(testRef, { status: 'OK', timestamp: Date.now() });
+                console.log("DB_CHECK: SUCCESS");
+            } catch (e) {
+                console.error("DB_CHECK: FAILED", e);
+            }
+        })();
+
+        // --- AUTH LOGIC ---
         onAuthStateChanged(auth, async (user) => {
             const loading = document.getElementById('loading');
             const authScreen = document.getElementById('auth-screen');
@@ -223,18 +229,21 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
-                // Update User Registry
-                await setDoc(doc(db, 'users', user.uid), {
-                    nickname: user.displayName || 'Anonymous',
-                    lastSeen: serverTimestamp()
-                }, { merge: true });
-
-                document.getElementById('my-id-display').innerText = user.displayName || 'GUEST';
-                
-                loading.classList.add('hidden');
-                appScreen.classList.remove('hidden');
-                
-                startListeners();
+                try {
+                    document.getElementById('loading-txt').innerText = "GENERATING_USER_DB_ENTRY...";
+                    await setDoc(doc(db, 'users', user.uid), {
+                        nickname: user.displayName || 'Anonymous',
+                        email: user.email || 'guest',
+                        lastSeen: serverTimestamp()
+                    }, { merge: true });
+                    
+                    document.getElementById('my-id-display').innerText = user.displayName || 'GUEST';
+                    loading.classList.add('hidden');
+                    appScreen.classList.remove('hidden');
+                    startListeners();
+                } catch(e) {
+                    alert("DATABASE WRITE FAILED: " + e.message);
+                }
             } else {
                 currentUser = null;
                 appScreen.classList.add('hidden');
@@ -244,108 +253,106 @@
         });
 
         function startListeners() {
-            // 1. Users List
+            if(usersUnsub) usersUnsub();
             usersUnsub = onSnapshot(collection(db, 'users'), (snap) => {
                 const list = document.getElementById('user-list');
                 list.innerHTML = '';
                 snap.forEach(d => {
-                    const u = d.data();
                     if(d.id === currentUser.uid) return;
-                    
+                    const u = d.data();
                     const div = document.createElement('div');
-                    div.className = `user-item p-2 mb-1 border-l-2 border-transparent transition-all flex justify-between items-center`;
-                    div.innerHTML = `<span class="text-xs font-bold truncate">${u.nickname}</span> <span class="text-[8px] opacity-50">ID:${d.id.substring(0,4)}</span>`;
-                    div.onclick = () => switchChannel(d.id);
-                    if(currentChannel.includes(d.id)) div.classList.add('active');
+                    div.className = `user-item p-2 mb-1 border-l-2 border-transparent transition-all flex justify-between items-center group`;
+                    
+                    const isSelected = currentChannel.includes(d.id);
+                    if(isSelected) div.classList.add('active');
+
+                    // User Row with explicit MSG button
+                    div.innerHTML = `
+                        <div class="flex flex-col overflow-hidden mr-2">
+                            <span class="text-xs font-bold truncate group-hover:text-white transition-colors">${escapeHtml(u.nickname)}</span>
+                            <span class="text-[8px] text-green-900 font-mono">ID: ${d.id.substring(0,4)}</span>
+                        </div>
+                        <button onclick="switchChannel('${d.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-1.5 py-0.5 transition-all">MSG</button>
+                    `;
                     list.appendChild(div);
                 });
             });
 
-            // 2. Messages (Global Subscription - filtering in memory)
+            if(messagesUnsub) messagesUnsub();
             const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc')); 
             
             messagesUnsub = onSnapshot(q, (snap) => {
                 const container = document.getElementById('msg-container');
                 const messages = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                
-                // Filter memory
                 const filtered = messages.filter(m => m.channel === currentChannel);
                 
-                // Render
                 const html = filtered.map(m => {
                     const isMe = m.uid === currentUser.uid;
                     const date = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
                     
                     let content = m.text;
                     if(content.startsWith('data:image')) {
-                        content = `<img src="${content}" class="max-w-[200px] border border-green-800 rounded opacity-80 hover:opacity-100 transition-opacity">`;
+                        content = `<img src="${content}" class="max-w-[200px] border border-green-800 rounded">`;
                     } else {
-                        content = content.replace(/</g, "&lt;");
+                        // Mention Detection
+                        const mentionRegex = new RegExp(`@${currentUser.displayName}\\b`, 'gi');
+                        if (m.text.match(mentionRegex)) {
+                            content = content.replace(/</g, "&lt;").replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded">@${currentUser.displayName}</span>`);
+                        } else {
+                            content = content.replace(/</g, "&lt;");
+                        }
                     }
+
+                    // Check for mention to highlight container
+                    const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
+                    const highlightClass = isMentioned ? 'border-yellow-600 bg-yellow-900/20' : (isMe ? 'border-green-500/50' : 'border-green-900');
+                    const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : '';
+
+                    // Clickable Nickname logic
+                    const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DIRECT_MESSAGE" class="nickname-link"`;
 
                     return `
                         <div class="msg-anim mb-3 flex flex-col ${isMe ? 'items-end' : 'items-start'}">
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="text-[10px] text-green-700 font-bold">${date}</span>
-                                <span class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'}">${m.nickname}</span>
+                                <span ${nickAction} class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'}">${m.nickname}</span>
+                                ${headerBadge}
                             </div>
-                            <div class="max-w-[90%] md:max-w-[70%] text-sm break-words bg-green-900/10 border ${isMe ? 'border-green-500/50' : 'border-green-900'} p-2 rounded">
+                            <div class="max-w-[90%] text-sm break-words bg-green-900/10 border ${highlightClass} p-2 rounded">
                                 ${content}
                             </div>
                         </div>
                     `;
                 });
-
                 container.innerHTML = html.join('');
                 container.scrollTop = container.scrollHeight;
             });
         }
 
-        // --- CHANNEL LOGIC ---
         window.switchChannel = (targetId) => {
-            const oldBtn = document.querySelector('.user-item.active');
-            if(oldBtn) oldBtn.classList.remove('active');
-
             if(targetId === 'global') {
                 currentChannel = 'global';
-                document.getElementById('chan-global').classList.add('active');
                 document.getElementById('mobile-title').innerText = "GLOBAL_FEED";
-                document.getElementById('channel-status').innerText = "CHANNEL: GLOBAL // STANDARD_RELAY";
             } else {
-                // Deterministic ID: sort uids alphabetically
                 const ids = [currentUser.uid, targetId].sort();
                 currentChannel = `${ids[0]}_${ids[1]}`;
-                
-                // Highlight user in list
-                const list = document.getElementById('user-list').children;
-                for(let item of list) {
-                    if(item.innerHTML.includes(targetId.substring(0,4))) item.classList.add('active');
-                }
-                document.getElementById('mobile-title').innerText = "SECURE_DM";
-                document.getElementById('channel-status').innerText = "CHANNEL: PRIVATE_DM // EYES_ONLY";
+                document.getElementById('mobile-title').innerText = "PRIVATE_DM";
             }
-            
             startListeners();
             toggleSidebar(true);
         };
 
-        // --- ACTIONS ---
         window.sendMessage = async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if(!text) return;
-
-            // Plain text write
-            await addDoc(collection(db, 'messages'), {
-                text,
-                uid: currentUser.uid,
-                nickname: currentUser.displayName,
-                timestamp: serverTimestamp(),
-                channel: currentChannel
-            });
-            
-            input.value = '';
+            try {
+                await addDoc(collection(db, 'messages'), {
+                    text, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel
+                });
+                input.value = '';
+            } catch(e) { alert("MSG FAIL: " + e.message); }
         };
 
         window.handleImage = (input) => {
@@ -353,79 +360,37 @@
             if(!file) return;
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const b64 = e.target.result;
-                // Plain image write
                 await addDoc(collection(db, 'messages'), {
-                    text: b64,
-                    uid: currentUser.uid,
-                    nickname: currentUser.displayName,
-                    timestamp: serverTimestamp(),
-                    channel: currentChannel
+                    text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel
                 });
             };
             reader.readAsDataURL(file);
             input.value = '';
         };
 
-        // --- AUTH EXPORTS ---
-        window.authGoogle = async () => {
-            try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); }
-        };
-        window.authGuest = async () => {
-            try { await signInAnonymously(auth); } catch(e) { alert(e.message); }
-        };
+        window.authGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
+        window.authGuest = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
         window.handleEmailSubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
             const mode = document.getElementById('auth-mode').value;
-            
-            try {
-                if (mode === 'login') {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
-                }
-            } catch (err) {
-                alert("AUTH_ERROR: " + err.message);
-            }
+            try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, password); else { const u = await createUserWithEmailAndPassword(auth, email, password); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH_ERROR: " + err.message); }
         };
         window.logout = () => signOut(auth);
         
         // --- UI UTILS ---
-        window.showEmailAuth = (mode) => {
-            document.getElementById('auth-landing').classList.add('hidden');
-            document.getElementById('auth-email-form').classList.remove('hidden');
-            setMode(mode);
-        };
-
-        window.showLanding = () => {
-            document.getElementById('auth-email-form').classList.add('hidden');
-            document.getElementById('auth-landing').classList.remove('hidden');
-        };
-
-        window.toggleEmailMode = () => {
-            const current = document.getElementById('auth-mode').value;
-            setMode(current === 'login' ? 'signup' : 'login');
-        };
-
-        function setMode(mode) {
-            document.getElementById('auth-mode').value = mode;
-            document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE_CREDENTIALS" : "CREATE_NEW_RECORD";
-            document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "NO_ID? CREATE_RECORD" : "HAS_ID? LOGIN";
-        }
-
+        window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); setMode(mode); };
+        window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
+        window.toggleEmailMode = () => { const current = document.getElementById('auth-mode').value; setMode(current === 'login' ? 'signup' : 'login'); };
+        function setMode(mode) { document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE_CREDENTIALS" : "CREATE_NEW_RECORD"; document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "NO_ID? CREATE_RECORD" : "HAS_ID? LOGIN"; }
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
         
         window.confirmDecommission = async () => {
             const val = document.getElementById('wipe-confirm').value;
             if(val !== 'TERMINATE') return alert("ERROR: CONFIRMATION_MISMATCH");
-            try {
-                await deleteUser(currentUser);
-                location.reload();
-            } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); }
+            try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); }
         };
 
         window.saveName = async () => {
@@ -437,26 +402,14 @@
                 location.reload();
             }
         };
-        
         window.toggleSidebar = (forceClose = false) => {
             const sb = document.getElementById('sidebar');
             const bg = document.getElementById('mobile-sidebar-bg');
-            if(forceClose) {
-                sb.classList.add('hidden');
-                sb.classList.remove('absolute', 'z-50', 'h-full');
-                bg.classList.add('hidden');
-                return;
-            }
+            if(forceClose) { sb.classList.add('hidden'); sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); return; }
             sb.classList.toggle('hidden');
-            if(!sb.classList.contains('hidden')) {
-                sb.classList.add('absolute', 'z-50', 'h-full');
-                bg.classList.remove('hidden');
-            } else {
-                sb.classList.remove('absolute', 'z-50', 'h-full');
-                bg.classList.add('hidden');
-            }
+            if(!sb.classList.contains('hidden')) { sb.classList.add('absolute', 'z-50', 'h-full'); bg.classList.remove('hidden'); } else { sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); }
         };
-
+        function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
     </script>
 </body>
 </html>
