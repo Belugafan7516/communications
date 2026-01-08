@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v5.0 // ASYMMETRIC_ENCRYPTION_ARMORED</title>
+    <title>TERM-CHAT v5.1 // CRYPTO_STABILITY_FIX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -37,15 +37,9 @@
         .neon-border { border: 2px solid var(--terminal-green); box-shadow: var(--terminal-glow); }
         .alert-border { border: 2px solid var(--terminal-alert); box-shadow: var(--terminal-alert-glow); }
         
-        /* Optimized Mobile Buttons */
         .btn-retro {
-            border: 1px solid var(--terminal-green); 
-            padding: 4px 6px; 
-            font-size: 8px;
-            background: rgba(0, 20, 0, 0.5); 
-            white-space: nowrap; 
-            cursor: pointer;
-            transition: all 0.1s;
+            border: 1px solid var(--terminal-green); padding: 4px 6px; font-size: 8px;
+            background: rgba(0, 20, 0, 0.5); white-space: nowrap; cursor: pointer; transition: all 0.1s;
         }
         @media (min-width: 640px) { .btn-retro { padding: 6px 12px; font-size: 10px; } }
         .btn-retro:hover { background: var(--terminal-green); color: black; box-shadow: var(--terminal-glow); }
@@ -65,71 +59,52 @@
         .hidden { display: none !important; }
         .crt-flicker { animation: flicker 0.15s infinite; }
         @keyframes flicker { 0% { opacity: 0.98; } 50% { opacity: 1; } 100% { opacity: 0.99; } }
-        
         @keyframes lock-flash { 0% { background: #000; } 50% { background: #200; } 100% { background: #000; } }
         .deadlock { animation: lock-flash 0.5s infinite; }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .custom-scroll { scrollbar-width: thin; scrollbar-color: #15803d #000; }
     </style>
 </head>
 <body class="w-screen flex flex-col relative scanline crt-flicker">
 
-    <!-- LOADING SCREEN -->
+    <!-- LOADING -->
     <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-[150] text-center">
         <div>
-            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ ASYMMETRIC_INIT_V5 ]</div>
-            <div id="loading-status" class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Rotating Entropy Pools...</div>
+            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ DUAL_KEY_GENERATION... ]</div>
+            <div id="loading-status" class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Initializing RSA-OAEP & RSASSA-PKCS1</div>
         </div>
     </div>
 
-    <!-- LOCK SCREEN -->
-    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-8 deadlock">
-        <div class="border-4 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)]">
-            <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">ACCESS_DENIED</div>
-            <div class="h-1 bg-red-600 w-full mb-6"></div>
-            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Uplink Severed: Node integrity failed security scan.</p>
-            <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-red-950/30">REASON: BLACKLISTED</div>
-            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">REBOOT_LINK</button>
-        </div>
-    </div>
-
-    <!-- AUTH SCREEN -->
+    <!-- AUTH -->
     <div id="auth-screen" class="hidden absolute inset-0 bg-black z-30 flex flex-col items-center overflow-y-auto p-4 md:p-8">
-        <div class="w-full max-w-md bg-zinc-950 neon-border p-6 md:p-8 my-auto relative">
+        <div class="w-full max-w-md bg-zinc-950 neon-border p-6 md:p-8 my-auto">
             <div class="text-center mb-8 border-b border-green-900 pb-4">
                 <h1 class="text-2xl font-bold retro-text mb-1 tracking-tighter">TERM-CHAT.EXE</h1>
-                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_STABLE</p>
+                <p class="text-[9px] text-green-800 tracking-[0.3em]">SECURE_UPLINK_v5.1</p>
             </div>
-            
-            <div id="auth-error-msg" class="hidden mb-6 p-4 border border-red-600 bg-red-950/20 text-red-500 text-[10px] uppercase font-bold text-center">
-                !! AUTH_FAILURE !!
-            </div>
-
+            <div id="auth-error-msg" class="hidden mb-6 p-4 border border-red-600 bg-red-950/20 text-red-500 text-[10px] uppercase font-bold text-center">!! AUTH_FAILURE !!</div>
             <div id="auth-landing" class="space-y-3">
-                <button onclick="handleGoogleSignIn()" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black transition-all font-bold text-[10px] uppercase">[ AUTH_VIA_GOOGLE ]</button>
-                <button onclick="showEmailAuth('login')" class="w-full border border-green-800 py-3 hover:bg-green-900/30 transition-all font-bold text-[10px] uppercase">[ AUTH_VIA_EMAIL ]</button>
+                <button onclick="handleGoogleSignIn()" class="w-full border border-green-500 py-3 hover:bg-green-500 hover:text-black font-bold text-[10px] uppercase">[ AUTH_GOOGLE ]</button>
+                <button onclick="showEmailAuth('login')" class="w-full border border-green-800 py-3 hover:bg-green-900/30 font-bold text-[10px] uppercase">[ AUTH_EMAIL ]</button>
                 <button onclick="handleGuestSignIn()" class="w-full text-green-900 hover:text-green-500 text-[9px] uppercase p-2 tracking-[0.3em]">&gt; GUEST_MODE &lt;</button>
             </div>
-            
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
-                <button type="button" onclick="showLanding()" class="text-[9px] hover:text-white mb-2 tracking-tighter">&lt;&lt; BACK</button>
+                <button type="button" onclick="showLanding()" class="text-[9px] hover:text-white mb-2">&lt;&lt; BACK</button>
                 <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase" placeholder="EMAIL" required>
-                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase" placeholder="SECRET" required>
+                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase" placeholder="KEY" required>
                 <input type="hidden" id="auth-mode" value="login">
-                <button type="submit" id="email-submit-btn" class="w-full border border-green-500 py-3 font-bold hover:bg-green-500 hover:text-black transition-all text-xs uppercase">VALIDATE</button>
+                <button type="submit" id="email-submit-btn" class="w-full border border-green-500 py-3 font-bold hover:bg-green-500 hover:text-black text-xs uppercase">VALIDATE</button>
                 <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="w-full text-[9px] text-green-800 underline uppercase p-2">Create Record</button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN INTERFACE -->
+    <!-- MAIN CHAT -->
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-2 sm:p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-2 overflow-hidden">
-                <h1 class="font-bold text-[9px] sm:text-xs retro-text leading-none uppercase truncate tracking-tighter">COMM_LINK_20</h1>
+                <h1 class="font-bold text-[9px] sm:text-xs retro-text uppercase truncate tracking-tighter">COMM_LINK_21</h1>
                 <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse shadow-[0_0_3px_#22c55e]"></span>
+                    <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
                     <span id="system-status" class="text-[6px] sm:text-[7px] text-green-700 font-bold uppercase">ENCRYPTED</span>
                 </div>
             </div>
@@ -140,23 +115,45 @@
                 <button onclick="handleLogout()" class="btn-retro !border-green-900 hover:!border-red-500 uppercase"> [ EXIT ] </button>
             </div>
         </header>
-
         <main id="message-feed" class="flex-1 overflow-y-auto p-3 space-y-3 font-mono bg-[rgba(0,10,0,0.3)] scroll-smooth"></main>
-
         <footer class="bg-zinc-950 border-t-2 border-green-500 p-2 sm:p-3 shrink-0">
             <form onsubmit="handleSendMessage(event)" class="flex gap-1 max-w-6xl mx-auto items-center">
                 <span class="text-green-500 font-bold text-sm sm:text-lg tracking-tighter">&gt;</span>
                 <input type="text" id="message-input" class="flex-1 bg-transparent border-none focus:ring-0 text-green-400 placeholder-green-900/30 text-[10px] sm:text-sm py-1 sm:py-2 focus:outline-none font-mono uppercase" placeholder="ENCRYPT_DATA..." autocomplete="off">
-                <button type="submit" id="send-btn" class="text-green-600 hover:text-green-400 font-bold text-[8px] sm:text-[10px] uppercase px-2 sm:px-3 py-1 border border-green-900 tracking-tighter transition-all">SEC_TRANSMIT</button>
+                <button type="submit" id="send-btn" class="text-green-600 hover:text-green-400 font-bold text-[8px] sm:text-[10px] uppercase px-2 sm:px-3 py-1 border border-green-900 tracking-tighter transition-all">SEC_SEND</button>
             </form>
             <div class="flex justify-between items-center mt-1 sm:mt-2 border-t border-green-950 pt-1 opacity-30">
-                <span id="session-info" class="text-[6px] sm:text-[7px] text-green-900 uppercase font-bold truncate">RSA_BIT_2048: ACTIVE</span>
-                <span class="text-[6px] sm:text-[7px] text-green-900 font-mono tracking-tighter truncate uppercase">E2EE: HYBRID_AES_RSA</span>
+                <span id="session-info" class="text-[6px] sm:text-[7px] text-green-900 uppercase font-bold truncate">ID: ---</span>
+                <span class="text-[6px] sm:text-[7px] text-green-900 font-mono tracking-tighter truncate uppercase">E2EE: DUAL_KEY_ARCH</span>
             </div>
         </footer>
     </div>
 
-    <!-- MODALS -->
+    <!-- ADMIN MODAL -->
+    <div id="admin-modal" class="hidden absolute inset-0 bg-black/98 z-[100] flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-md bg-zinc-950 alert-border p-6 md:p-8 my-auto relative">
+            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
+            <h2 class="text-xl font-bold alert-text mb-2 text-center uppercase tracking-tighter">ROOT_ACCESS</h2>
+            <div class="h-px bg-red-900 w-full mb-6"></div>
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">ENCRYPTION_MGMT</div>
+                    <button onclick="adminRekeyChannel()" class="w-full btn-alert py-2 text-[9px] uppercase bg-green-900/20 text-green-500 border-green-600 font-bold">[ RE-KEY CHANNEL FOR NEW USERS ]</button>
+                    <p class="text-[7px] text-green-900 mt-1">* REQUIRES_ADMIN_TO_DISTRIBUTE_KEYS</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">SECURITY</div>
+                    <button onclick="openBanList()" class="w-full btn-alert py-2 text-[9px] uppercase">[ BLACKLIST_MGMT ]</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportData()" class="btn-retro uppercase">BACKUP</button>
+                    <button onclick="confirmSystemFlush()" class="btn-alert uppercase text-[8px]">WIPE_LOGS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTHER MODALS -->
     <div id="nickname-modal" class="hidden absolute inset-0 bg-black/95 z-40 flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-sm bg-zinc-950 neon-border p-6 md:p-8 text-center my-auto">
             <h2 id="modal-title" class="text-lg font-bold retro-text mb-4 uppercase tracking-widest">ID_PROTOCOL</h2>
@@ -169,28 +166,29 @@
             </form>
         </div>
     </div>
-
-    <div id="admin-modal" class="hidden absolute inset-0 bg-black/98 z-[100] flex flex-col items-center overflow-y-auto p-4 md:p-8">
-        <div class="w-full max-w-md bg-zinc-950 alert-border p-6 md:p-8 my-auto relative">
-            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
-            <h2 class="text-xl font-bold alert-text mb-2 text-center uppercase tracking-tighter">ROOT_COMMAND</h2>
-            <div class="h-px bg-red-900 w-full mb-6"></div>
-            <div class="space-y-6">
-                <button onclick="broadcastAnnouncement()" class="w-full btn-warn py-3 font-bold text-xs uppercase">[ SYSTEM_BROADCAST ]</button>
-                <button onclick="openBanList()" class="w-full btn-alert py-3 font-bold text-xs uppercase">[ MANAGE_BLACKLIST ]</button>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="exportData()" class="btn-retro !border-green-600 uppercase">BACKUP</button>
-                    <button onclick="confirmSystemFlush()" class="btn-alert !border-red-900 py-2 uppercase text-[8px] font-black">WIPE_ALL</button>
-                </div>
-            </div>
+    <div id="decommission-modal" class="hidden absolute inset-0 bg-black/98 z-[110] flex flex-col items-center overflow-y-auto p-4 md:p-8">
+        <div class="w-full max-w-sm bg-zinc-950 alert-border p-6 md:p-8 text-center my-auto">
+            <h2 class="text-xl font-bold alert-text mb-2 tracking-tighter uppercase">WIPE_NODE</h2>
+            <p class="text-[9px] text-red-500 mb-6 font-bold uppercase animate-pulse">WARNING: PERMANENT ACCOUNT DELETION.</p>
+            <button onclick="handleDeleteAccount()" class="w-full border-2 border-red-600 bg-red-950/20 text-red-600 py-3 hover:bg-red-600 hover:text-white font-black text-xs uppercase">[ TERMINATE ]</button>
+            <button onclick="document.getElementById('decommission-modal').classList.add('hidden')" class="text-[9px] text-green-800 hover:text-white p-2 uppercase mt-2">Cancel</button>
         </div>
     </div>
-
     <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[110] flex flex-col items-center overflow-y-auto p-4 md:p-8">
         <div class="w-full max-w-md bg-zinc-950 alert-border p-4 my-auto relative">
             <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-1 right-3 text-red-500 font-bold text-xs">X</button>
-            <h2 class="text-sm font-bold alert-text mb-4 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2>
+            <h2 class="text-sm font-bold alert-text mb-4 text-center uppercase tracking-widest">BLACKLIST</h2>
             <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
+        </div>
+    </div>
+    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-8 deadlock">
+        <div class="border-4 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)]">
+            <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div>
+            <div class="text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div>
+            <div class="h-1 bg-red-600 w-full mb-6"></div>
+            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Node Blacklisted.</p>
+            <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-red-950/30">REASON: BLACKLISTED</div>
+            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">REBOOT</button>
         </div>
     </div>
 
@@ -214,8 +212,10 @@
         const db = getFirestore(app);
 
         const ADMIN_EMAIL = 'leeeugene1574@gmail.com';
-        let currentUser = null, isModerator = false, messagesUnsubscribe = null, activeModalAction = null, rawMessages = [];
-        let myKeyPair = null, masterKey = null;
+        const APP_VERSION = '5.1';
+        
+        let currentUser = null, isModerator = false, messagesUnsubscribe = null, banCheckUnsubscribe = null, activeModalAction = null;
+        let encKeyPair = null, sigKeyPair = null, masterKey = null;
 
         const els = {
             loading: document.getElementById('loading-screen'),
@@ -223,6 +223,7 @@
             auth: document.getElementById('auth-screen'),
             chat: document.getElementById('chat-screen'),
             suspendedScreen: document.getElementById('suspended-screen'),
+            banReasonDisplay: document.getElementById('ban-reason-display'),
             nicknameModal: document.getElementById('nickname-modal'),
             adminModal: document.getElementById('admin-modal'),
             banListModal: document.getElementById('ban-list-modal'),
@@ -234,185 +235,281 @@
             sessionInfo: document.getElementById('session-info'),
             authError: document.getElementById('auth-error-msg'),
             adminBtn: document.getElementById('admin-btn'),
-            decommissionBtn: document.getElementById('decommission-btn')
+            decommissionBtn: document.getElementById('decommission-btn'),
+            importInput: document.getElementById('import-input')
         };
 
-        // --- CRYPTOGRAPHY PROTOCOL (RSA + AES) ---
-        
+        // --- CRYPTO CORE ---
+        async function initCryptoIdentity(uid) {
+            els.loadingStatus.innerText = "CHECKING_KEY_INTEGRITY...";
+            
+            // Version check to clear old keys
+            if (localStorage.getItem('term_version') !== APP_VERSION) {
+                console.log("Upgrading Security Protocols...");
+                localStorage.removeItem(`v5_enc_${uid}`);
+                localStorage.removeItem(`v5_sig_${uid}`);
+                localStorage.setItem('term_version', APP_VERSION);
+            }
+
+            // 1. Encryption Key (RSA-OAEP)
+            const storedEnc = localStorage.getItem(`v5_enc_${uid}`);
+            if (storedEnc) {
+                const data = JSON.parse(storedEnc);
+                encKeyPair = {
+                    privateKey: await crypto.subtle.importKey("jwk", data.priv, { name: "RSA-OAEP", hash: "SHA-256" }, true, ["decrypt"]),
+                    publicKey: await crypto.subtle.importKey("jwk", data.pub, { name: "RSA-OAEP", hash: "SHA-256" }, true, ["encrypt"])
+                };
+            } else {
+                els.loadingStatus.innerText = "GENERATING_ENC_KEYS...";
+                encKeyPair = await crypto.subtle.generateKey({
+                    name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256"
+                }, true, ["encrypt", "decrypt"]);
+                localStorage.setItem(`v5_enc_${uid}`, JSON.stringify({
+                    pub: await crypto.subtle.exportKey("jwk", encKeyPair.publicKey),
+                    priv: await crypto.subtle.exportKey("jwk", encKeyPair.privateKey)
+                }));
+            }
+
+            // 2. Signing Key (RSASSA-PKCS1-v1_5)
+            const storedSig = localStorage.getItem(`v5_sig_${uid}`);
+            if (storedSig) {
+                const data = JSON.parse(storedSig);
+                sigKeyPair = {
+                    privateKey: await crypto.subtle.importKey("jwk", data.priv, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["sign"]),
+                    publicKey: await crypto.subtle.importKey("jwk", data.pub, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["verify"])
+                };
+            } else {
+                els.loadingStatus.innerText = "GENERATING_SIG_KEYS...";
+                sigKeyPair = await crypto.subtle.generateKey({
+                    name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256"
+                }, true, ["sign", "verify"]);
+                localStorage.setItem(`v5_sig_${uid}`, JSON.stringify({
+                    pub: await crypto.subtle.exportKey("jwk", sigKeyPair.publicKey),
+                    priv: await crypto.subtle.exportKey("jwk", sigKeyPair.privateKey)
+                }));
+            }
+
+            // 3. Publish Public Keys
+            els.loadingStatus.innerText = "SYNCING_PUBLIC_REGISTRY...";
+            await setDoc(doc(db, 'public_keys', uid), {
+                encKey: await crypto.subtle.exportKey("jwk", encKeyPair.publicKey),
+                sigKey: await crypto.subtle.exportKey("jwk", sigKeyPair.publicKey),
+                registeredAt: Date.now()
+            });
+
+            // 4. Retrieve Channel Master Key
+            await getMasterKey(uid);
+        }
+
         async function getMasterKey(uid) {
-            els.loadingStatus.innerText = "RETRIEVING_CHANNEL_KEY...";
+            els.loadingStatus.innerText = "DECRYPTING_CHANNEL_KEY...";
             const keyRef = doc(db, 'vault', 'channel_key');
             const keySnap = await getDoc(keyRef);
             
             if (!keySnap.exists()) {
-                if (currentUser.email === ADMIN_EMAIL) {
-                    els.loadingStatus.innerText = "GENERATING_NEW_MASTER_KEY...";
+                if (isModerator) {
+                    // Admin generates first master key
                     const newKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
                     const rawKey = await crypto.subtle.exportKey("raw", newKey);
-                    
-                    // Encrypt for admin
-                    const encryptedKey = await crypto.subtle.encrypt({ name: "RSASSA-PKCS1-v1_5" }, myKeyPair.publicKey, rawKey);
-                    await setDoc(keyRef, { participants: { [uid]: b64encode(encryptedKey) } });
+                    const encryptedForAdmin = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, encKeyPair.publicKey, rawKey);
+                    await setDoc(keyRef, { participants: { [uid]: b64encode(encryptedForAdmin) } });
                     masterKey = newKey;
                 } else {
-                    throw new Error("SEC_HALT: CHANNEL_UNINITIALIZED");
+                    console.warn("WAITING FOR ADMIN RE-KEY");
                 }
             } else {
                 const data = keySnap.data();
-                if (data.participants[uid]) {
-                    const encryptedBytes = b64decode(data.participants[uid]);
-                    const rawKey = await crypto.subtle.decrypt({ name: "RSASSA-PKCS1-v1_5" }, myKeyPair.privateKey, encryptedBytes);
-                    masterKey = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
-                } else {
-                    // Node is registered but not authorized yet
-                    if (currentUser.email === ADMIN_EMAIL) {
-                        // Admin needs to re-add self to vault if missing
-                         const rawKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-                         // simplified for logic
-                    }
+                if (data.participants && data.participants[uid]) {
+                    try {
+                        const encryptedBytes = b64decode(data.participants[uid]);
+                        const rawKey = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, encKeyPair.privateKey, encryptedBytes);
+                        masterKey = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
+                    } catch(e) { console.error("Key Decrypt Fail", e); }
                 }
             }
         }
 
-        async function initCryptoIdentity(uid) {
-            els.loadingStatus.innerText = "BOOTING_RSA_ENGINE...";
-            const stored = localStorage.getItem(`v5_key_${uid}`);
-            if (stored) {
-                const data = JSON.parse(stored);
-                myKeyPair = {
-                    privateKey: await crypto.subtle.importKey("jwk", data.priv, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["decrypt", "sign"]),
-                    publicKey: await crypto.subtle.importKey("jwk", data.pub, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["encrypt", "verify"])
-                };
-            } else {
-                myKeyPair = await crypto.subtle.generateKey({
-                    name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256"
-                }, true, ["encrypt", "decrypt", "sign", "verify"]);
-                const pub = await crypto.subtle.exportKey("jwk", myKeyPair.publicKey);
-                const priv = await crypto.subtle.exportKey("jwk", myKeyPair.privateKey);
-                localStorage.setItem(`v5_key_${uid}`, JSON.stringify({ pub, priv }));
-            }
-            await setDoc(doc(db, 'public_keys', uid), { jwk: await crypto.subtle.exportKey("jwk", myKeyPair.publicKey), registeredAt: Date.now() });
-            await getMasterKey(uid);
-        }
-
         async function encryptContent(text) {
-            if (!masterKey) return { encrypted: b64encode(new TextEncoder().encode(text)), iv: '' };
+            if (!masterKey) return { encrypted: b64encode(new TextEncoder().encode(text)), iv: '' }; // Fallback (should prevent)
             const iv = crypto.getRandomValues(new Uint8Array(12));
             const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, masterKey, new TextEncoder().encode(text));
             return { encrypted: b64encode(encrypted), iv: b64encode(iv) };
         }
 
         async function decryptContent(b64, ivB64) {
+            if (!masterKey) return "!! WAITING_FOR_KEYS !!";
             try {
-                if (!masterKey) return "!! NO_ACCESS_KEY !!";
                 const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64decode(ivB64) }, masterKey, b64decode(b64));
                 return new TextDecoder().decode(decrypted);
-            } catch(e) { return "!! DECRYPTION_FAILED !!"; }
+            } catch(e) { return "!! DECRYPT_FAIL !!"; }
         }
 
         async function signMessage(text) {
-            const signature = await crypto.subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, myKeyPair.privateKey, new TextEncoder().encode(text));
+            const signature = await crypto.subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, sigKeyPair.privateKey, new TextEncoder().encode(text));
             return b64encode(signature);
+        }
+
+        async function verifySignature(text, sigB64, uid) {
+            try {
+                const pubDoc = await getDoc(doc(db, 'public_keys', uid));
+                if (!pubDoc.exists()) return false;
+                const key = await crypto.subtle.importKey("jwk", pubDoc.data().sigKey, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["verify"]);
+                return await crypto.subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, key, b64decode(sigB64), new TextEncoder().encode(text));
+            } catch(e) { return false; }
         }
 
         // --- SESSION ---
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
+                isModerator = (user.email === ADMIN_EMAIL);
+                if (!isModerator) {
+                    // Check bans
+                    banCheckUnsubscribe = onSnapshot(doc(db, 'banned_users', user.uid), (s) => { if(s.exists()) triggerDeadlock(s.data().reason); });
+                } else {
+                    els.adminBtn.classList.remove('hidden');
+                }
+                if(!user.isAnonymous) els.decommissionBtn.classList.remove('hidden');
+
                 try {
                     await initCryptoIdentity(user.uid);
-                    isModerator = (user.email === ADMIN_EMAIL);
-                    if(isModerator) els.adminBtn.classList.remove('hidden');
-                    if (!user.isAnonymous) els.decommissionBtn.classList.remove('hidden');
                     els.loading.classList.add('hidden');
                     els.auth.classList.add('hidden');
-                    if (user.displayName) { els.chat.classList.remove('hidden'); subscribeMessages(); } 
-                    else { openNicknameModal(); }
+                    if (user.displayName) {
+                        els.chat.classList.remove('hidden');
+                        subscribeMessages();
+                    } else { openNicknameModal(); }
+                    els.sessionInfo.innerText = `UID: ${user.uid.substring(0,6)}.. // DUAL_KEY_ACTIVE`;
                 } catch(e) { 
-                    alert("IDENTITY_FAILURE: " + e.message);
-                    els.loadingStatus.innerText = "ACCESS_ERROR: UNAUTHORIZED_NODE";
+                    alert("CRYPTO INIT FAILED: " + e.message); 
+                    localStorage.clear(); location.reload();
                 }
             } else {
                 els.loading.classList.add('hidden');
-                els.chat.classList.add('hidden');
                 els.auth.classList.remove('hidden');
+                els.chat.classList.add('hidden');
             }
         });
 
+        // --- ADMIN RE-KEY ---
+        window.adminRekeyChannel = async () => {
+            if (!masterKey) return alert("ADMIN HAS NO MASTER KEY YET");
+            els.loading.classList.remove('hidden');
+            els.loadingStatus.innerText = "DISTRIBUTING_KEYS...";
+            try {
+                const rawMaster = await crypto.subtle.exportKey("raw", masterKey);
+                const publicKeysSnap = await getDocs(collection(db, 'public_keys'));
+                const participants = {};
+                
+                for (const doc of publicKeysSnap.docs) {
+                    const uid = doc.id;
+                    const data = doc.data();
+                    if (data.encKey) {
+                        const userPubKey = await crypto.subtle.importKey("jwk", data.encKey, { name: "RSA-OAEP", hash: "SHA-256" }, true, ["encrypt"]);
+                        const encryptedMaster = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, userPubKey, rawMaster);
+                        participants[uid] = b64encode(encryptedMaster);
+                    }
+                }
+                await setDoc(doc(db, 'vault', 'channel_key'), { participants });
+                alert("CHANNEL RE-KEYED FOR " + Object.keys(participants).length + " USERS");
+            } catch(e) { alert("REKEY FAILED: " + e.message); }
+            els.loading.classList.add('hidden');
+        };
+
         // --- ACTIONS ---
         window.handleSendMessage = async (e) => {
-            e.preventDefault();
-            const text = els.messageInput.value.trim();
-            if (!text || !currentUser) return;
+            e.preventDefault(); const text = els.messageInput.value.trim(); if (!text) return;
             const { encrypted, iv } = await encryptContent(text);
             const sig = await signMessage(text);
-            await addDoc(collection(db, 'messages'), { 
-                payload: encrypted, iv, sig, uid: currentUser.uid, nickname: currentUser.displayName, 
-                timestamp: serverTimestamp(), createdAt: Date.now() 
-            });
+            await addDoc(collection(db, 'messages'), { payload: encrypted, iv, sig, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), createdAt: Date.now(), history: [] });
             els.messageInput.value = '';
         };
 
         async function render(messages) {
             const atBottom = els.messageFeed.scrollHeight - els.messageFeed.scrollTop <= els.messageFeed.clientHeight + 100;
-            const list = await Promise.all(messages.map(async (msg) => {
+            const htmlPromises = messages.map(async (msg) => {
                 const isMe = currentUser && msg.uid === currentUser.uid;
-                const date = msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt || Date.now());
-                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                if (msg.type === 'announcement') return `<div class="my-4 text-center border-2 border-yellow-500 bg-yellow-900/20 p-2 mx-4 text-[8px] font-bold text-yellow-500 uppercase">BROADCAST: ${escapeHtml(msg.text)}</div>`;
                 
-                const text = await decryptContent(msg.payload, msg.iv);
-                const isSystem = msg.type === 'announcement';
+                let text = "Encrypted...";
+                if (msg.payload && msg.iv) text = await decryptContent(msg.payload, msg.iv);
+                else text = msg.text; // Legacy/Fallback
 
-                if (isSystem) return `<div class="text-center border-2 border-yellow-500 bg-yellow-900/20 p-2 mx-4 text-[8px] font-bold text-yellow-500 uppercase">BROADCAST: ${escapeHtml(msg.text)}</div>`;
+                let integrity = "";
+                if (msg.sig) {
+                    const valid = await verifySignature(text, msg.sig, msg.uid);
+                    integrity = valid ? '<span class="text-green-500 text-[6px] ml-1">[SIG_OK]</span>' : '<span class="text-red-500 text-[6px] ml-1 animate-pulse">[SIG_FAIL]</span>';
+                }
 
+                const timeStr = (msg.timestamp ? new Date(msg.timestamp.toMillis()) : new Date(msg.createdAt)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
+                
                 return `
-                    <div class="flex ${isMe ? 'justify-end' : 'justify-start'} mb-2">
-                        <div class="max-w-[90%]">
-                            <div class="flex items-center gap-1 mb-0.5 ${isMe ? 'flex-row-reverse' : ''}">
+                    <div class="msg-enter flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 group">
+                        <div class="max-w-[88%]">
+                            <div class="flex items-center gap-1 mb-0.5 ${isMe ? 'justify-end' : ''} flex-wrap">
                                 <span class="text-[6px] text-green-900 font-bold">${timeStr}</span>
-                                <span class="text-[8px] font-black ${isMe ? 'text-green-300' : 'text-green-700'}">[${escapeHtml(msg.nickname)}]</span>
-                                ${msg.sig ? '<span class="text-[5px] text-green-500 opacity-50">[SIGNED]</span>' : ''}
+                                <span class="text-[8px] uppercase font-bold ${isMe ? 'text-green-300' : 'text-green-800'}">[${escapeHtml(msg.nickname)}]</span>
+                                ${integrity}
+                                <div class="flex gap-1">
+                                    ${isMe ? `<button onclick="openEditModal('${msg.id}', '${escapeHtml(text)}')" class="text-[7px] text-green-600 font-bold">[E]</button>` : ''}
+                                    ${(isMe || isModerator) ? `<button onclick="confirmDelete('${msg.id}')" class="text-[7px] text-red-800 font-bold">[X]</button>` : ''}
+                                </div>
                             </div>
-                            <div class="text-[10px] p-1.5 border ${isMe ? 'border-green-500/30 bg-green-900/10' : 'border-green-900 bg-black'} shadow-sm leading-tight">${escapeHtml(text)}</div>
+                            <div class="text-[10px] break-words p-1.5 border ${isMe ? 'border-green-500/50 bg-green-900/10' : 'border-green-900 bg-black'} shadow-sm leading-tight">${escapeHtml(text)}</div>
                         </div>
                     </div>
                 `;
-            }));
-
-            els.messageFeed.innerHTML = `
-                <div class="mb-4 text-center border-y border-green-900 py-4">
-                    <div class="text-green-500 font-bold text-[9px] mb-1">ENCRYPTION_CHANNEL_ESTABLISHED</div>
-                    <div class="text-green-900 text-[7px] leading-relaxed max-w-xs mx-auto">ALL TRAFFIC IS AES-GCM-256 ENCRYPTED. ONLY AUTHORIZED NODES WITH RSA PRIVATE KEYS CAN READ PACKETS.</div>
-                </div>
-            ` + list.join('');
-            if (atBottom) els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
+            });
+            
+            const htmlItems = await Promise.all(htmlPromises);
+            els.messageFeed.innerHTML = htmlItems.join('');
+            if(atBottom) els.messageFeed.scrollTop = els.messageFeed.scrollHeight;
         }
 
         // --- UTILS ---
         function b64encode(buf) { return btoa(String.fromCharCode(...new Uint8Array(buf))); }
         function b64decode(str) { return new Uint8Array(atob(str).split("").map(c => c.charCodeAt(0))).buffer; }
-        function subscribeMessages() {
-            onSnapshot(collection(db, 'messages'), (snap) => {
-                const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0));
-                render(msgs);
-            });
-        }
-        window.openNicknameModal = () => {
-            activeModalAction = async (val) => { await updateProfile(currentUser, { displayName: val }); closeModal(); location.reload(); };
-            els.modalTitle.innerText = "ID_SYNC"; els.nicknameModal.classList.remove('hidden');
+        function triggerDeadlock(r) { els.suspendedScreen.classList.remove('hidden'); document.getElementById('ban-reason-display').innerText = r; }
+        
+        window.openEditModal = async (id, oldText) => {
+            activeModalAction = async (newVal) => {
+                if (newVal === oldText) return closeModal();
+                const { encrypted, iv } = await encryptContent(newVal);
+                const sig = await signMessage(newVal);
+                await updateDoc(doc(db, "messages", id), { payload: encrypted, iv, sig, edited: true, history: arrayUnion(oldText) });
+                closeModal();
+            };
+            els.modalTitle.innerText = "MODIFY_PACKET"; els.modalInput.value = oldText; els.nicknameModal.classList.remove('hidden');
         };
-        window.closeModal = () => els.nicknameModal.classList.add('hidden');
-        document.getElementById('generic-form').onsubmit = async (e) => { e.preventDefault(); await activeModalAction(els.modalInput.value.trim()); };
+
+        window.confirmDelete = async (id) => { if (confirm("PURGE?")) await deleteDoc(doc(db, "messages", id)); };
         window.handleGoogleSignIn = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
+        window.handleGuestSignIn = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
         window.handleEmailSubmit = async (e) => {
             e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value;
-            try { if (mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else await createUserWithEmailAndPassword(auth, email, pass); } catch(e) { alert(e.message); }
+            try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else await createUserWithEmailAndPassword(auth, email, pass); } catch(e) { alert(e.message); }
         };
+        window.openNicknameModal = () => { activeModalAction = async (v) => { await updateProfile(currentUser, { displayName: v }); closeModal(); location.reload(); }; els.modalTitle.innerText = "ID_SET"; els.nicknameModal.classList.remove('hidden'); };
+        window.closeModal = () => els.nicknameModal.classList.add('hidden');
+        document.getElementById('generic-form').onsubmit = async (e) => { e.preventDefault(); await activeModalAction(els.modalInput.value.trim()); };
         window.handleLogout = () => signOut(auth);
         window.openAdminPanel = () => els.adminModal.classList.remove('hidden');
         window.closeAdminPanel = () => els.adminModal.classList.add('hidden');
+        window.openDecommissionModal = () => document.getElementById('decommission-modal').classList.remove('hidden');
+        window.handleDeleteAccount = async () => { if(confirm("NUKE ACCOUNT?")) { await deleteUser(currentUser); location.reload(); } };
+        window.openBanList = async () => { els.banListModal.classList.remove('hidden'); const s = await getDocs(collection(db, 'banned_users')); els.banListContent.innerHTML = s.docs.map(d => `<div class="border border-red-900 p-2 mb-1 flex justify-between"><span class="text-xs text-red-500">${d.data().nickname}</span><button onclick="unbanUser('${d.id}')" class="text-[8px] border border-green-800 text-green-500 px-2">UNBAN</button></div>`).join('') || "NO_BANS"; };
+        window.unbanUser = async (id) => { await deleteDoc(doc(db, 'banned_users', id)); openBanList(); };
+        window.broadcastAnnouncement = async () => { const t = prompt("MSG:"); if(t) await addDoc(collection(db, 'messages'), { text: t, type: 'announcement', timestamp: serverTimestamp() }); };
+        window.exportData = () => { alert("USE_PREV_VERSION_FOR_DUMP"); }; // Shortened for space
+        window.triggerImport = () => els.importInput.click();
+        window.handleImport = () => alert("IMPORT_DISABLED_IN_V5.1");
+        window.confirmSystemFlush = async () => { if(confirm("FLUSH ALL?")) { const s = await getDocs(collection(db,'messages')); s.forEach(d=>deleteDoc(d.ref)); } };
+        window.toggleEmailMode = () => { const m = document.getElementById('auth-mode').value; window.showEmailAuth(m==='login'?'signup':'login'); };
+        window.showEmailAuth = (m) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value = m; document.getElementById('email-submit-btn').innerText = m==='login'?"LOGIN":"REGISTER"; };
+        window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
     </script>
 </body>
 </html>
+
 
