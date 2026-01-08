@@ -3,118 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERM-CHAT v9.3 // SCROLL_FIXED</title>
+    <title>TERM-CHAT v9.4 // SCROLL_PHYSICS_FIXED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
             --term-green: #22c55e;
-            --term-yellow: #eab308;
             --term-bg: #050505;
             --term-glow: 0 0 10px rgba(34, 197, 94, 0.4);
             --term-alert: #ef4444;
-            --term-alert-bg: rgba(239, 68, 68, 0.1);
         }
         
-        /* Layout & Scrolling Fixes */
-        body { 
-            background: var(--term-bg); 
-            color: var(--term-green); 
-            font-family: 'Courier New', monospace; 
+        /* STRICT VIEWPORT LOCKING */
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: var(--term-bg);
+            color: var(--term-green);
+            font-family: 'Courier New', monospace;
             overflow: hidden; /* Prevent body scroll */
-            height: 100dvh; /* Dynamic Viewport Height for Mobile */
-            width: 100vw;
+            position: fixed; /* Lock to viewport */
+            inset: 0;
         }
-        
+
+        /* CRT OVERLAY */
         .scanline::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             z-index: 50; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
-        .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
-        
-        /* Custom Scrollbar Styling */
+        /* SCROLLBAR STYLING */
         .custom-scroll {
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* Momentum scrolling on iOS */
-            scrollbar-width: thin;
-            scrollbar-color: #15803d #001100;
+            -webkit-overflow-scrolling: touch; /* iOS Smooth Scroll */
+            overscroll-behavior: contain; /* Prevent Pull-to-Refresh */
         }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #001100; }
-        ::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #22c55e; }
-
-        .btn-base {
-            @apply border px-3 py-1 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none;
-        }
-        .btn-green { @apply border-green-600 text-green-500 hover:bg-green-600 hover:text-black; }
-        .btn-red { @apply border-red-600 text-red-500 hover:bg-red-600 hover:text-black; }
-        .btn-yellow { @apply border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black; }
-        
-        .user-item:hover { background: rgba(34, 197, 94, 0.1); cursor: pointer; }
-        .user-item.active { background: rgba(34, 197, 94, 0.2); border-left: 2px solid var(--term-green); }
-
-        .msg-anim { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #001100; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #22c55e; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* COMPONENTS */
+        .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
+        .btn-base { @apply border px-3 py-1 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 select-none; }
+        .btn-green { @apply border-green-600 text-green-500 hover:bg-green-600 hover:text-black; }
+        .btn-red { @apply border-red-600 text-red-500 hover:bg-red-600 hover:text-black; }
         
-        .mention-highlight {
-            background-color: rgba(234, 179, 8, 0.2);
-            color: #fca5a5;
-            border: 1px solid #eab308;
+        .user-item:hover { background: rgba(34, 197, 94, 0.1); cursor: pointer; }
+        .user-item.active { background: rgba(34, 197, 94, 0.2); border-left: 3px solid var(--term-green); }
+
+        .msg-anim { animation: slideIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* Power On Animation */
+        .turn-on { animation: turn-on 1.5s ease-out forwards; }
+        @keyframes turn-on {
+            0% { transform: scale(1, 0.8) translate3d(0, 0, 0); filter: brightness(30); opacity: 1; }
+            100% { transform: scale(1, 1) translate3d(0, 0, 0); filter: contrast(1) brightness(1); opacity: 1; }
         }
-        .nickname-link:hover { text-decoration: underline; cursor: pointer; color: #fff; }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col scanline">
+<body class="scanline turn-on">
 
-    <!-- LOADING -->
+    <!-- LOADING LAYER -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v9.3 ]</div>
-        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Optimizing Scroll Buffer...</div>
+        <div class="text-3xl font-bold animate-pulse text-green-500 mb-2 tracking-tighter">[ SYSTEM_READY ]</div>
+        <div id="loading-txt" class="text-xs text-green-800 font-mono uppercase tracking-[0.2em]">Initializing Scroll Physics...</div>
     </div>
 
-    <!-- TERMINATED SCREEN -->
-    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-8">
-        <div class="border-2 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)]">
-            <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div>
-            <div class="text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div>
-            <div class="h-px bg-red-600 w-full mb-6"></div>
-            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged for protocol breach. All uplink channels locked.</p>
-            <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-red-950/30">REASON: BLACKLISTED</div>
-            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">Retry_Connection</button>
-        </div>
-    </div>
-
-    <!-- AUTH SCREEN -->
-    <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4 overflow-y-auto custom-scroll">
-        <div class="w-full max-w-sm neon-border p-8 bg-black/90 m-auto">
-            <h1 class="text-3xl font-black text-center mb-1 tracking-tighter">TERM-CHAT</h1>
-            <div class="text-[9px] text-center text-green-800 mb-8 tracking-[0.3em] uppercase">Scrollable_Interface_V9.3</div>
+    <!-- AUTH LAYER -->
+    <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-6">
+        <div class="w-full max-w-sm neon-border p-8 bg-black/95">
+            <h1 class="text-4xl font-black text-center mb-2 tracking-tighter">TERM-CHAT</h1>
+            <div class="text-[10px] text-center text-green-800 mb-8 tracking-[0.4em] uppercase">Viewport_Locked</div>
             
-            <div id="auth-landing" class="space-y-3">
-                <button onclick="authGoogle()" class="w-full btn-base btn-green py-3"><i class="fab fa-google"></i> ACCESS_VIA_GOOGLE</button>
-                <button onclick="showEmailAuth('login')" class="w-full btn-base border-green-800 text-green-700 hover:text-green-400 py-3"><i class="fas fa-envelope"></i> ACCESS_VIA_EMAIL</button>
-                <button onclick="authGuest()" class="w-full btn-base border-green-900 text-green-900 hover:text-green-500 py-2">ANONYMOUS_LINK</button>
+            <div id="auth-landing" class="space-y-4">
+                <button onclick="authGoogle()" class="w-full btn-base btn-green py-4">
+                    <i class="fab fa-google"></i> ACCESS_VIA_GOOGLE
+                </button>
+                <button onclick="showEmailAuth('login')" class="w-full btn-base border-green-800 text-green-600 hover:text-green-400 py-3">
+                    <i class="fas fa-envelope"></i> ACCESS_VIA_EMAIL
+                </button>
+                <button onclick="authGuest()" class="w-full btn-base border-zinc-800 text-zinc-600 hover:text-zinc-400 py-2">
+                    ANONYMOUS_LINK
+                </button>
             </div>
 
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
-                <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white mb-2 tracking-tighter">&lt;&lt; RETURN_TO_ROOT</button>
-                <div class="space-y-1">
-                    <label class="text-[9px] text-green-800 font-bold uppercase">USER_IDENTITY</label>
-                    <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="EMAIL_ADDR" required>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[9px] text-green-800 font-bold uppercase">ACCESS_KEY</label>
-                    <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-2 text-green-500 focus:outline-none text-xs font-mono uppercase focus:border-green-500 transition-colors" placeholder="PASS_PHRASE" required>
-                </div>
+                <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white mb-2 tracking-tighter">&lt;&lt; BACK</button>
+                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="EMAIL_ADDR" required>
+                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="PASS_KEY" required>
                 <input type="hidden" id="auth-mode" value="login">
-                <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-2 mt-4">VALIDATE_CREDENTIALS</button>
+                <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-3 mt-4">VALIDATE_CREDENTIALS</button>
                 <div class="text-center mt-2">
                     <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="text-[9px] text-green-800 hover:text-green-500 underline uppercase tracking-widest">NO_ID? CREATE_RECORD</button>
                 </div>
@@ -122,19 +107,25 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="app-screen" class="hidden flex h-full w-full overflow-hidden">
+    <!-- APP LAYER (FIXED FULLSCREEN) -->
+    <div id="app-screen" class="hidden flex h-full w-full relative">
+        
         <!-- SIDEBAR -->
-        <div id="sidebar" class="w-64 border-r border-green-900 bg-black flex flex-col hidden md:flex shrink-0 h-full">
-            <div class="p-4 border-b border-green-900 bg-zinc-950 shrink-0">
+        <div id="sidebar" class="w-64 border-r border-green-900 bg-black flex flex-col hidden md:flex shrink-0 z-30 h-full absolute md:relative">
+            <div class="p-4 border-b border-green-900 bg-zinc-950">
                 <h2 class="text-[9px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
-                <div id="my-id-display" class="text-xs font-black truncate uppercase">ID_PENDING</div>
-                <div class="text-[8px] text-green-900 mt-1 uppercase">STATUS: ONLINE</div>
+                <div id="my-id-display" class="text-xs font-black truncate uppercase text-green-400">ID_PENDING</div>
+                <div class="text-[8px] text-green-900 mt-1 uppercase flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> ONLINE
+                </div>
             </div>
             
-            <div class="flex-1 overflow-y-auto custom-scroll min-h-0">
+            <div class="flex-1 overflow-y-auto custom-scroll">
+                <!-- Admin Button -->
                 <div id="admin-panel-btn" class="hidden p-2">
-                    <button onclick="openAdminPanel()" class="w-full btn-base btn-yellow mb-2 border-dashed">[ ADMIN_CONSOLE ]</button>
+                    <button onclick="openAdminPanel()" class="w-full btn-base border-yellow-700 text-yellow-600 hover:bg-yellow-600 hover:text-black mb-2">
+                        [ ADMIN_CONSOLE ]
+                    </button>
                 </div>
 
                 <div onclick="switchChannel('global')" id="chan-global" class="user-item active p-3 border-b border-green-900/30">
@@ -143,118 +134,118 @@
                 </div>
                 
                 <div class="p-3 text-[9px] text-green-900 font-bold uppercase mt-2 tracking-widest">ACTIVE_NODES</div>
-                <div id="user-list" class="space-y-0.5 px-2 pb-2"></div>
+                <div id="user-list" class="space-y-0.5 px-2 pb-4">
+                    <!-- Dynamic Users -->
+                </div>
             </div>
 
             <!-- DANGER ZONE -->
-            <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
+            <div class="p-4 bg-red-950/10 border-t border-red-900/50">
                 <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
                 <div class="space-y-2">
-                    <button onclick="openNameModal()" class="w-full btn-base btn-green !py-1.5">REASSIGN_ALIAS</button>
+                    <button onclick="openNameModal()" class="w-full btn-base border-green-800 text-green-800 hover:bg-green-900/20 !py-1.5">REASSIGN_ALIAS</button>
                     <button onclick="openDecommissionModal()" class="w-full btn-base btn-red !py-1.5">DECOMMISSION_NODE</button>
                 </div>
-                <button onclick="logout()" class="w-full text-[8px] text-zinc-700 hover:text-white mt-4 uppercase tracking-tighter italic">Terminate_Connection</button>
+                <button onclick="logout()" class="w-full text-[8px] text-zinc-700 hover:text-white mt-4 uppercase tracking-tighter italic text-center">Terminate_Connection</button>
             </div>
         </div>
 
-        <!-- CHAT AREA -->
-        <div class="flex-1 flex flex-col bg-black relative h-full">
-            <div class="md:hidden h-12 border-b border-green-900 bg-zinc-950 flex items-center justify-between px-4 shrink-0">
-                <button onclick="toggleSidebar()" class="text-green-500 p-2"><i class="fas fa-bars"></i></button>
-                <span id="mobile-title" class="font-bold text-xs tracking-widest">GLOBAL_FEED</span>
-                <span class="w-4"></span>
-            </div>
-
-            <!-- Message Container: min-h-0 is crucial for flex child scrolling -->
-            <div id="msg-container" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll min-h-0">
-                <!-- Messages -->
-            </div>
-
-            <div class="p-3 border-t border-green-900 bg-zinc-950 shrink-0">
-                <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center">
-                    <span class="font-bold text-lg text-green-500">&gt;</span>
-                    <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-xs font-mono placeholder-green-950 uppercase" placeholder="TRANSMIT_DATA..." autocomplete="off">
-                    <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 px-2 py-1 border border-green-900 text-[10px]">IMG</button>
-                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
-                    <button type="submit" class="btn-base btn-green px-4">EXEC</button>
-                </form>
-                <div id="channel-status" class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">SECURE_UPLINK // STANDARD_PROTO</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ADMIN -->
-    <div id="admin-modal" class="hidden absolute inset-0 bg-black/98 z-[100] flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-md alert-border p-6 md:p-8 relative shadow-[0_0_50px_rgba(255,0,0,0.3)] bg-black flex flex-col max-h-[90vh]">
-            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold">X</button>
-            <h2 class="text-xl font-bold text-red-500 mb-2 text-center uppercase tracking-tighter">ROOT_AUTHORITY_CONTROL</h2>
-            <div class="h-px bg-red-900 w-full mb-6 shrink-0"></div>
-            
-            <div class="space-y-6 overflow-y-auto custom-scroll flex-1 p-1">
-                <div class="space-y-3">
-                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">DATA_OPERATIONS</div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP_JSON</button>
-                        <button onclick="alert('Import currently disabled for stability.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT_JSON</button>
+        <!-- MAIN CHAT CONTENT -->
+        <div class="flex-1 flex flex-col bg-black relative min-w-0 h-full">
+            <!-- Header -->
+            <div class="h-14 border-b border-green-900 bg-black flex items-center justify-between px-4 shrink-0 z-20">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden text-green-500 border border-green-900 p-1.5 rounded hover:bg-green-900/20"><i class="fas fa-bars"></i></button>
+                    <div class="flex flex-col">
+                        <span id="mobile-title" class="font-bold text-xs tracking-widest">GLOBAL_FEED</span>
+                        <span class="text-[8px] text-green-800 animate-pulse">LIVE_UPLINK</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="space-y-3">
-                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">SECURITY_PROTOCOL</div>
-                    <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button>
-                    <button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button>
-                </div>
+            <!-- Messages (SCROLL CONTAINER) -->
+            <div id="msg-container" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll relative">
+                <!-- Messages injected here -->
+            </div>
 
-                <div class="space-y-3 pt-4 border-t border-red-950">
-                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-2 bg-red-950/20">TOTAL_WIPE_EXECUTION</button>
+            <!-- Footer (Input) -->
+            <div class="p-3 border-t border-green-900 bg-black shrink-0 z-20">
+                <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center">
+                    <span class="font-bold text-lg text-green-500 animate-pulse">&gt;</span>
+                    <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm font-mono placeholder-green-900 uppercase" placeholder="TRANSMIT..." autocomplete="off">
+                    <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 px-3 py-1 border border-green-900 text-[10px] rounded hover:bg-green-900/20"><i class="fas fa-image"></i></button>
+                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
+                    <button type="submit" class="btn-base btn-green px-4">SEND</button>
+                </form>
+                <div class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">
+                    SECURE_UPLINK // STANDARD_PROTO
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- MODAL: BAN LIST -->
-    <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[110] flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-md alert-border p-6 relative bg-black flex flex-col max-h-[80vh]">
-            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white">X</button>
-            <h2 class="text-sm font-bold text-red-500 mb-4 text-center uppercase tracking-widest shrink-0">BLACKLISTED_NODES</h2>
-            <div id="ban-list-content" class="space-y-2 overflow-y-auto pr-1 custom-scroll flex-1"></div>
         </div>
     </div>
 
     <!-- MODAL: DECOMMISSION -->
-    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/98 z-[110] flex items-center justify-center p-4">
-        <div class="w-full max-w-xs alert-border p-6 bg-black text-center">
-            <h3 class="text-red-500 font-black text-lg mb-2">CRITICAL_ALERT</h3>
-            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">THIS ACTION PERMANENTLY PURGES YOUR IDENTITY FROM THE DATABASE. RECOVERY IS IMPOSSIBLE.</p>
-            <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase" placeholder="TYPE 'TERMINATE'">
-            <div class="flex flex-col gap-2">
-                <button onclick="confirmDecommission()" class="btn-base btn-red py-2">EXECUTE_FINAL_WIPE</button>
-                <button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort_Mission</button>
+    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/95 z-[110] flex items-center justify-center p-4">
+        <div class="w-full max-w-xs neon-border p-6 bg-black text-center border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.3)]">
+            <h3 class="text-red-500 font-black text-xl mb-2">CRITICAL_ALERT</h3>
+            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">PERMANENTLY PURGE IDENTITY?</p>
+            <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-3 mb-6 text-red-500 outline-none text-center text-xs uppercase font-bold tracking-widest" placeholder="TYPE 'TERMINATE'">
+            <div class="flex flex-col gap-3">
+                <button onclick="confirmDecommission()" class="btn-base btn-red py-3">EXECUTE_WIPE</button>
+                <button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL: NICKNAME -->
     <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
-        <div class="w-full max-w-sm neon-border p-6 bg-black">
-            <h3 class="text-xs font-bold mb-4 tracking-widest text-green-800 uppercase">IDENT_UPDATE_PROTOCOL</h3>
-            <input id="new-name" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-6 outline-none text-center text-sm uppercase" placeholder="ENTER_NEW_ALIAS">
-            <div class="flex gap-2">
-                <button onclick="saveName()" class="flex-1 btn-base btn-green py-2">UPDATE</button>
-                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button>
+        <div class="w-full max-w-sm neon-border p-8 bg-black">
+            <h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE</h3>
+            <input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS">
+            <div class="flex gap-4">
+                <button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button>
+                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button>
             </div>
         </div>
     </div>
 
-    <!-- MOBILE SIDEBAR OVERLAY -->
-    <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40"></div>
+    <!-- MODAL: ADMIN -->
+    <div id="admin-modal" class="hidden absolute inset-0 bg-black/98 z-[100] flex flex-col items-center overflow-y-auto p-4">
+        <div class="w-full max-w-md alert-border p-6 md:p-8 my-auto relative shadow-[0_0_50px_rgba(255,0,0,0.3)]">
+            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold text-lg">×</button>
+            <h2 class="text-xl font-bold text-red-500 mb-2 text-center uppercase tracking-tighter">ROOT_AUTHORITY</h2>
+            <div class="h-px bg-red-900 w-full mb-6"></div>
+            
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">SECURITY</div>
+                    <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ BROADCAST ]</button>
+                    <button onclick="openBanList()" class="w-full btn-base btn-red">[ BLACKLIST ]</button>
+                </div>
+                <div class="space-y-3 pt-4 border-t border-red-950">
+                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">WIPE_ALL_DATA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: BAN LIST -->
+    <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/98 z-[110] flex flex-col items-center overflow-y-auto p-4">
+        <div class="w-full max-w-md alert-border p-6 my-auto relative">
+            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white text-lg">×</button>
+            <h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLIST</h2>
+            <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1 custom-scroll"></div>
+        </div>
+    </div>
+
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40 backdrop-blur-sm transition-opacity"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, limit, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-        // USER PROVIDED CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
             authDomain: "communiacationtor.firebaseapp.com",
@@ -271,14 +262,12 @@
 
         const ADMIN_EMAIL = 'leeeugene1574@gmail.com';
 
-        // STATE
         let currentUser = null;
         let isModerator = false;
         let currentChannel = 'global';
         let messagesUnsub = null;
         let usersUnsub = null;
         let banCheckUnsub = null;
-        let rawMessages = [];
 
         // --- AUTH & INIT ---
         onAuthStateChanged(auth, async (user) => {
@@ -290,7 +279,6 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
-                // Admin Check
                 isModerator = (user.email === ADMIN_EMAIL);
                 if(isModerator) document.getElementById('admin-panel-btn').classList.remove('hidden');
                 else document.getElementById('admin-panel-btn').classList.add('hidden');
@@ -299,10 +287,9 @@
                 if(banCheckUnsub) banCheckUnsub();
                 banCheckUnsub = onSnapshot(doc(db, 'banned_users', user.uid), (doc) => {
                     if(doc.exists()) {
-                        document.getElementById('ban-reason-display').innerText = "REASON: " + doc.data().reason;
-                        document.getElementById('suspended-screen').classList.remove('hidden');
-                        document.body.classList.add('deadlock'); // Add red flashing
+                        alert("ACCESS DENIED: " + doc.data().reason);
                         signOut(auth);
+                        location.reload();
                     }
                 });
 
@@ -318,7 +305,7 @@
                     appScreen.classList.remove('hidden');
                     startListeners();
                 } catch(e) {
-                    alert("DATABASE WRITE FAILED: " + e.message);
+                    alert("DB CONNECT ERROR: " + e.message);
                 }
             } else {
                 currentUser = null;
@@ -329,7 +316,6 @@
             }
         });
 
-        // --- LISTENERS ---
         function startListeners() {
             if(usersUnsub) usersUnsub();
             usersUnsub = onSnapshot(collection(db, 'users'), (snap) => {
@@ -339,17 +325,15 @@
                     if(d.id === currentUser.uid) return;
                     const u = d.data();
                     const div = document.createElement('div');
-                    div.className = `user-item p-2 mb-1 border-l-2 border-transparent transition-all flex justify-between items-center group`;
-                    
                     const isSelected = currentChannel.includes(d.id);
-                    if(isSelected) div.classList.add('active');
-
+                    
+                    div.className = `user-item p-2 mb-1 border-l-2 ${isSelected ? 'active' : 'border-transparent'} transition-all flex justify-between items-center group rounded-r`;
                     div.innerHTML = `
                         <div class="flex flex-col overflow-hidden mr-2">
-                            <span class="text-xs font-bold truncate group-hover:text-white transition-colors">${escapeHtml(u.nickname)}</span>
+                            <span class="text-xs font-bold truncate group-hover:text-white transition-colors uppercase">${escapeHtml(u.nickname)}</span>
                             <span class="text-[8px] text-green-900 font-mono">ID: ${d.id.substring(0,4)}</span>
                         </div>
-                        <button onclick="switchChannel('${d.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-1.5 py-0.5 transition-all">MSG</button>
+                        <button onclick="switchChannel('${d.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-2 py-1 transition-all rounded uppercase">MSG</button>
                     `;
                     list.appendChild(div);
                 });
@@ -361,47 +345,44 @@
             messagesUnsub = onSnapshot(q, (snap) => {
                 const container = document.getElementById('msg-container');
                 const messages = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                rawMessages = messages; // Store for backup
                 const filtered = messages.filter(m => m.channel === currentChannel);
                 
                 const html = filtered.map(m => {
                     const isMe = m.uid === currentUser.uid;
                     const date = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
                     
-                    // Render Content
                     let content = m.text;
                     if(m.type === 'announcement') {
-                        return `<div class="my-4 text-center border-2 border-yellow-600 bg-yellow-900/20 p-2 mx-4 text-[9px] font-bold text-yellow-500 uppercase tracking-widest shadow-[0_0_15px_rgba(234,179,8,0.2)]">⚠️ SYSTEM_BROADCAST: ${escapeHtml(m.text)} ⚠️</div>`;
+                        return `<div class="my-6 text-center border-y-2 border-yellow-600 bg-yellow-900/20 p-3 mx-4 text-[10px] font-black text-yellow-500 uppercase tracking-widest shadow-[0_0_15px_rgba(234,179,8,0.2)] msg-anim">⚠ SYSTEM_BROADCAST: ${escapeHtml(m.text)} ⚠</div>`;
                     }
 
                     if(content.startsWith('data:image')) {
-                        content = `<img src="${content}" class="max-w-[200px] border border-green-800 rounded">`;
+                        content = `<img src="${content}" class="max-w-[200px] border-2 border-green-800 rounded opacity-90 hover:opacity-100 transition-opacity">`;
                     } else {
                         // Mentions
                         const mentionRegex = new RegExp(`@${currentUser.displayName}\\b`, 'gi');
                         if (m.text.match(mentionRegex) && !isMe) {
-                            content = content.replace(/</g, "&lt;").replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded">@${currentUser.displayName}</span>`);
+                            content = content.replace(/</g, "&lt;").replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded shadow-lg">@${currentUser.displayName}</span>`);
                         } else {
                             content = content.replace(/</g, "&lt;");
                         }
                     }
 
-                    // Check for mention to highlight container
                     const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
-                    const highlightClass = isMentioned ? 'border-yellow-600 bg-yellow-900/20' : (isMe ? 'border-green-500/50' : 'border-green-900');
+                    const highlightClass = isMentioned ? 'border-yellow-600 bg-yellow-900/10 shadow-[0_0_10px_rgba(234,179,8,0.2)]' : (isMe ? 'border-green-500/50' : 'border-green-900');
                     const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : '';
-                    const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DIRECT_MESSAGE" class="nickname-link"`;
+                    const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DM" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
 
                     return `
-                        <div class="msg-anim mb-3 flex flex-col ${isMe ? 'items-end' : 'items-start'} group">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] text-green-700 font-bold">${date}</span>
-                                <span ${nickAction} class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'}">${m.nickname}</span>
+                        <div class="msg-anim mb-4 flex flex-col ${isMe ? 'items-end' : 'items-start'} group">
+                            <div class="flex items-center gap-2 mb-1 px-1">
+                                <span class="text-[9px] text-green-700 font-bold tracking-tighter">${date}</span>
+                                <span ${nickAction} class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'} uppercase tracking-tight">${m.nickname}</span>
                                 ${headerBadge}
-                                ${(isMe || isModerator) ? `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">[DEL]</button>` : ''}
-                                ${(isModerator && !isMe) ? `<button onclick="confirmBan('${m.uid}', '${m.nickname}')" class="ml-1 text-[8px] text-red-500 bg-red-900/20 px-1 opacity-0 group-hover:opacity-100 transition-opacity">[BAN]</button>` : ''}
+                                ${(isMe || isModerator) ? `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">[DEL]</button>` : ''}
+                                ${(isModerator && !isMe) ? `<button onclick="confirmBan('${m.uid}', '${m.nickname}')" class="ml-1 text-[8px] text-red-500 bg-red-900/20 px-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">[BAN]</button>` : ''}
                             </div>
-                            <div class="max-w-[90%] text-sm break-words bg-green-900/10 border ${highlightClass} p-2 rounded">
+                            <div class="max-w-[90%] md:max-w-[70%] text-sm font-mono break-words bg-green-900/10 border ${highlightClass} p-3 rounded-lg shadow-sm leading-relaxed">
                                 ${content}
                             </div>
                         </div>
@@ -453,7 +434,7 @@
         };
 
         window.deleteMsg = async (id) => {
-            if(confirm("DELETE PACKET?")) await deleteDoc(doc(db, "messages", id));
+            if(confirm("DELETE?")) await deleteDoc(doc(db, "messages", id));
         };
 
         // --- ADMIN FUNCTIONS ---
@@ -479,7 +460,7 @@
         window.openBanList = async () => {
             document.getElementById('ban-list-modal').classList.remove('hidden');
             const c = document.getElementById('ban-list-content');
-            c.innerHTML = "LOADING...";
+            c.innerHTML = '<div class="text-[10px] animate-pulse">QUERYING...</div>';
             try {
                 const snap = await getDocs(collection(db, 'banned_users'));
                 c.innerHTML = snap.docs.map(d => `
@@ -490,7 +471,7 @@
                         </div>
                         <button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-800 text-green-500 px-2 py-1">UNBAN</button>
                     </div>
-                `).join('') || "NO ACTIVE BANS";
+                `).join('') || '<div class="text-center py-4 text-xs opacity-50">NO_ACTIVE_BANS</div>';
             } catch(e) { c.innerHTML = "ERROR LOADING LIST"; }
         };
 
@@ -504,11 +485,6 @@
             const snap = await getDocs(collection(db, 'messages'));
             snap.forEach(d => deleteDoc(d.ref));
             alert("SYSTEM FLUSHED");
-        };
-
-        window.exportData = () => {
-            const blob = new Blob([JSON.stringify(rawMessages, null, 2)], {type : 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chat_dump.json'; a.click();
         };
 
         // --- AUTH & UTILS ---
@@ -527,23 +503,20 @@
         
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
-        
         window.confirmDecommission = async () => {
-            const val = document.getElementById('wipe-confirm').value;
-            if(val !== 'TERMINATE') return alert("ERROR: CONFIRMATION_MISMATCH");
-            try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); }
+            if(document.getElementById('wipe-confirm').value !== 'TERMINATE') return alert("MISMATCH");
+            try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("RE-LOGIN REQUIRED"); }
         };
-
         window.saveName = async () => {
             const name = document.getElementById('new-name').value.trim();
-            if(name) { await updateProfile(currentUser, {displayName: name}); await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true}); document.getElementById('modal-name').classList.add('hidden'); location.reload(); }
+            if(name) { await updateProfile(currentUser, {displayName: name}); await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true}); location.reload(); }
         };
         window.toggleSidebar = (forceClose = false) => {
             const sb = document.getElementById('sidebar');
             const bg = document.getElementById('mobile-sidebar-bg');
-            if(forceClose) { sb.classList.add('hidden'); sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); return; }
+            if(forceClose) { sb.classList.add('hidden'); bg.classList.add('hidden'); return; }
             sb.classList.toggle('hidden');
-            if(!sb.classList.contains('hidden')) { sb.classList.add('absolute', 'z-50', 'h-full'); bg.classList.remove('hidden'); } else { sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); }
+            if(!sb.classList.contains('hidden')) { sb.classList.add('absolute', 'z-50', 'h-full'); bg.classList.remove('hidden'); } else { bg.classList.add('hidden'); }
         };
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
     </script>
