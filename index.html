@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v4.7 // SECURE_TRANSACTION_PROTOCOL</title>
+    <title>TERM-CHAT v4.7 // FINAL_STABLE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -37,7 +37,7 @@
         .neon-border { border: 2px solid var(--terminal-green); box-shadow: var(--terminal-glow); }
         .alert-border { border: 2px solid var(--terminal-alert); box-shadow: var(--terminal-alert-glow); }
         
-        /* Smaller Mobile-First Buttons */
+        /* Button Styles */
         .btn-retro {
             border: 1px solid var(--terminal-green); 
             padding: 4px 6px; 
@@ -47,15 +47,7 @@
             cursor: pointer;
             transition: all 0.1s;
         }
-        
-        /* Larger buttons for Desktop */
-        @media (min-width: 640px) {
-            .btn-retro {
-                padding: 6px 12px;
-                font-size: 10px;
-            }
-        }
-
+        @media (min-width: 640px) { .btn-retro { padding: 6px 12px; font-size: 10px; } }
         .btn-retro:hover { background: var(--terminal-green); color: black; box-shadow: var(--terminal-glow); }
 
         .btn-alert {
@@ -63,6 +55,12 @@
             background: rgba(20, 0, 0, 0.5); cursor: pointer;
         }
         .btn-alert:hover { background: var(--terminal-alert); color: black; box-shadow: var(--terminal-alert-glow); }
+
+        .btn-warn {
+            border: 1px solid var(--terminal-yellow); color: var(--terminal-yellow);
+            background: rgba(20, 20, 0, 0.5); cursor: pointer;
+        }
+        .btn-warn:hover { background: var(--terminal-yellow); color: black; box-shadow: 0 0 8px rgba(234, 179, 8, 0.6); }
 
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #001100; }
@@ -86,8 +84,8 @@
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="absolute inset-0 bg-black flex items-center justify-center z-[150] text-center">
         <div>
-            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ VERIFYING_SIGNATURES... ]</div>
-            <div class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Secure Protocol v4.7 // Integrity Check Active</div>
+            <div class="retro-text text-2xl font-bold animate-pulse tracking-tighter">[ ESTABLISHING_HANDSHAKE... ]</div>
+            <div class="text-[8px] mt-2 opacity-50 font-mono uppercase tracking-[0.2em]">Target: COMMUNIACATOR_V4.7</div>
         </div>
     </div>
 
@@ -202,7 +200,7 @@
     <div id="chat-screen" class="hidden flex flex-col h-full w-full bg-black overflow-hidden">
         <header class="bg-zinc-950 border-b-2 border-green-500 p-2 sm:p-3 flex items-center justify-between gap-2 z-10 shrink-0">
             <div class="flex items-center gap-2 overflow-hidden">
-                <h1 class="font-bold text-[9px] sm:text-xs retro-text leading-none uppercase truncate tracking-tighter">COMM_LINK_17</h1>
+                <h1 class="font-bold text-[9px] sm:text-xs retro-text leading-none uppercase truncate tracking-tighter">COMM_LINK_18</h1>
                 <div class="flex items-center gap-1">
                     <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse shadow-[0_0_3px_#22c55e]"></span>
                     <span id="system-status" class="text-[6px] sm:text-[7px] text-green-700 font-bold uppercase">SECURE</span>
@@ -236,6 +234,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, deleteUser } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, updateDoc, doc, getDoc, getDocs, setDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        // --- CREDENTIALS FROM TURN 6 ---
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
             authDomain: "communiacationtor.firebaseapp.com",
@@ -274,23 +273,18 @@
             importInput: document.getElementById('import-input')
         };
 
-        // --- ERROR HANDLING PROTOCOL ---
+        // --- SECURE TRANSACTION HANDLER ---
         function handleTransactionError(error, actionName) {
             console.error(`TRANSACTION_FAILED: ${actionName}`, error);
             let msg = "UNKNOWN_SYSTEM_FAULT";
-            
             if (error.code) {
-                if (error.code.includes("permission-denied")) msg = "ACCESS_DENIED: INSUFFICIENT_CLEARANCE_OR_SUSPENDED";
-                else if (error.code.includes("unauthenticated")) msg = "AUTH_SIG_INVALID: RE-LOGIN_REQUIRED";
-                else if (error.code.includes("cancelled")) msg = "OPERATION_ABORTED";
-                else if (error.code.includes("network")) msg = "UPLINK_UNSTABLE";
+                if (error.code.includes("permission-denied")) msg = "ACCESS_DENIED: INSUFFICIENT_CLEARANCE";
+                else if (error.code.includes("unauthenticated")) msg = "AUTH_SIG_INVALID";
                 else msg = `ERR_CODE: ${error.code.toUpperCase()}`;
             } else if (error.message) {
-                if (error.message.toLowerCase().includes("signature")) msg = "CRITICAL_ERROR: INVALID_SIGNATURE";
-                else msg = error.message.toUpperCase();
+                msg = error.message.toUpperCase();
             }
-            
-            alert(`!! EXECUTION_HALTED: ${actionName} !!\n\nSTATUS: ${msg}\n\nACTION VOIDED.`);
+            alert(`!! EXECUTION_HALTED: ${actionName} !!\n\nSTATUS: ${msg}`);
         }
 
         async function verifyClearance(uid) {
@@ -354,18 +348,14 @@
             }
         });
 
-        // --- ACCOUNT ---
+        // --- ACTIONS ---
         window.handleDeleteAccount = async () => {
             if (!currentUser) return;
             const confirmation = prompt("TERMINATE IDENTITY? TYPE 'TERMINATE' TO CONFIRM.");
             if (confirmation !== 'TERMINATE') return;
-            try {
-                await deleteUser(currentUser);
-                location.reload();
-            } catch (error) { handleTransactionError(error, "DECOMMISSION"); }
+            try { await deleteUser(currentUser); location.reload(); } catch (error) { handleTransactionError(error, "DECOMMISSION"); }
         };
 
-        // --- AUTHORITY ---
         window.openAdminPanel = () => els.adminModal.classList.remove('hidden');
         window.closeAdminPanel = () => els.adminModal.classList.add('hidden');
 
@@ -395,7 +385,7 @@
                     </div>
                 `).join('');
             } catch(e) { 
-                els.banListContent.innerHTML = "ACCESS_DENIED"; 
+                els.banListContent.innerHTML = "DENIED"; 
                 handleTransactionError(e, "READ_BLACKLIST");
             }
         };
@@ -405,7 +395,6 @@
             try { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); } catch(e) { handleTransactionError(e, "REVOKE_BAN"); }
         };
 
-        // --- DATA TOOLS ---
         window.exportData = () => {
             const blob = new Blob([JSON.stringify(rawMessages, null, 2)], { type: 'application/json' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `term_backup.json`; a.click();
@@ -426,9 +415,8 @@
         window.broadcastAnnouncement = async () => {
             const text = prompt("GLOBAL BROADCAST:");
             if (!text) return;
-            try {
-                await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", type: 'announcement', timestamp: serverTimestamp() });
-            } catch (err) { handleTransactionError(err, "BROADCAST"); }
+            try { await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", type: 'announcement', timestamp: serverTimestamp() }); } 
+            catch (err) { handleTransactionError(err, "BROADCAST"); }
         };
         window.confirmSystemFlush = async () => {
             if(prompt("TYPE 'CONFIRM' TO FLUSH LOGS") !== 'CONFIRM') return;
@@ -438,7 +426,6 @@
             } catch (err) { handleTransactionError(err, "SYSTEM_FLUSH"); }
         };
 
-        // --- ENGINE ---
         function subscribeMessages() {
             if (messagesUnsubscribe) messagesUnsubscribe();
             messagesUnsubscribe = onSnapshot(collection(db, 'messages'), (snap) => {
@@ -497,18 +484,14 @@
         };
         window.confirmDelete = async (id) => { 
             if (confirm("PURGE DATA PACKET?")) {
-                try {
-                    await deleteDoc(doc(db, "messages", id));
-                } catch(err) { handleTransactionError(err, "DELETE_PACKET"); }
+                try { await deleteDoc(doc(db, "messages", id)); } catch(err) { handleTransactionError(err, "DELETE_PACKET"); }
             }
         };
         window.closeModal = () => els.nicknameModal.classList.add('hidden');
         document.getElementById('generic-form').onsubmit = async (e) => { 
             e.preventDefault(); const val = els.modalInput.value.trim(); 
             if (val && activeModalAction) {
-                try {
-                    await activeModalAction(val); 
-                } catch(err) { handleTransactionError(err, "MODAL_EXECUTION"); }
+                try { await activeModalAction(val); } catch(err) { handleTransactionError(err, "MODAL_EXECUTION"); }
             }
         };
         window.handleGoogleSignIn = async () => { try { const res = await signInWithPopup(auth, new GoogleAuthProvider()); if (!(await verifyClearance(res.user.uid))) return; } catch (err) { handleTransactionError(err, "AUTH_GOOGLE"); } };
