@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERM-CHAT v9.6 // UI_CALIBRATED</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TERM-CHAT v9.7 // SCROLL_PHYSICS_FINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -13,10 +13,22 @@
             --term-bg: #050505;
             --term-glow: 0 0 10px rgba(34, 197, 94, 0.4);
             --term-alert: #ef4444;
-            --term-alert-bg: rgba(239, 68, 68, 0.1);
         }
-        body { background: var(--term-bg); color: var(--term-green); font-family: 'Courier New', monospace; overflow: hidden; }
         
+        /* STRICT VIEWPORT LOCKING - The foundation of a working scroll app */
+        html, body {
+            height: 100dvh; /* Dynamic height handles mobile bars */
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            background: var(--term-bg);
+            color: var(--term-green);
+            font-family: 'Courier New', monospace;
+            overflow: hidden; /* KILL BODY SCROLL */
+            position: fixed; /* Lock content to screen */
+            inset: 0;
+        }
+
         .scanline::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
@@ -26,9 +38,17 @@
         .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
         .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
         
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #001100; }
-        ::-webkit-scrollbar-thumb { background: #15803d; }
+        /* SCROLLABLE AREAS */
+        .custom-scroll {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* Momentum scrolling iOS */
+            overscroll-behavior: contain;
+        }
+        
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #001100; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #22c55e; }
 
         .btn-base {
             @apply border px-3 py-1 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none;
@@ -44,7 +64,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
         /* POPUP ANIMATION */
-        .modal-anim { animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .modal-anim { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popIn {
             0% { opacity: 0; transform: scale(0.95); }
             100% { opacity: 1; transform: scale(1); }
@@ -64,20 +84,8 @@
 
     <!-- LOADING OVERLAY -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v9.6 ]</div>
-        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Calibrating Viewport...</div>
-    </div>
-
-    <!-- TERMINATED SCREEN -->
-    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-8">
-        <div class="border-2 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)] modal-anim">
-            <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div>
-            <div class="text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div>
-            <div class="h-px bg-red-600 w-full mb-6"></div>
-            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged for protocol breach. All uplink channels locked.</p>
-            <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-black">REASON: BLACKLISTED</div>
-            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">Retry_Connection</button>
-        </div>
+        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v9.7 ]</div>
+        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Configuring Scroll Metrics...</div>
     </div>
 
     <!-- AUTH SCREEN -->
@@ -111,17 +119,19 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="app-screen" class="hidden flex h-full w-full">
+    <!-- MAIN APP STRUCTURE -->
+    <div id="app-screen" class="hidden flex h-full w-full overflow-hidden">
+        
         <!-- SIDEBAR -->
-        <div id="sidebar" class="w-64 border-r border-green-900 bg-black flex flex-col hidden md:flex shrink-0">
-            <div class="p-4 border-b border-green-900 bg-zinc-950">
+        <div id="sidebar" class="w-64 border-r border-green-900 bg-black flex flex-col hidden md:flex shrink-0 h-full">
+            <div class="p-4 border-b border-green-900 bg-zinc-950 shrink-0">
                 <h2 class="text-[9px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
                 <div id="my-id-display" class="text-xs font-black truncate uppercase">ID_PENDING</div>
                 <div class="text-[8px] text-green-900 mt-1 uppercase">STATUS: ONLINE</div>
             </div>
             
-            <div class="flex-1 overflow-y-auto no-scrollbar">
+            <!-- Flexible middle part that scrolls -->
+            <div class="flex-1 overflow-y-auto no-scrollbar min-h-0">
                 <!-- Admin Button (Hidden by default) -->
                 <div id="admin-panel-btn" class="hidden p-2">
                     <button onclick="openAdminPanel()" class="w-full btn-base btn-yellow mb-2 border-dashed">
@@ -140,32 +150,37 @@
                 </div>
             </div>
 
-            <!-- DANGER ZONE -->
-            <div class="p-4 bg-red-950/10 border-t border-red-900/50">
+            <!-- DANGER ZONE (Fixed at bottom of sidebar) -->
+            <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
                 <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
                 <div class="space-y-2">
                     <button onclick="openNameModal()" class="w-full btn-base btn-green !py-1.5">REASSIGN_ALIAS</button>
                     <button onclick="openDecommissionModal()" class="w-full btn-base btn-red !py-1.5">DECOMMISSION_NODE</button>
+                    <!-- LOGOUT BUTTON IN DANGER ZONE -->
+                    <button onclick="logout()" class="w-full btn-base border-zinc-700 text-zinc-500 hover:text-white hover:border-white !py-1.5 mt-2">
+                        [ LOG_OUT ]
+                    </button>
                 </div>
-                <button onclick="logout()" class="w-full text-[8px] text-zinc-700 hover:text-white mt-4 uppercase tracking-tighter italic">Terminate_Connection</button>
             </div>
         </div>
 
         <!-- CHAT AREA -->
-        <div class="flex-1 flex flex-col bg-black relative">
-            <!-- Mobile Header: Taller (h-16) and Padded Top (pt-2) for Safe Area -->
-            <div class="md:hidden h-16 border-b border-green-900 bg-zinc-950 flex items-center justify-between px-4 shrink-0 pt-2 transition-all">
+        <div class="flex-1 flex flex-col bg-black relative min-w-0 h-full">
+            <!-- Mobile Header -->
+            <div class="md:hidden h-14 border-b border-green-900 bg-zinc-950 flex items-center justify-between px-4 shrink-0 pt-2">
                 <button onclick="toggleSidebar()" class="text-green-500"><i class="fas fa-bars"></i></button>
                 <span id="mobile-title" class="font-bold text-xs tracking-widest">GLOBAL_FEED</span>
-                <span class="w-4"></span>
+                <!-- HEADER LOGOUT -->
+                <button onclick="logout()" class="text-[10px] text-red-500 border border-red-900 px-2 py-1 hover:bg-red-900/20">EXIT</button>
             </div>
 
-            <!-- Messages -->
-            <div id="msg-container" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll">
+            <!-- Messages (SCROLL CONTAINER) -->
+            <!-- min-h-0 is CRITICAL for flex child scrolling -->
+            <div id="msg-container" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scroll scroll-smooth">
                 <!-- Messages -->
             </div>
 
-            <!-- Input -->
+            <!-- Input (FIXED BOTTOM) -->
             <div class="p-3 border-t border-green-900 bg-zinc-950 shrink-0">
                 <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center">
                     <span class="font-bold text-lg text-green-500">&gt;</span>
@@ -181,49 +196,11 @@
         </div>
     </div>
 
-    <!-- MODAL: ADMIN -->
-    <div id="admin-modal" class="hidden absolute inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-md alert-border p-6 md:p-8 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.3)] modal-anim">
-            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold text-lg">×</button>
-            <h2 class="text-xl font-bold text-red-500 mb-2 text-center uppercase tracking-tighter">ROOT_AUTHORITY_CONTROL</h2>
-            <div class="h-px bg-red-900 w-full mb-6"></div>
-            
-            <div class="space-y-6">
-                <div class="space-y-3">
-                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">DATA_OPERATIONS</div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP_JSON</button>
-                        <button onclick="alert('Import currently disabled for stability.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT_JSON</button>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">SECURITY_PROTOCOL</div>
-                    <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button>
-                    <button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button>
-                </div>
-
-                <div class="space-y-3 pt-4 border-t border-red-950">
-                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">TOTAL_WIPE_EXECUTION</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: BAN LIST -->
-    <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/80 z-[110] flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-md alert-border p-6 bg-black relative modal-anim">
-            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white text-lg">×</button>
-            <h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2>
-            <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1 custom-scroll"></div>
-        </div>
-    </div>
-
-    <!-- MODAL: DECOMMISSION -->
-    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/80 z-[110] flex items-center justify-center p-4">
+    <!-- MODALS -->
+    <div id="modal-wipe" class="hidden absolute inset-0 bg-black z-[110] flex items-center justify-center p-4">
         <div class="w-full max-w-xs alert-border p-6 bg-black text-center modal-anim">
             <h3 class="text-red-500 font-black text-lg mb-2">CRITICAL_ALERT</h3>
-            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">THIS ACTION PERMANENTLY PURGES YOUR IDENTITY FROM THE DATABASE. RECOVERY IS IMPOSSIBLE.</p>
+            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">THIS ACTION PERMANENTLY PURGES YOUR IDENTITY. RECOVERY IS IMPOSSIBLE.</p>
             <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase" placeholder="TYPE 'TERMINATE'">
             <div class="flex flex-col gap-2">
                 <button onclick="confirmDecommission()" class="btn-base btn-red py-2">EXECUTE_FINAL_WIPE</button>
@@ -232,8 +209,7 @@
         </div>
     </div>
 
-    <!-- MODAL: NICKNAME -->
-    <div id="modal-name" class="hidden absolute inset-0 bg-black/80 z-[60] flex items-center justify-center p-4">
+    <div id="modal-name" class="hidden absolute inset-0 bg-black z-[60] flex items-center justify-center p-4">
         <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim">
             <h3 class="text-xs font-bold mb-4 tracking-widest text-green-800 uppercase">IDENT_UPDATE_PROTOCOL</h3>
             <input id="new-name" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-6 outline-none text-center text-sm uppercase" placeholder="ENTER_NEW_ALIAS">
@@ -244,8 +220,43 @@
         </div>
     </div>
 
-    <!-- MODAL: EDIT MESSAGE -->
-    <div id="modal-edit" class="hidden absolute inset-0 bg-black/80 z-[60] flex items-center justify-center p-4">
+    <!-- MODAL: ADMIN -->
+    <div id="admin-modal" class="hidden absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md alert-border p-6 md:p-8 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.3)] modal-anim">
+            <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold text-lg">×</button>
+            <h2 class="text-xl font-bold text-red-500 mb-2 text-center uppercase tracking-tighter">ROOT_AUTHORITY_CONTROL</h2>
+            <div class="h-px bg-red-900 w-full mb-6"></div>
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">DATA_OPERATIONS</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP_JSON</button>
+                        <button onclick="alert('Import currently disabled for stability.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT_JSON</button>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="text-[9px] text-red-400 font-bold tracking-widest uppercase">SECURITY_PROTOCOL</div>
+                    <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button>
+                    <button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button>
+                </div>
+                <div class="space-y-3 pt-4 border-t border-red-950">
+                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">TOTAL_WIPE_EXECUTION</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: BAN LIST -->
+    <div id="ban-list-modal" class="hidden absolute inset-0 bg-black z-[110] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md alert-border p-6 bg-black relative modal-anim">
+            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white text-lg">×</button>
+            <h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2>
+            <div id="ban-list-content" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1 custom-scroll"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT -->
+    <div id="modal-edit" class="hidden absolute inset-0 bg-black z-[60] flex items-center justify-center p-4">
         <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim">
             <h3 class="text-xs font-bold mb-4 tracking-widest text-green-800 uppercase">MODIFY_PACKET</h3>
             <input id="edit-input" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-6 outline-none text-center text-sm uppercase">
@@ -257,7 +268,19 @@
         </div>
     </div>
 
-    <!-- MOBILE SIDEBAR OVERLAY -->
+    <!-- TERMINATED SCREEN -->
+    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-8">
+        <div class="border-2 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)] modal-anim">
+            <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div>
+            <div class="text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div>
+            <div class="h-px bg-red-600 w-full mb-6"></div>
+            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged for protocol breach. All uplink channels locked.</p>
+            <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-black">REASON: BLACKLISTED</div>
+            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">Retry_Connection</button>
+        </div>
+    </div>
+
+    <!-- MOBILE OVERLAY -->
     <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40 backdrop-blur-sm transition-opacity"></div>
 
     <script type="module">
@@ -282,7 +305,6 @@
 
         const ADMIN_EMAIL = 'leeeugene1574@gmail.com';
 
-        // STATE
         let currentUser = null;
         let isModerator = false;
         let currentChannel = 'global';
@@ -291,7 +313,6 @@
         let banCheckUnsub = null;
         let rawMessages = [];
 
-        // --- AUTH & INIT ---
         onAuthStateChanged(auth, async (user) => {
             const loading = document.getElementById('loading');
             const authScreen = document.getElementById('auth-screen');
@@ -301,12 +322,10 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
-                // Admin Check
                 isModerator = (user.email === ADMIN_EMAIL);
                 if(isModerator) document.getElementById('admin-panel-btn').classList.remove('hidden');
                 else document.getElementById('admin-panel-btn').classList.add('hidden');
 
-                // Ban Check
                 if(banCheckUnsub) banCheckUnsub();
                 banCheckUnsub = onSnapshot(doc(db, 'banned_users', user.uid), (doc) => {
                     if(doc.exists()) {
@@ -348,10 +367,8 @@
                     if(d.id === currentUser.uid) return;
                     const u = d.data();
                     const div = document.createElement('div');
-                    
                     const isSelected = currentChannel.includes(d.id);
                     div.className = `user-item p-2 mb-1 border-l-2 ${isSelected ? 'active' : 'border-transparent'} transition-all flex justify-between items-center group rounded-r`;
-
                     div.innerHTML = `
                         <div class="flex flex-col overflow-hidden mr-2">
                             <span class="text-xs font-bold truncate group-hover:text-white transition-colors uppercase">${escapeHtml(u.nickname)}</span>
@@ -365,7 +382,6 @@
 
             if(messagesUnsub) messagesUnsub();
             const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc')); 
-            
             messagesUnsub = onSnapshot(q, (snap) => {
                 const container = document.getElementById('msg-container');
                 const messages = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -375,16 +391,13 @@
                 const html = filtered.map(m => {
                     const isMe = m.uid === currentUser.uid;
                     const date = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
-                    
                     let content = m.text;
                     if(m.type === 'announcement') {
                         return `<div class="my-6 text-center border-y-2 border-yellow-600 bg-yellow-900/20 p-3 mx-4 text-[10px] font-black text-yellow-500 uppercase tracking-widest shadow-[0_0_15px_rgba(234,179,8,0.2)] msg-anim">⚠ SYSTEM_BROADCAST: ${escapeHtml(m.text)} ⚠</div>`;
                     }
-
                     if(content.startsWith('data:image')) {
                         content = `<img src="${content}" class="max-w-[200px] border-2 border-green-800 rounded opacity-90 hover:opacity-100 transition-opacity">`;
                     } else {
-                        // Mentions
                         const mentionRegex = new RegExp(`@${currentUser.displayName}\\b`, 'gi');
                         if (m.text.match(mentionRegex) && !isMe) {
                             content = content.replace(/</g, "&lt;").replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded shadow-lg">@${currentUser.displayName}</span>`);
@@ -392,23 +405,14 @@
                             content = content.replace(/</g, "&lt;");
                         }
                     }
-
                     const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
                     const highlightClass = isMentioned ? 'border-yellow-600 bg-yellow-900/10 shadow-[0_0_10px_rgba(234,179,8,0.2)]' : (isMe ? 'border-green-500/50' : 'border-green-900');
                     const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : '';
-                    const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DIRECT_MESSAGE" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
-
-                    // Action Buttons Logic
+                    const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DM" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
                     let actions = '';
-                    if (isMe) {
-                        actions += `<button onclick="openEditModal('${m.id}', '${content.startsWith('data:image') ? '' : escapeHtml(m.text)}')" class="ml-2 text-[8px] text-green-600 hover:text-white font-bold uppercase">[EDIT]</button>`;
-                    }
-                    if (isMe || isModerator) {
-                        actions += `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 font-bold uppercase">[DEL]</button>`;
-                    }
-                    if (isModerator && !isMe) {
-                        actions += `<button onclick="confirmBan('${m.uid}', '${m.nickname}')" class="ml-1 text-[8px] text-red-500 bg-red-900/20 px-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">[BAN]</button>`;
-                    }
+                    if (isMe) actions += `<button onclick="openEditModal('${m.id}', '${content.startsWith('data:image') ? '' : escapeHtml(m.text)}')" class="ml-2 text-[8px] text-green-600 hover:text-white font-bold uppercase">[EDIT]</button>`;
+                    if (isMe || isModerator) actions += `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 font-bold uppercase">[DEL]</button>`;
+                    if (isModerator && !isMe) actions += `<button onclick="confirmBan('${m.uid}', '${m.nickname}')" class="ml-1 text-[8px] text-red-500 bg-red-900/20 px-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">[BAN]</button>`;
 
                     return `
                         <div class="msg-anim mb-4 flex flex-col ${isMe ? 'items-end' : 'items-start'} group">
@@ -429,7 +433,6 @@
             });
         }
 
-        // --- CORE FUNCTIONS ---
         window.switchChannel = (targetId) => {
             if(targetId === 'global') {
                 currentChannel = 'global';
@@ -448,112 +451,53 @@
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if(!text) return;
-            try {
-                await addDoc(collection(db, 'messages'), {
-                    text, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel
-                });
-                input.value = '';
-            } catch(e) { alert("MSG FAIL: " + e.message); }
+            try { await addDoc(collection(db, 'messages'), { text, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel }); input.value = ''; } catch(e) { alert("MSG FAIL: " + e.message); }
         };
 
         window.handleImage = (input) => {
             const file = input.files[0];
             if(!file) return;
             const reader = new FileReader();
-            reader.onload = async (e) => {
-                await addDoc(collection(db, 'messages'), {
-                    text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel
-                });
-            };
+            reader.onload = async (e) => { await addDoc(collection(db, 'messages'), { text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel }); };
             reader.readAsDataURL(file);
             input.value = '';
         };
 
-        window.deleteMsg = async (id) => {
-            if(confirm("DELETE PACKET?")) await deleteDoc(doc(db, "messages", id));
-        };
-
-        // --- EDITING ---
+        window.deleteMsg = async (id) => { if(confirm("DELETE PACKET?")) await deleteDoc(doc(db, "messages", id)); };
         window.openEditModal = (id, oldText) => {
             if(oldText.startsWith('<img')) return alert("CANNOT EDIT IMAGES");
             document.getElementById('modal-edit').classList.remove('hidden');
             document.getElementById('edit-input').value = oldText;
             document.getElementById('edit-id').value = id;
         };
-
         window.submitEdit = async () => {
             const id = document.getElementById('edit-id').value;
             const text = document.getElementById('edit-input').value.trim();
-            if(text) {
-                await updateDoc(doc(db, 'messages', id), { text });
-                document.getElementById('modal-edit').classList.add('hidden');
-            }
+            if(text) { await updateDoc(doc(db, 'messages', id), { text }); document.getElementById('modal-edit').classList.add('hidden'); }
         };
 
-        // --- ADMIN FUNCTIONS ---
         window.openAdminPanel = () => document.getElementById('admin-modal').classList.remove('hidden');
         window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
-
-        window.broadcastAnnouncement = async () => {
-            const text = prompt("BROADCAST MESSAGE:");
-            if(text) await addDoc(collection(db, 'messages'), {
-                text, nickname: "SYSTEM_ROOT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), channel: 'global'
-            });
-        };
-
-        window.confirmBan = async (uid, name) => {
-            const reason = prompt(`BAN USER [${name}]?\nREASON:`);
-            if(!reason) return;
-            try {
-                await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() });
-                alert("USER_BLACKLISTED");
-            } catch(e) { alert("BAN FAILED: " + e.message); }
-        };
-
+        window.broadcastAnnouncement = async () => { const text = prompt("BROADCAST MESSAGE:"); if(text) await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), channel: 'global' }); };
+        window.confirmBan = async (uid, name) => { const reason = prompt(`BAN USER [${name}]?\nREASON:`); if(!reason) return; try { await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() }); alert("USER_BLACKLISTED"); } catch(e) { alert("BAN FAILED: " + e.message); } };
         window.openBanList = async () => {
             document.getElementById('ban-list-modal').classList.remove('hidden');
             const c = document.getElementById('ban-list-content');
             c.innerHTML = '<div class="text-[10px] animate-pulse">QUERYING...</div>';
             try {
                 const snap = await getDocs(collection(db, 'banned_users'));
-                c.innerHTML = snap.docs.map(d => `
-                    <div class="border border-red-900 p-2 mb-1 flex justify-between items-center bg-red-950/20">
-                        <div>
-                            <span class="text-xs font-bold text-red-500">${escapeHtml(d.data().nickname)}</span>
-                            <div class="text-[8px] text-red-900 uppercase italic">${escapeHtml(d.data().reason)}</div>
-                        </div>
-                        <button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-800 text-green-500 px-2 py-1 uppercase hover:bg-green-900 hover:text-white transition-all">REVOKE</button>
-                    </div>
-                `).join('') || '<div class="text-center py-4 text-xs opacity-50">NO_ACTIVE_BANS</div>';
+                c.innerHTML = snap.docs.map(d => `<div class="border border-red-900 p-2 mb-1 flex justify-between items-center bg-red-950/20"><div><span class="text-xs font-bold text-red-500">${escapeHtml(d.data().nickname)}</span><div class="text-[8px] text-red-900 uppercase italic">${escapeHtml(d.data().reason)}</div></div><button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-800 text-green-500 px-2 py-1 uppercase hover:bg-green-900 hover:text-white transition-all">REVOKE</button></div>`).join('') || '<div class="text-center py-4 text-xs opacity-50">NO_ACTIVE_BANS</div>';
             } catch(e) { c.innerHTML = "ERROR LOADING LIST"; }
         };
+        window.unbanUser = async (uid) => { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); };
+        window.confirmSystemFlush = async () => { if(prompt("TYPE 'CONFIRM' TO DELETE ALL MESSAGES") !== 'CONFIRM') return; const snap = await getDocs(collection(db, 'messages')); snap.forEach(d => deleteDoc(d.ref)); alert("SYSTEM FLUSHED"); };
+        window.exportData = () => { const blob = new Blob([JSON.stringify(rawMessages, null, 2)], {type : 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chat_dump.json'; a.click(); };
 
-        window.unbanUser = async (uid) => {
-            await deleteDoc(doc(db, 'banned_users', uid));
-            openBanList();
-        };
-
-        window.confirmSystemFlush = async () => {
-            if(prompt("TYPE 'CONFIRM' TO DELETE ALL MESSAGES") !== 'CONFIRM') return;
-            const snap = await getDocs(collection(db, 'messages'));
-            snap.forEach(d => deleteDoc(d.ref));
-            alert("SYSTEM FLUSHED");
-        };
-
-        window.exportData = () => {
-            const blob = new Blob([JSON.stringify(rawMessages, null, 2)], {type : 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chat_dump.json'; a.click();
-        };
-
-        // --- AUTH & UTILS ---
         window.authGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
         window.authGuest = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
         window.handleEmailSubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email-input').value;
-            const password = document.getElementById('password-input').value;
-            const mode = document.getElementById('auth-mode').value;
-            try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, password); else { const u = await createUserWithEmailAndPassword(auth, email, password); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH_ERROR: " + err.message); }
+            e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value;
+            try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else { const u = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH_ERROR: " + err.message); }
         };
         window.logout = () => signOut(auth);
         
@@ -564,24 +508,9 @@
         
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
-        
-        window.confirmDecommission = async () => {
-            const val = document.getElementById('wipe-confirm').value;
-            if(val !== 'TERMINATE') return alert("ERROR: CONFIRMATION_MISMATCH");
-            try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); }
-        };
-
-        window.saveName = async () => {
-            const name = document.getElementById('new-name').value.trim();
-            if(name) { await updateProfile(currentUser, {displayName: name}); await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true}); location.reload(); }
-        };
-        window.toggleSidebar = (forceClose = false) => {
-            const sb = document.getElementById('sidebar');
-            const bg = document.getElementById('mobile-sidebar-bg');
-            if(forceClose) { sb.classList.add('hidden'); sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); return; }
-            sb.classList.toggle('hidden');
-            if(!sb.classList.contains('hidden')) { sb.classList.add('absolute', 'z-50', 'h-full'); bg.classList.remove('hidden'); } else { sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); }
-        };
+        window.confirmDecommission = async () => { if(document.getElementById('wipe-confirm').value !== 'TERMINATE') return alert("MISMATCH"); try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); } };
+        window.saveName = async () => { const name = document.getElementById('new-name').value.trim(); if(name) { await updateProfile(currentUser, {displayName: name}); await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true}); location.reload(); } };
+        window.toggleSidebar = (forceClose = false) => { const sb = document.getElementById('sidebar'); const bg = document.getElementById('mobile-sidebar-bg'); if(forceClose) { sb.classList.add('hidden'); sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); return; } sb.classList.toggle('hidden'); if(!sb.classList.contains('hidden')) { sb.classList.add('absolute', 'z-50', 'h-full'); bg.classList.remove('hidden'); } else { sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); } };
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
     </script>
 </body>
