@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERM-CHAT v9.9 // FIT_CALIBRATION</title>
+    <title>TERM-CHAT v10.1 // AUTH_RESTORED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -13,7 +13,7 @@
             --term-glow: 0 0 10px rgba(34, 197, 94, 0.4);
             --term-alert: #ef4444;
         }
-
+        
         /* STRICT VIEWPORT LOCKING */
         html, body {
             height: 100%;
@@ -28,9 +28,6 @@
             inset: 0;
         }
 
-        /* LAYOUT UTILS */
-        .flex-centered { display: flex; align-items: center; justify-content: center; }
-        
         .scanline::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
@@ -40,22 +37,21 @@
         .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
         .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
 
+        .custom-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #001100; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
         .btn-base {
-            @apply border px-4 py-2 text-xs font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none active:scale-95;
+            @apply border px-3 py-2 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none active:scale-95;
         }
         .btn-green { @apply border-green-600 text-green-500 hover:bg-green-600 hover:text-black; }
         .btn-red { @apply border-red-600 text-red-500 hover:bg-red-600 hover:text-black; }
         .btn-yellow { @apply border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black; }
-
-        .user-item { @apply p-3 border-l-2 border-transparent transition-all cursor-pointer flex justify-between items-center bg-green-900/5 mb-1; }
-        .user-item:hover { @apply bg-green-900/20 pl-4; }
-        .user-item.active { @apply bg-green-900/30 border-green-500 pl-4; }
-
-        .custom-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #001100; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #15803d; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .user-item:hover { background: rgba(34, 197, 94, 0.1); cursor: pointer; }
+        .user-item.active { background: rgba(34, 197, 94, 0.2); border-left: 3px solid var(--term-green); }
 
         .msg-anim { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -68,15 +64,15 @@
 
     <!-- LOADING -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="text-3xl font-black animate-pulse text-green-500 mb-2">[ v9.9 READY ]</div>
-        <div id="loading-txt" class="text-xs text-green-800 font-mono tracking-[0.2em]">CALIBRATING INTERFACE...</div>
+        <div class="text-3xl font-black animate-pulse text-green-500 mb-2">[ SYSTEM_BOOT_v10.1 ]</div>
+        <div id="loading-txt" class="text-xs text-green-800 font-mono tracking-[0.2em]">Initializing Auth Protocols...</div>
     </div>
 
     <!-- AUTH SCREEN -->
-    <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4 custom-scroll">
+    <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4 overflow-y-auto">
         <div class="w-full max-w-sm neon-border p-8 bg-black modal-anim my-auto">
             <h1 class="text-4xl font-black text-center mb-2 tracking-tighter">TERM-CHAT</h1>
-            <div class="text-[10px] text-center text-green-800 mb-8 tracking-[0.4em] uppercase">Secure_Relay_Node</div>
+            <div class="text-[10px] text-center text-green-800 mb-8 tracking-[0.4em] uppercase">ACCESS_CONTROL_GATE</div>
             
             <div id="auth-landing" class="space-y-4">
                 <button onclick="authGoogle()" class="w-full btn-base btn-green py-4">
@@ -92,12 +88,12 @@
 
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
                 <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white mb-2 tracking-tighter">&lt;&lt; BACK</button>
-                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase" placeholder="EMAIL" required>
-                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase" placeholder="PASSWORD" required>
+                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="EMAIL_ADDR" required>
+                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="PASS_KEY" required>
                 <input type="hidden" id="auth-mode" value="login">
-                <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-3 mt-4">VALIDATE</button>
+                <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-3 mt-4">VALIDATE_CREDENTIALS</button>
                 <div class="text-center mt-2">
-                    <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="text-[10px] text-green-800 hover:text-green-500 underline uppercase tracking-widest">NO_ID? CREATE_RECORD</button>
+                    <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="text-[9px] text-green-800 hover:text-green-500 underline uppercase tracking-widest">NO_ID? CREATE_RECORD</button>
                 </div>
             </form>
         </div>
@@ -106,19 +102,14 @@
     <!-- APP CONTAINER -->
     <div id="app-screen" class="hidden flex h-full w-full relative overflow-hidden">
         
-        <!-- SIDEBAR (Responsive) -->
+        <!-- SIDEBAR -->
         <div id="sidebar" class="hidden md:flex flex-col w-64 border-r border-green-900 bg-black h-full shrink-0 absolute md:relative z-40 inset-y-0 left-0">
-            <!-- Header -->
-            <div class="p-4 border-b border-green-900 bg-zinc-950 shrink-0 flex justify-between items-center">
-                <div>
-                    <h2 class="text-[10px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
-                    <div id="my-id-display" class="text-xs font-black truncate uppercase text-green-400">ID_PENDING</div>
-                </div>
-                <!-- Close button for mobile only -->
-                <button onclick="toggleSidebar()" class="md:hidden text-green-500 border border-green-900 px-2 py-1">X</button>
+            <div class="p-4 border-b border-green-900 bg-zinc-950 shrink-0">
+                <h2 class="text-[9px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
+                <div id="my-id-display" class="text-xs font-black truncate uppercase text-green-400">ID_PENDING</div>
+                <div class="text-[8px] text-green-900 mt-1 uppercase">STATUS: AUTHENTICATED</div>
             </div>
             
-            <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto custom-scroll min-h-0">
                 <div id="admin-panel-btn" class="hidden p-2">
                     <button onclick="openAdminPanel()" class="w-full btn-base btn-yellow mb-2 border-dashed">[ ADMIN_CONSOLE ]</button>
@@ -135,7 +126,7 @@
                 <div id="user-list" class="space-y-1 px-2 pb-4"></div>
             </div>
 
-            <!-- Danger Zone (Fixed Bottom) -->
+            <!-- Danger Zone -->
             <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
                 <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
                 <div class="space-y-2">
@@ -146,11 +137,11 @@
             </div>
         </div>
 
-        <!-- CHAT INTERFACE -->
+        <!-- CHAT AREA -->
         <div class="flex-1 flex flex-col bg-black relative min-w-0 h-full">
-            <!-- Header -->
-            <div class="h-14 border-b border-green-900 bg-black flex items-center justify-between px-4 shrink-0 z-20">
-                <button onclick="toggleSidebar()" class="md:hidden text-green-500 border border-green-900 p-2 rounded hover:bg-green-900/20"><i class="fas fa-bars"></i></button>
+            <!-- Mobile Header -->
+            <div class="md:hidden h-14 border-b border-green-900 bg-black flex items-center justify-between px-4 shrink-0 z-20">
+                <button onclick="toggleSidebar()" class="text-green-500 border border-green-900 p-2 rounded hover:bg-green-900/20"><i class="fas fa-bars"></i></button>
                 <div class="flex flex-col items-center">
                     <span id="mobile-title" class="font-bold text-xs tracking-widest">GLOBAL_FEED</span>
                     <span class="text-[8px] text-green-800 animate-pulse">LIVE_UPLINK</span>
@@ -159,45 +150,20 @@
             </div>
 
             <!-- Messages -->
-            <div id="msg-container" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scroll scroll-smooth relative">
-                <!-- Messages -->
-            </div>
+            <div id="msg-container" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scroll scroll-smooth relative"></div>
 
             <!-- Input -->
             <div class="p-3 border-t border-green-900 bg-black shrink-0 z-20">
                 <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center">
-                    <span class="font-bold text-lg text-green-500">&gt;</span>
+                    <span class="font-bold text-lg text-green-500 animate-pulse">&gt;</span>
                     <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-sm font-mono placeholder-green-900 uppercase" placeholder="TRANSMIT_DATA..." autocomplete="off">
-                    <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 px-3 py-2 border border-green-900 text-[10px] rounded hover:bg-green-900/20"><i class="fas fa-image"></i></button>
+                    <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 px-3 py-1 border border-green-900 text-[10px] rounded hover:bg-green-900/20"><i class="fas fa-image"></i></button>
                     <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
                     <button type="submit" class="btn-base btn-green px-6">SEND</button>
                 </form>
-                <div class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">SECURE_UPLINK</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: DECOMMISSION -->
-    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/95 z-[110] flex items-center justify-center p-4">
-        <div class="w-full max-w-xs alert-border p-6 bg-black text-center modal-anim">
-            <h3 class="text-red-500 font-black text-lg mb-2">CRITICAL_ALERT</h3>
-            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">PERMANENTLY PURGE IDENTITY?</p>
-            <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase font-bold tracking-widest" placeholder="TYPE 'TERMINATE'">
-            <div class="flex flex-col gap-2">
-                <button onclick="confirmDecommission()" class="btn-base btn-red py-3">EXECUTE_WIPE</button>
-                <button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[10px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: NICKNAME -->
-    <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
-        <div class="w-full max-w-sm neon-border p-8 bg-black modal-anim">
-            <h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE</h3>
-            <input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS">
-            <div class="flex gap-4">
-                <button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button>
-                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button>
+                <div id="channel-status" class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">
+                    SECURE_UPLINK // STANDARD_PROTO
+                </div>
             </div>
         </div>
     </div>
@@ -215,7 +181,7 @@
                 <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button>
                 <button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button>
                 <div class="pt-4 border-t border-red-950">
-                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">WIPE_ALL_DATA</button>
+                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">TOTAL_WIPE_EXECUTION</button>
                 </div>
             </div>
         </div>
@@ -227,6 +193,31 @@
             <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white text-lg">×</button>
             <h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2>
             <div id="ban-list-content" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 custom-scroll"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: DECOMMISSION -->
+    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/95 z-[110] flex items-center justify-center p-4">
+        <div class="w-full max-w-xs alert-border p-6 bg-black text-center modal-anim">
+            <h3 class="text-red-500 font-black text-lg mb-2">CRITICAL_ALERT</h3>
+            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">THIS ACTION PERMANENTLY PURGES YOUR IDENTITY. RECOVERY IS IMPOSSIBLE.</p>
+            <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase font-bold tracking-widest" placeholder="TYPE 'TERMINATE'">
+            <div class="flex flex-col gap-2">
+                <button onclick="confirmDecommission()" class="btn-base btn-red py-3">EXECUTE_FINAL_WIPE</button>
+                <button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort_Mission</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: NICKNAME -->
+    <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-8 bg-black modal-anim">
+            <h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE_PROTOCOL</h3>
+            <input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS">
+            <div class="flex gap-4">
+                <button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button>
+                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button>
+            </div>
         </div>
     </div>
 
@@ -253,6 +244,8 @@
             <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">Retry</button>
         </div>
     </div>
+
+    <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40 backdrop-blur-sm transition-opacity"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
@@ -306,6 +299,7 @@
                 });
 
                 try {
+                    // Create user profile if missing or update last seen
                     await setDoc(doc(db, 'users', user.uid), {
                         nickname: user.displayName || 'Anonymous',
                         email: user.email || 'guest',
@@ -317,7 +311,10 @@
                     appScreen.classList.remove('hidden');
                     startListeners();
                 } catch(e) {
-                    alert("DB CONNECT ERROR: " + e.message);
+                    // Fallback to allow app to run even if DB write fails (e.g., if user is banned at rule level)
+                    console.error("DB Init Error:", e);
+                    loading.classList.add('hidden');
+                    appScreen.classList.remove('hidden');
                 }
             } else {
                 currentUser = null;
@@ -339,7 +336,7 @@
                     const div = document.createElement('div');
                     
                     const isSelected = currentChannel.includes(d.id);
-                    div.className = `user-item ${isSelected ? 'active' : 'border-transparent'}`;
+                    div.className = `user-item ${isSelected ? 'active' : 'border-transparent'} rounded-r`;
 
                     div.innerHTML = `
                         <div class="flex flex-col overflow-hidden mr-2">
@@ -406,10 +403,7 @@
                     `;
                 });
                 container.innerHTML = html.join('');
-                // FORCE SCROLL
-                requestAnimationFrame(() => {
-                    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
-                });
+                requestAnimationFrame(() => { setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); });
             });
         }
 
@@ -464,61 +458,40 @@
         window.submitEdit = async () => {
             const id = document.getElementById('edit-id').value;
             const text = document.getElementById('edit-input').value.trim();
-            if(text) {
-                await updateDoc(doc(db, 'messages', id), { text });
-                document.getElementById('modal-edit').classList.add('hidden');
-            }
+            if(text) { await updateDoc(doc(db, 'messages', id), { text }); document.getElementById('modal-edit').classList.add('hidden'); }
         };
 
         window.openAdminPanel = () => document.getElementById('admin-modal').classList.remove('hidden');
         window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
-        window.broadcastAnnouncement = async () => { const text = prompt("BROADCAST MESSAGE:"); if(text) await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), channel: 'global' }); };
-        window.confirmBan = async (uid, name) => { const reason = prompt(`BAN USER [${name}]?\nREASON:`); if(!reason) return; try { await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() }); alert("USER_BLACKLISTED"); } catch(e) { alert("BAN FAILED: " + e.message); } };
+        window.broadcastAnnouncement = async () => { const text = prompt("BROADCAST:"); if(text) await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), channel: 'global' }); };
+        window.confirmBan = async (uid, name) => { const reason = prompt(`BAN USER [${name}]?\nREASON:`); if(!reason) return; try { await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() }); alert("BLACKLISTED"); } catch(e) { alert("BAN ERROR"); } };
         window.openBanList = async () => {
             document.getElementById('ban-list-modal').classList.remove('hidden');
             const c = document.getElementById('ban-list-content');
-            c.innerHTML = '<div class="text-[10px] animate-pulse">QUERYING...</div>';
+            c.innerHTML = '<div class="text-[10px] animate-pulse">LOADING...</div>';
             try {
                 const snap = await getDocs(collection(db, 'banned_users'));
-                c.innerHTML = snap.docs.map(d => `<div class="border border-red-900 p-2 mb-1 flex justify-between items-center bg-red-950/20"><div><span class="text-xs font-bold text-red-500">${escapeHtml(d.data().nickname)}</span><div class="text-[8px] text-red-900 uppercase italic">${escapeHtml(d.data().reason)}</div></div><button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-800 text-green-500 px-2 py-1 uppercase font-bold hover:bg-green-900 hover:text-white transition-all">REVOKE</button></div>`).join('') || '<div class="text-center py-4 text-xs opacity-50">NO_ACTIVE_BANS</div>';
-            } catch(e) { c.innerHTML = "ERROR LOADING LIST"; }
+                c.innerHTML = snap.docs.map(d => `<div class="border border-red-900 p-2 mb-1 flex justify-between items-center bg-red-950/20"><div><span class="text-xs font-bold text-red-500">${escapeHtml(d.data().nickname)}</span><div class="text-[8px] text-red-900 uppercase italic">${escapeHtml(d.data().reason)}</div></div><button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-800 text-green-500 px-2 py-1 uppercase">REVOKE</button></div>`).join('') || '<div class="text-center py-4 text-xs opacity-50">NO_BANS</div>';
+            } catch(e) { c.innerHTML = "ERROR"; }
         };
         window.unbanUser = async (uid) => { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); };
-        window.confirmSystemFlush = async () => { if(prompt("TYPE 'CONFIRM' TO DELETE ALL MESSAGES") !== 'CONFIRM') return; const snap = await getDocs(collection(db, 'messages')); snap.forEach(d => deleteDoc(d.ref)); alert("SYSTEM FLUSHED"); };
-        window.exportData = () => { const blob = new Blob([JSON.stringify(rawMessages, null, 2)], {type : 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chat_dump.json'; a.click(); };
-
+        window.confirmSystemFlush = async () => { if(prompt("TYPE 'CONFIRM' TO FLUSH") !== 'CONFIRM') return; const s = await getDocs(collection(db, 'messages')); s.forEach(d => deleteDoc(d.ref)); alert("FLUSHED"); };
+        window.exportData = () => { const blob = new Blob([JSON.stringify(rawMessages, null, 2)], {type : 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'dump.json'; a.click(); };
         window.authGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
         window.authGuest = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
-        window.handleEmailSubmit = async (e) => { e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value; try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else { const u = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH_ERROR: " + err.message); } };
+        window.handleEmailSubmit = async (e) => { e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value; try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else { const u = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH ERROR: " + err.message); } };
         window.logout = () => signOut(auth);
         
         window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); setMode(mode); };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
         window.toggleEmailMode = () => { const current = document.getElementById('auth-mode').value; setMode(current === 'login' ? 'signup' : 'login'); };
-        function setMode(mode) { document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE_CREDENTIALS" : "CREATE_NEW_RECORD"; document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "NO_ID? CREATE_RECORD" : "HAS_ID? LOGIN"; }
+        function setMode(mode) { document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE" : "CREATE"; document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "NO_ID? CREATE_RECORD" : "HAS_ID? LOGIN"; }
         
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
-        window.confirmDecommission = async () => { if(document.getElementById('wipe-confirm').value !== 'TERMINATE') return alert("MISMATCH"); try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); } };
+        window.confirmDecommission = async () => { if(document.getElementById('wipe-confirm').value !== 'TERMINATE') return alert("MISMATCH"); try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("AUTH_ERROR"); } };
         window.saveName = async () => { const name = document.getElementById('new-name').value.trim(); if(name) { await updateProfile(currentUser, {displayName: name}); await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true}); location.reload(); } };
-        
-        window.toggleSidebar = (forceClose = false) => {
-            const sb = document.getElementById('sidebar');
-            const bg = document.getElementById('mobile-sidebar-bg');
-            if (forceClose) {
-                sb.classList.add('hidden');
-                bg.classList.add('hidden');
-                return;
-            }
-            sb.classList.toggle('hidden');
-            if (!sb.classList.contains('hidden')) {
-                sb.classList.add('absolute', 'z-40', 'h-full', 'w-64');
-                bg.classList.remove('hidden');
-            } else {
-                bg.classList.add('hidden');
-            }
-        };
-
+        window.toggleSidebar = (forceClose = false) => { const sb = document.getElementById('sidebar'); const bg = document.getElementById('mobile-sidebar-bg'); if(forceClose) { sb.classList.add('hidden'); bg.classList.add('hidden'); return; } sb.classList.toggle('hidden'); if(!sb.classList.contains('hidden')) { sb.classList.add('absolute', 'z-50', 'h-full'); bg.classList.remove('hidden'); } else { sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); } };
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
     </script>
 </body>
