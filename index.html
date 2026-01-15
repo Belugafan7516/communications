@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERM-CHAT v10.1 // AUTH_RESTORED</title>
+    <title>TERM-CHAT v10.0 // GROUPS_ENABLED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -14,18 +14,10 @@
             --term-alert: #ef4444;
         }
         
-        /* STRICT VIEWPORT LOCKING */
         html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            background: var(--term-bg);
-            color: var(--term-green);
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            position: fixed;
-            inset: 0;
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            background: var(--term-bg); color: var(--term-green);
+            font-family: 'Courier New', monospace; overflow: hidden; position: fixed; inset: 0;
         }
 
         .scanline::before {
@@ -44,14 +36,17 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
         .btn-base {
-            @apply border px-3 py-2 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none active:scale-95;
+            @apply border px-3 py-1 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none active:scale-95;
         }
         .btn-green { @apply border-green-600 text-green-500 hover:bg-green-600 hover:text-black; }
         .btn-red { @apply border-red-600 text-red-500 hover:bg-red-600 hover:text-black; }
         .btn-yellow { @apply border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black; }
         
-        .user-item:hover { background: rgba(34, 197, 94, 0.1); cursor: pointer; }
-        .user-item.active { background: rgba(34, 197, 94, 0.2); border-left: 3px solid var(--term-green); }
+        .user-item { @apply p-2 border-l-2 border-transparent transition-all cursor-pointer flex items-center gap-3 bg-green-900/5 mb-1; }
+        .user-item:hover { @apply bg-green-900/20 pl-3; }
+        .user-item.active { @apply bg-green-900/30 border-green-500 pl-3; }
+
+        .channel-icon { width: 24px; height: 24px; object-fit: cover; border-radius: 4px; border: 1px solid #15803d; background: #000; display: flex; align-items: center; justify-content: center; font-size: 10px; }
 
         .msg-anim { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -64,26 +59,20 @@
 
     <!-- LOADING -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="text-3xl font-black animate-pulse text-green-500 mb-2">[ SYSTEM_BOOT_v10.1 ]</div>
-        <div id="loading-txt" class="text-xs text-green-800 font-mono tracking-[0.2em]">Initializing Auth Protocols...</div>
+        <div class="text-3xl font-black animate-pulse text-green-500 mb-2">[ SYSTEM_BOOT_v10.0 ]</div>
+        <div id="loading-txt" class="text-xs text-green-800 font-mono tracking-[0.2em]">Loading Channel Matrix...</div>
     </div>
 
     <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4 overflow-y-auto">
         <div class="w-full max-w-sm neon-border p-8 bg-black modal-anim my-auto">
             <h1 class="text-4xl font-black text-center mb-2 tracking-tighter">TERM-CHAT</h1>
-            <div class="text-[10px] text-center text-green-800 mb-8 tracking-[0.4em] uppercase">ACCESS_CONTROL_GATE</div>
+            <div class="text-[10px] text-center text-green-800 mb-8 tracking-[0.4em] uppercase">Secure_Relay_Node</div>
             
             <div id="auth-landing" class="space-y-4">
-                <button onclick="authGoogle()" class="w-full btn-base btn-green py-4">
-                    <i class="fab fa-google"></i> ACCESS_VIA_GOOGLE
-                </button>
-                <button onclick="showEmailAuth('login')" class="w-full btn-base border-green-800 text-green-600 hover:text-green-400 py-3">
-                    <i class="fas fa-envelope"></i> ACCESS_VIA_EMAIL
-                </button>
-                <button onclick="authGuest()" class="w-full btn-base border-zinc-800 text-zinc-600 hover:text-zinc-400 py-2">
-                    ANONYMOUS_LINK
-                </button>
+                <button onclick="authGoogle()" class="w-full btn-base btn-green py-4"><i class="fab fa-google"></i> ACCESS_VIA_GOOGLE</button>
+                <button onclick="showEmailAuth('login')" class="w-full btn-base border-green-800 text-green-600 hover:text-green-400 py-3"><i class="fas fa-envelope"></i> ACCESS_VIA_EMAIL</button>
+                <button onclick="authGuest()" class="w-full btn-base border-zinc-800 text-zinc-600 hover:text-zinc-400 py-2">ANONYMOUS_LINK</button>
             </div>
 
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
@@ -91,7 +80,7 @@
                 <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="EMAIL_ADDR" required>
                 <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="PASS_KEY" required>
                 <input type="hidden" id="auth-mode" value="login">
-                <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-3 mt-4">VALIDATE_CREDENTIALS</button>
+                <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-3 mt-4">VALIDATE</button>
                 <div class="text-center mt-2">
                     <button type="button" onclick="toggleEmailMode()" id="email-toggle-btn" class="text-[9px] text-green-800 hover:text-green-500 underline uppercase tracking-widest">NO_ID? CREATE_RECORD</button>
                 </div>
@@ -103,11 +92,11 @@
     <div id="app-screen" class="hidden flex h-full w-full relative overflow-hidden">
         
         <!-- SIDEBAR -->
-        <div id="sidebar" class="hidden md:flex flex-col w-64 border-r border-green-900 bg-black h-full shrink-0 absolute md:relative z-40 inset-y-0 left-0">
+        <div id="sidebar" class="hidden md:flex flex-col w-72 border-r border-green-900 bg-black h-full shrink-0 absolute md:relative z-40 inset-y-0 left-0">
             <div class="p-4 border-b border-green-900 bg-zinc-950 shrink-0">
                 <h2 class="text-[9px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
                 <div id="my-id-display" class="text-xs font-black truncate uppercase text-green-400">ID_PENDING</div>
-                <div class="text-[8px] text-green-900 mt-1 uppercase">STATUS: AUTHENTICATED</div>
+                <div class="text-[8px] text-green-900 mt-1 uppercase">STATUS: ONLINE</div>
             </div>
             
             <div class="flex-1 overflow-y-auto custom-scroll min-h-0">
@@ -115,51 +104,65 @@
                     <button onclick="openAdminPanel()" class="w-full btn-base btn-yellow mb-2 border-dashed">[ ADMIN_CONSOLE ]</button>
                 </div>
 
-                <div onclick="switchChannel('global')" id="chan-global" class="user-item active m-2">
-                    <div>
-                        <div class="font-bold text-xs"># GLOBAL_FEED</div>
-                        <div class="text-[8px] opacity-40 uppercase">Public_Channel</div>
-                    </div>
+                <!-- GROUPS SECTION -->
+                <div class="p-3 pb-1 flex justify-between items-center border-b border-green-900/30">
+                    <span class="text-[9px] text-green-900 font-bold uppercase tracking-widest">PUBLIC CHANNELS</span>
+                    <button onclick="openGroupModal()" class="text-[10px] text-green-600 hover:text-white border border-green-900 px-1.5 rounded">+</button>
+                </div>
+                <div id="channel-list" class="space-y-0.5 px-2 py-2">
+                    <!-- Channels injected here -->
                 </div>
                 
-                <div class="p-3 text-[9px] text-green-900 font-bold uppercase mt-2 tracking-widest">ACTIVE_NODES</div>
-                <div id="user-list" class="space-y-1 px-2 pb-4"></div>
+                <!-- USERS SECTION -->
+                <div class="p-3 pb-1 text-[9px] text-green-900 font-bold uppercase tracking-widest border-b border-green-900/30 mt-2">ACTIVE NODES</div>
+                <div id="user-list" class="space-y-0.5 px-2 py-2">
+                    <!-- Users injected here -->
+                </div>
             </div>
 
-            <!-- Danger Zone -->
+            <!-- DANGER ZONE -->
             <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
                 <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
                 <div class="space-y-2">
-                    <button onclick="openNameModal()" class="w-full btn-base border-green-800 text-green-800 hover:bg-green-900/20">RENAME</button>
-                    <button onclick="openDecommissionModal()" class="w-full btn-base btn-red">DECOMMISSION</button>
-                    <button onclick="logout()" class="w-full btn-base border-zinc-700 text-zinc-500 hover:text-white">LOG_OUT</button>
+                    <button onclick="openNameModal()" class="w-full btn-base btn-green !py-1.5">REASSIGN_ALIAS</button>
+                    <button onclick="openDecommissionModal()" class="w-full btn-base btn-red !py-1.5">DECOMMISSION_NODE</button>
                 </div>
+                <button onclick="logout()" class="w-full btn-base border-zinc-700 text-zinc-500 hover:text-white !py-1.5 mt-2">[ LOG_OUT ]</button>
             </div>
         </div>
 
         <!-- CHAT AREA -->
         <div class="flex-1 flex flex-col bg-black relative min-w-0 h-full">
-            <!-- Mobile Header -->
-            <div class="md:hidden h-14 border-b border-green-900 bg-black flex items-center justify-between px-4 shrink-0 z-20">
-                <button onclick="toggleSidebar()" class="text-green-500 border border-green-900 p-2 rounded hover:bg-green-900/20"><i class="fas fa-bars"></i></button>
-                <div class="flex flex-col items-center">
-                    <span id="mobile-title" class="font-bold text-xs tracking-widest">GLOBAL_FEED</span>
-                    <span class="text-[8px] text-green-800 animate-pulse">LIVE_UPLINK</span>
+            <!-- Header -->
+            <div class="h-16 border-b border-green-900 bg-zinc-950 flex items-center justify-between px-4 shrink-0 pt-2 md:pt-0">
+                <button onclick="toggleSidebar()" class="md:hidden text-green-500 border border-green-900 p-2 rounded hover:bg-green-900/20 mr-4"><i class="fas fa-bars"></i></button>
+                
+                <!-- Current Channel Info -->
+                <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                    <img id="current-channel-icon" src="" class="hidden w-8 h-8 rounded border border-green-600 object-cover bg-black" onerror="this.style.display='none'">
+                    <div id="default-channel-icon" class="w-8 h-8 rounded border border-green-600 bg-green-900/20 flex items-center justify-center text-xs">#</div>
+                    
+                    <div class="flex flex-col overflow-hidden">
+                        <span id="mobile-title" class="font-bold text-xs tracking-widest truncate uppercase">LOADING...</span>
+                        <span class="text-[8px] text-green-800 animate-pulse">UPLINK_ESTABLISHED</span>
+                    </div>
+
+                    <!-- Admin Global Icon Set -->
+                    <button id="set- global-icon-btn" onclick="openGlobalIconModal()" class="hidden ml-2 text-[8px] border border-yellow-800 text-yellow-600 px-2 py-1 hover:bg-yellow-900/20" title="Set Global Icon"><i class="fas fa-pen"></i></button>
                 </div>
-                <div class="w-8"></div>
             </div>
 
             <!-- Messages -->
             <div id="msg-container" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scroll scroll-smooth relative"></div>
 
             <!-- Input -->
-            <div class="p-3 border-t border-green-900 bg-black shrink-0 z-20">
+            <div class="p-3 border-t border-green-900 bg-zinc-950 shrink-0 z-20">
                 <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center">
                     <span class="font-bold text-lg text-green-500 animate-pulse">&gt;</span>
                     <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-sm font-mono placeholder-green-900 uppercase" placeholder="TRANSMIT_DATA..." autocomplete="off">
                     <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 px-3 py-1 border border-green-900 text-[10px] rounded hover:bg-green-900/20"><i class="fas fa-image"></i></button>
                     <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
-                    <button type="submit" class="btn-base btn-green px-6">SEND</button>
+                    <button type="submit" class="btn-base btn-green px-4">EXEC</button>
                 </form>
                 <div id="channel-status" class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]">
                     SECURE_UPLINK // STANDARD_PROTO
@@ -168,56 +171,94 @@
         </div>
     </div>
 
-    <!-- MODAL: ADMIN -->
+    <!-- MODAL: CREATE GROUP -->
+    <div id="modal-group" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim">
+            <h3 class="text-xs font-bold mb-4 tracking-widest text-green-500 uppercase">INITIALIZE_NEW_CHANNEL</h3>
+            <input id="group-name" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-4 outline-none text-sm uppercase placeholder-green-900" placeholder="CHANNEL_NAME">
+            
+            <div class="mb-6">
+                <label class="text-[9px] text-green-800 uppercase block mb-2">CHANNEL_ICON (OPTIONAL)</label>
+                <button onclick="document.getElementById('group-icon-input').click()" class="w-full border border-dashed border-green-800 p-4 text-[9px] text-green-600 hover:text-white hover:border-green-500">
+                    [ CLICK TO UPLOAD ICON ]
+                </button>
+                <input type="file" id="group-icon-input" class="hidden" accept="image/*">
+                <div id="group-icon-preview" class="hidden mt-2 text-[9px] text-green-500">IMAGE_LOADED_READY</div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="createGroup()" class="flex-1 btn-base btn-green py-2">CREATE</button>
+                <button onclick="document.getElementById('modal-group').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-2">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SET GLOBAL ICON (ADMIN) -->
+    <div id="modal-global-icon" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim border-yellow-600">
+            <h3 class="text-xs font-bold mb-4 tracking-widest text-yellow-500 uppercase">GLOBAL_FEED_CONFIGURATION</h3>
+            <div class="mb-6">
+                <label class="text-[9px] text-yellow-800 uppercase block mb-2">UPLOAD_NEW_ICON</label>
+                <button onclick="document.getElementById('global-icon-input').click()" class="w-full border border-dashed border-yellow-800 p-4 text-[9px] text-yellow-600 hover:text-white hover:border-yellow-500">
+                    [ SELECT_IMAGE_FILE ]
+                </button>
+                <input type="file" id="global-icon-input" class="hidden" accept="image/*">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="updateGlobalIcon()" class="flex-1 btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-2">UPDATE</button>
+                <button onclick="document.getElementById('modal-global-icon').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-2">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Modals (Wipe, Name, Admin, Ban) kept from previous version, collapsed for brevity but present in logic -->
+    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/95 z-[110] flex items-center justify-center p-4">
+        <div class="w-full max-w-xs alert-border p-6 bg-black text-center modal-anim">
+            <h3 class="text-red-500 font-black text-lg mb-2">CRITICAL_ALERT</h3>
+            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">PERMANENTLY PURGE IDENTITY?</p>
+            <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase font-bold tracking-widest" placeholder="TYPE 'TERMINATE'">
+            <div class="flex flex-col gap-2">
+                <button onclick="confirmDecommission()" class="btn-base btn-red py-3">EXECUTE</button>
+                <button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-8 bg-black modal-anim">
+            <h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE</h3>
+            <input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS">
+            <div class="flex gap-4">
+                <button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button>
+                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN & BAN LIST MODALS -->
     <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-md alert-border p-6 md:p-8 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.3)] modal-anim">
             <button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold text-lg">×</button>
             <h2 class="text-xl font-bold text-red-500 mb-4 text-center uppercase tracking-tighter">ROOT_CONTROL</h2>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP_JSON</button>
-                    <button onclick="alert('Import currently disabled.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT_JSON</button>
+                    <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP</button>
+                    <button onclick="alert('Import disabled.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT</button>
                 </div>
-                <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button>
-                <button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button>
+                <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ BROADCAST ]</button>
+                <button onclick="openBanList()" class="w-full btn-base btn-red">[ BLACKLIST ]</button>
                 <div class="pt-4 border-t border-red-950">
-                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">TOTAL_WIPE_EXECUTION</button>
+                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">WIPE_ALL_DATA</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: BAN LIST -->
     <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/95 z-[110] flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-md alert-border p-6 bg-black relative modal-anim">
             <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white text-lg">×</button>
-            <h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2>
+            <h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLISTED</h2>
             <div id="ban-list-content" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 custom-scroll"></div>
-        </div>
-    </div>
-
-    <!-- MODAL: DECOMMISSION -->
-    <div id="modal-wipe" class="hidden absolute inset-0 bg-black/95 z-[110] flex items-center justify-center p-4">
-        <div class="w-full max-w-xs alert-border p-6 bg-black text-center modal-anim">
-            <h3 class="text-red-500 font-black text-lg mb-2">CRITICAL_ALERT</h3>
-            <p class="text-[9px] text-red-900 uppercase mb-6 leading-relaxed">THIS ACTION PERMANENTLY PURGES YOUR IDENTITY. RECOVERY IS IMPOSSIBLE.</p>
-            <input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase font-bold tracking-widest" placeholder="TYPE 'TERMINATE'">
-            <div class="flex flex-col gap-2">
-                <button onclick="confirmDecommission()" class="btn-base btn-red py-3">EXECUTE_FINAL_WIPE</button>
-                <button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort_Mission</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: NICKNAME -->
-    <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
-        <div class="w-full max-w-sm neon-border p-8 bg-black modal-anim">
-            <h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE_PROTOCOL</h3>
-            <input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS">
-            <div class="flex gap-4">
-                <button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button>
-                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button>
-            </div>
         </div>
     </div>
 
@@ -233,13 +274,12 @@
             </div>
         </div>
     </div>
-
+    
     <!-- TERMINATED SCREEN -->
     <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-8">
         <div class="border-2 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)] modal-anim">
             <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div>
-            <div class="text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div>
-            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged for protocol breach.</p>
+            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged. Uplink locked.</p>
             <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-black">REASON: BLACKLISTED</div>
             <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">Retry</button>
         </div>
@@ -273,9 +313,12 @@
         let currentChannel = 'global';
         let messagesUnsub = null;
         let usersUnsub = null;
+        let channelsUnsub = null;
         let banCheckUnsub = null;
         let rawMessages = [];
+        let channelsCache = {};
 
+        // --- AUTH & INIT ---
         onAuthStateChanged(auth, async (user) => {
             const loading = document.getElementById('loading');
             const authScreen = document.getElementById('auth-screen');
@@ -287,8 +330,8 @@
                 
                 isModerator = (user.email === ADMIN_EMAIL);
                 if(isModerator) document.getElementById('admin-panel-btn').classList.remove('hidden');
-                else document.getElementById('admin-panel-btn').classList.add('hidden');
-
+                
+                // Ban Check
                 if(banCheckUnsub) banCheckUnsub();
                 banCheckUnsub = onSnapshot(doc(db, 'banned_users', user.uid), (doc) => {
                     if(doc.exists()) {
@@ -299,7 +342,6 @@
                 });
 
                 try {
-                    // Create user profile if missing or update last seen
                     await setDoc(doc(db, 'users', user.uid), {
                         nickname: user.displayName || 'Anonymous',
                         email: user.email || 'guest',
@@ -311,10 +353,7 @@
                     appScreen.classList.remove('hidden');
                     startListeners();
                 } catch(e) {
-                    // Fallback to allow app to run even if DB write fails (e.g., if user is banned at rule level)
-                    console.error("DB Init Error:", e);
-                    loading.classList.add('hidden');
-                    appScreen.classList.remove('hidden');
+                    alert("DB CONNECT ERROR: " + e.message);
                 }
             } else {
                 currentUser = null;
@@ -326,6 +365,34 @@
         });
 
         function startListeners() {
+            // 1. CHANNELS LISTENER
+            if(channelsUnsub) channelsUnsub();
+            channelsUnsub = onSnapshot(collection(db, 'channels'), (snap) => {
+                const list = document.getElementById('channel-list');
+                list.innerHTML = '';
+                channelsCache = {}; // Reset cache
+                
+                // Always render Global first
+                // Check if 'global' doc exists, otherwise default
+                let globalDoc = snap.docs.find(d => d.id === 'global');
+                if(globalDoc) {
+                    channelsCache['global'] = globalDoc.data();
+                    renderChannelItem('global', globalDoc.data(), list);
+                } else {
+                    renderChannelItem('global', {name: "GLOBAL_FEED", type: 'global'}, list);
+                }
+
+                // Render other groups
+                snap.forEach(d => {
+                    if(d.id === 'global') return;
+                    channelsCache[d.id] = d.data();
+                    renderChannelItem(d.id, d.data(), list);
+                });
+
+                updateHeaderUI(); // Update current header if active channel changed
+            });
+
+            // 2. USERS LISTENER
             if(usersUnsub) usersUnsub();
             usersUnsub = onSnapshot(collection(db, 'users'), (snap) => {
                 const list = document.getElementById('user-list');
@@ -339,16 +406,48 @@
                     div.className = `user-item ${isSelected ? 'active' : 'border-transparent'} rounded-r`;
 
                     div.innerHTML = `
-                        <div class="flex flex-col overflow-hidden mr-2">
-                            <span class="text-xs font-bold truncate group-hover:text-white transition-colors uppercase">${escapeHtml(u.nickname)}</span>
-                            <span class="text-[8px] text-green-900 font-mono">ID: ${d.id.substring(0,4)}</span>
+                        <div class="flex items-center gap-2 overflow-hidden mr-2">
+                             <div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-[10px] border border-green-800 font-bold shrink-0">
+                                ${u.nickname.substring(0,1).toUpperCase()}
+                            </div>
+                            <div class="flex flex-col overflow-hidden">
+                                <span class="text-xs font-bold truncate group-hover:text-white transition-colors uppercase">${escapeHtml(u.nickname)}</span>
+                                <span class="text-[8px] text-green-900 font-mono">ID: ${d.id.substring(0,4)}</span>
+                            </div>
                         </div>
-                        <button onclick="switchChannel('${d.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-2 py-1 transition-all rounded uppercase">MSG</button>
+                        <button onclick="switchChannel('${d.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-1.5 py-0.5 transition-all rounded uppercase">DM</button>
                     `;
                     list.appendChild(div);
                 });
             });
 
+            subscribeMessages();
+        }
+
+        function renderChannelItem(id, data, container) {
+            const div = document.createElement('div');
+            const isSelected = currentChannel === id;
+            div.className = `user-item ${isSelected ? 'active' : 'border-transparent'} rounded-r`;
+            div.onclick = () => switchChannel(id);
+            
+            let iconHtml = `<div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-xs border border-green-800 font-bold shrink-0"><i class="fas fa-hashtag"></i></div>`;
+            if (data.icon) {
+                iconHtml = `<img src="${data.icon}" class="w-6 h-6 rounded border border-green-800 object-cover bg-black shrink-0">`;
+            } else if (id === 'global') {
+                iconHtml = `<div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-xs border border-green-800 font-bold shrink-0"><i class="fas fa-globe"></i></div>`;
+            }
+
+            div.innerHTML = `
+                ${iconHtml}
+                <div class="flex flex-col overflow-hidden">
+                    <span class="text-xs font-bold truncate uppercase">${escapeHtml(data.name || id)}</span>
+                    <span class="text-[8px] opacity-40 uppercase">${id === 'global' ? 'PUBLIC_BROADCAST' : 'GROUP_CHANNEL'}</span>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function subscribeMessages() {
             if(messagesUnsub) messagesUnsub();
             const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc')); 
             
@@ -370,6 +469,7 @@
                     if(content.startsWith('data:image')) {
                         content = `<img src="${content}" class="max-w-[200px] border-2 border-green-800 rounded opacity-90 hover:opacity-100 transition-opacity">`;
                     } else {
+                        // Mentions
                         const mentionRegex = new RegExp(`@${currentUser.displayName}\\b`, 'gi');
                         if (m.text.match(mentionRegex) && !isMe) {
                             content = content.replace(/</g, "&lt;").replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded shadow-lg">@${currentUser.displayName}</span>`);
@@ -381,8 +481,7 @@
                     const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
                     const highlightClass = isMentioned ? 'border-yellow-600 bg-yellow-900/10 shadow-[0_0_10px_rgba(234,179,8,0.2)]' : (isMe ? 'border-green-500/50' : 'border-green-900');
                     const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : '';
-                    const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DIRECT_MESSAGE" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
-
+                    
                     let actions = '';
                     if (isMe) actions += `<button onclick="openEditModal('${m.id}', '${content.startsWith('data:image') ? '' : escapeHtml(m.text)}')" class="ml-2 text-[8px] text-green-600 hover:text-white font-bold uppercase">[EDIT]</button>`;
                     if (isMe || isModerator) actions += `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 font-bold uppercase">[DEL]</button>`;
@@ -392,7 +491,7 @@
                         <div class="msg-anim mb-4 flex flex-col ${isMe ? 'items-end' : 'items-start'} group">
                             <div class="flex items-center gap-2 mb-1 px-1">
                                 <span class="text-[9px] text-green-700 font-bold tracking-tighter">${date}</span>
-                                <span ${nickAction} class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'} uppercase tracking-tight">${m.nickname}</span>
+                                <span class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'} uppercase tracking-tight">${m.nickname}</span>
                                 ${headerBadge}
                                 ${actions}
                             </div>
@@ -407,19 +506,112 @@
             });
         }
 
+        // --- CHANNEL LOGIC ---
         window.switchChannel = (targetId) => {
-            if(targetId === 'global') {
-                currentChannel = 'global';
-                document.getElementById('mobile-title').innerText = "GLOBAL_FEED";
+            const list = document.querySelectorAll('.user-item');
+            list.forEach(l => l.classList.remove('active'));
+
+            if(targetId === 'global' || channelsCache[targetId]) {
+                // It's a public group or global
+                currentChannel = targetId;
             } else {
+                // It's a DM (user ID)
                 const ids = [currentUser.uid, targetId].sort();
                 currentChannel = `${ids[0]}_${ids[1]}`;
-                document.getElementById('mobile-title').innerText = "PRIVATE_DM";
             }
-            startListeners();
+            
+            updateHeaderUI();
+            startListeners(); // Re-filter messages
             toggleSidebar(true);
         };
 
+        function updateHeaderUI() {
+            const title = document.getElementById('mobile-title');
+            const iconImg = document.getElementById('current-channel-icon');
+            const defaultIcon = document.getElementById('default-channel-icon');
+            const adminSetIconBtn = document.getElementById('set-global-icon-btn');
+
+            let chanData = channelsCache[currentChannel];
+            
+            if (currentChannel === 'global') {
+                title.innerText = chanData?.name || "GLOBAL_FEED";
+                if(isModerator) adminSetIconBtn.classList.remove('hidden');
+                else adminSetIconBtn.classList.add('hidden');
+            } else if (chanData) {
+                // Group
+                title.innerText = chanData.name;
+                adminSetIconBtn.classList.add('hidden');
+            } else {
+                // DM
+                title.innerText = "PRIVATE_DM";
+                adminSetIconBtn.classList.add('hidden');
+            }
+
+            if(chanData && chanData.icon) {
+                iconImg.src = chanData.icon;
+                iconImg.classList.remove('hidden');
+                defaultIcon.classList.add('hidden');
+            } else {
+                iconImg.classList.add('hidden');
+                defaultIcon.classList.remove('hidden');
+                defaultIcon.innerHTML = currentChannel === 'global' ? '<i class="fas fa-globe"></i>' : (chanData ? '<i class="fas fa-users"></i>' : '<i class="fas fa-user-secret"></i>');
+            }
+        }
+
+        // --- GROUPS ---
+        window.openGroupModal = () => document.getElementById('modal-group').classList.remove('hidden');
+        window.openGlobalIconModal = () => document.getElementById('modal-global-icon').classList.remove('hidden');
+
+        window.createGroup = async () => {
+            const name = document.getElementById('group-name').value.trim();
+            const fileInput = document.getElementById('group-icon-input');
+            
+            if(!name) return alert("NAME REQUIRED");
+
+            let icon = null;
+            if(fileInput.files.length > 0) {
+                 // Convert to base64
+                 icon = await new Promise(resolve => {
+                     const r = new FileReader();
+                     r.onload = e => resolve(e.target.result);
+                     r.readAsDataURL(fileInput.files[0]);
+                 });
+            }
+
+            try {
+                await addDoc(collection(db, 'channels'), {
+                    name,
+                    icon,
+                    createdBy: currentUser.uid,
+                    createdAt: serverTimestamp(),
+                    type: 'group'
+                });
+                document.getElementById('modal-group').classList.add('hidden');
+            } catch(e) { alert("ERROR CREATING GROUP: " + e.message); }
+        };
+
+        window.updateGlobalIcon = async () => {
+            if(!isModerator) return;
+            const fileInput = document.getElementById('global-icon-input');
+            if(fileInput.files.length === 0) return alert("SELECT IMAGE");
+            
+            const icon = await new Promise(resolve => {
+                 const r = new FileReader();
+                 r.onload = e => resolve(e.target.result);
+                 r.readAsDataURL(fileInput.files[0]);
+            });
+
+            await setDoc(doc(db, 'channels', 'global'), { 
+                name: 'GLOBAL FEED', 
+                icon: icon, 
+                type: 'global' 
+            }, { merge: true });
+            
+            document.getElementById('modal-global-icon').classList.add('hidden');
+            alert("GLOBAL ICON UPDATED");
+        };
+
+        // --- MESSAGING ---
         window.sendMessage = async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');
@@ -454,42 +646,42 @@
             document.getElementById('edit-input').value = oldText;
             document.getElementById('edit-id').value = id;
         };
-
         window.submitEdit = async () => {
             const id = document.getElementById('edit-id').value;
             const text = document.getElementById('edit-input').value.trim();
             if(text) { await updateDoc(doc(db, 'messages', id), { text }); document.getElementById('modal-edit').classList.add('hidden'); }
         };
 
+        // --- ADMIN ---
         window.openAdminPanel = () => document.getElementById('admin-modal').classList.remove('hidden');
         window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
-        window.broadcastAnnouncement = async () => { const text = prompt("BROADCAST:"); if(text) await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), channel: 'global' }); };
-        window.confirmBan = async (uid, name) => { const reason = prompt(`BAN USER [${name}]?\nREASON:`); if(!reason) return; try { await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() }); alert("BLACKLISTED"); } catch(e) { alert("BAN ERROR"); } };
+        window.broadcastAnnouncement = async () => { const text = prompt("BROADCAST MESSAGE:"); if(text) await addDoc(collection(db, 'messages'), { text, nickname: "SYSTEM_ROOT", uid: "SYSTEM", type: 'announcement', timestamp: serverTimestamp(), channel: 'global' }); };
+        window.confirmBan = async (uid, name) => { const reason = prompt(`BAN USER [${name}]?\nREASON:`); if(!reason) return; try { await setDoc(doc(db, 'banned_users', uid), { nickname: name, reason: reason.toUpperCase(), timestamp: serverTimestamp() }); alert("USER_BLACKLISTED"); } catch(e) { alert("BAN FAILED: " + e.message); } };
         window.openBanList = async () => {
             document.getElementById('ban-list-modal').classList.remove('hidden');
             const c = document.getElementById('ban-list-content');
-            c.innerHTML = '<div class="text-[10px] animate-pulse">LOADING...</div>';
+            c.innerHTML = '<div class="text-[10px] animate-pulse">QUERYING...</div>';
             try {
                 const snap = await getDocs(collection(db, 'banned_users'));
-                c.innerHTML = snap.docs.map(d => `<div class="border border-red-900 p-2 mb-1 flex justify-between items-center bg-red-950/20"><div><span class="text-xs font-bold text-red-500">${escapeHtml(d.data().nickname)}</span><div class="text-[8px] text-red-900 uppercase italic">${escapeHtml(d.data().reason)}</div></div><button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-800 text-green-500 px-2 py-1 uppercase">REVOKE</button></div>`).join('') || '<div class="text-center py-4 text-xs opacity-50">NO_BANS</div>';
-            } catch(e) { c.innerHTML = "ERROR"; }
+                c.innerHTML = snap.docs.map(d => `<div class="border border-red-900 p-2 mb-1 flex justify-between items-center bg-red-950/20"><div><span class="text-xs font-bold text-red-500">${escapeHtml(d.data().nickname)}</span><div class="text-[8px] text-red-900 uppercase italic">${escapeHtml(d.data().reason)}</div></div><button onclick="unbanUser('${d.id}')" class="text-[9px] border border-green-800 text-green-500 px-2 py-1 uppercase font-bold hover:bg-green-900 hover:text-white transition-all">REVOKE</button></div>`).join('') || '<div class="text-center py-4 text-xs opacity-50">NO_ACTIVE_BANS</div>';
+            } catch(e) { c.innerHTML = "ERROR LOADING LIST"; }
         };
         window.unbanUser = async (uid) => { await deleteDoc(doc(db, 'banned_users', uid)); openBanList(); };
-        window.confirmSystemFlush = async () => { if(prompt("TYPE 'CONFIRM' TO FLUSH") !== 'CONFIRM') return; const s = await getDocs(collection(db, 'messages')); s.forEach(d => deleteDoc(d.ref)); alert("FLUSHED"); };
-        window.exportData = () => { const blob = new Blob([JSON.stringify(rawMessages, null, 2)], {type : 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'dump.json'; a.click(); };
+        window.confirmSystemFlush = async () => { if(prompt("TYPE 'CONFIRM' TO DELETE ALL MESSAGES") !== 'CONFIRM') return; const snap = await getDocs(collection(db, 'messages')); snap.forEach(d => deleteDoc(d.ref)); alert("SYSTEM FLUSHED"); };
+        window.exportData = () => { const blob = new Blob([JSON.stringify(rawMessages, null, 2)], {type : 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chat_dump.json'; a.click(); };
+
+        // --- AUTH ---
         window.authGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
         window.authGuest = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
-        window.handleEmailSubmit = async (e) => { e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value; try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else { const u = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH ERROR: " + err.message); } };
+        window.handleEmailSubmit = async (e) => { e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value; try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else { const u = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH_ERROR: " + err.message); } };
         window.logout = () => signOut(auth);
-        
         window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); setMode(mode); };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
         window.toggleEmailMode = () => { const current = document.getElementById('auth-mode').value; setMode(current === 'login' ? 'signup' : 'login'); };
-        function setMode(mode) { document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE" : "CREATE"; document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "NO_ID? CREATE_RECORD" : "HAS_ID? LOGIN"; }
-        
+        function setMode(mode) { document.getElementById('auth-mode').value = mode; document.getElementById('email-submit-btn').innerText = mode === 'login' ? "VALIDATE_CREDENTIALS" : "CREATE_NEW_RECORD"; document.getElementById('email-toggle-btn').innerText = mode === 'login' ? "NO_ID? CREATE_RECORD" : "HAS_ID? LOGIN"; }
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
-        window.confirmDecommission = async () => { if(document.getElementById('wipe-confirm').value !== 'TERMINATE') return alert("MISMATCH"); try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("AUTH_ERROR"); } };
+        window.confirmDecommission = async () => { if(document.getElementById('wipe-confirm').value !== 'TERMINATE') return alert("MISMATCH"); try { await deleteUser(currentUser); location.reload(); } catch(e) { alert("ERROR: RECENT_AUTH_REQUIRED. RE-LOGIN BEFORE DECOMMISSION."); } };
         window.saveName = async () => { const name = document.getElementById('new-name').value.trim(); if(name) { await updateProfile(currentUser, {displayName: name}); await setDoc(doc(db, 'users', currentUser.uid), { nickname: name }, {merge:true}); location.reload(); } };
         window.toggleSidebar = (forceClose = false) => { const sb = document.getElementById('sidebar'); const bg = document.getElementById('mobile-sidebar-bg'); if(forceClose) { sb.classList.add('hidden'); bg.classList.add('hidden'); return; } sb.classList.toggle('hidden'); if(!sb.classList.contains('hidden')) { sb.classList.add('absolute', 'z-50', 'h-full'); bg.classList.remove('hidden'); } else { sb.classList.remove('absolute', 'z-50', 'h-full'); bg.classList.add('hidden'); } };
         function escapeHtml(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ''; }
