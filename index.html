@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERM-CHAT v10.2 // TEST_SUITE_PRO</title>
+    <title>TERM-CHAT v10.3 // TEST_SUITE_PATCHED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -62,15 +62,15 @@
 
     <!-- LOADING -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v10.2 ]</div>
-        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Checking Parameters...</div>
+        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v10.3 ]</div>
+        <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Executing Startup Scripts...</div>
     </div>
 
     <!-- TESTER DASHBOARD (Overlay) -->
     <div id="tester-dashboard" class="hidden fixed top-2 right-2 z-[200] bg-black/90 border border-yellow-600 p-3 shadow-lg w-64 max-h-[50vh] flex flex-col modal-anim">
         <div class="flex items-center justify-between border-b border-yellow-800 pb-2 mb-2">
             <div class="flex items-center gap-2">
-                <i class="fas fa-vial text-yellow-500 animate-pulse"></i>
+                <i class="fas fa-flask text-yellow-500 animate-pulse"></i>
                 <h3 class="text-yellow-500 font-bold text-[10px] uppercase">TEST_SUITE_ACTIVE</h3>
             </div>
             <button onclick="endTestSession()" class="text-red-500 hover:text-white text-[9px] font-bold">[ END ]</button>
@@ -79,7 +79,7 @@
         <div class="text-[9px] text-zinc-400 mb-2">ACCOUNT: <span id="test-id-display" class="text-green-400">...</span></div>
         <div class="flex-1 overflow-y-auto custom-scroll border border-zinc-800 bg-zinc-900/50 p-2 h-24">
             <ul id="test-logs" class="space-y-1 font-mono text-[8px] text-zinc-300">
-                <li class="text-yellow-500">> SESSION_INITIATED</li>
+                <li class="text-yellow-500">> ENV_READY</li>
             </ul>
         </div>
     </div>
@@ -98,8 +98,8 @@
 
             <form id="auth-email-form" class="hidden space-y-4" onsubmit="handleEmailSubmit(event)">
                 <button type="button" onclick="showLanding()" class="text-[10px] hover:text-white mb-2 tracking-tighter">&lt;&lt; BACK</button>
-                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase" placeholder="EMAIL" required>
-                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase" placeholder="KEY" required>
+                <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="EMAIL" required>
+                <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-3 text-green-500 focus:outline-none text-xs font-mono uppercase placeholder-green-900" placeholder="KEY" required>
                 <input type="hidden" id="auth-mode" value="login">
                 <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-3 mt-4">VALIDATE</button>
                 <div class="text-center mt-2">
@@ -128,13 +128,12 @@
 
                 <div class="p-3 pb-1 flex justify-between items-center border-b border-green-900/30">
                     <span class="text-[9px] text-green-900 font-bold uppercase tracking-widest">CHANNELS</span>
-                    <button onclick="openGroupModal()" class="text-[10px] text-green-600 hover:text-white px-1.5">+</button>
+                    <button onclick="openGroupModal()" class="text-[10px] text-green-600 hover:text-white border border-green-900 px-1.5 rounded">+</button>
                 </div>
                 <div id="channel-list" class="space-y-0.5 px-2 py-2"></div>
                 
                 <div class="p-3 pb-1 text-[9px] text-green-900 font-bold uppercase tracking-widest border-b border-green-900/30 mt-2">ACTIVE NODES</div>
                 <div id="user-list" class="space-y-0.5 px-2 py-2"></div>
-                <!-- Expand Button -->
                 <button id="expand-users-btn" onclick="toggleUserList()" class="hidden w-full text-[9px] text-green-800 hover:text-green-500 py-2 border-t border-green-900/30 uppercase tracking-widest">
                     [ SHOW_ALL_NODES ]
                 </button>
@@ -144,7 +143,7 @@
             <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
                 <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
                 <div class="space-y-2">
-                    <button onclick="openNameModal()" class="w-full btn-base border-green-800 text-green-800 hover:bg-green-900/20 !py-1.5">REASSIGN_ALIAS</button>
+                    <button onclick="openNameModal()" class="w-full btn-base btn-green !py-1.5">REASSIGN_ALIAS</button>
                     <button onclick="openDecommissionModal()" class="w-full btn-base btn-red !py-1.5">DECOMMISSION_NODE</button>
                 </div>
                 <button onclick="logout()" class="w-full btn-base border-zinc-700 text-zinc-500 hover:text-white !py-1.5 mt-2">[ LOG_OUT ]</button>
@@ -157,11 +156,14 @@
                 <button onclick="toggleSidebar()" class="md:hidden text-green-500 border border-green-900 p-2 rounded hover:bg-green-900/20 mr-4"><i class="fas fa-bars"></i></button>
                 
                 <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                    <img id="current-channel-icon" src="" class="hidden w-8 h-8 rounded border border-green-600 object-cover bg-black" onerror="this.style.display='none'">
                     <div id="default-channel-icon" class="w-8 h-8 rounded border border-green-600 bg-green-900/20 flex items-center justify-center text-xs">#</div>
+                    
                     <div class="flex flex-col overflow-hidden">
                         <span id="mobile-title" class="font-bold text-xs tracking-widest truncate uppercase">LOADING...</span>
                         <span class="text-[8px] text-green-800 animate-pulse">UPLINK_ESTABLISHED</span>
                     </div>
+
                     <button id="set-global-icon-btn" onclick="openGlobalIconModal()" class="hidden ml-2 text-[8px] border border-yellow-800 text-yellow-600 px-2 py-1" title="Set Icon"><i class="fas fa-pen"></i></button>
                 </div>
             </div>
@@ -283,7 +285,7 @@
         <div class="border-2 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)] modal-anim">
             <div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div>
             <div class="text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div>
-            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged for protocol breach.</p>
+            <p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged.</p>
             <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-black">REASON: BLACKLISTED</div>
             <button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">Retry</button>
         </div>
@@ -325,11 +327,10 @@
         let rawMessages = [];
         let channelsCache = {};
         
-        // --- SIDEBAR STATE ---
         let allUsers = [];
         let showAllUsers = false;
+        let isCreatingTestAccount = false;
 
-        // --- TEST SUITE LOGGER ---
         function logTestAction(action) {
             if (!IS_TEST_MODE) return;
             const logList = document.getElementById('test-logs');
@@ -343,32 +344,45 @@
             const authScreen = document.getElementById('auth-screen');
             const appScreen = document.getElementById('app-screen');
 
-            // --- TEST MODE INTERCEPTION ---
+            // TEST SUITE LOGIC
             if (IS_TEST_MODE) {
                 document.getElementById('tester-dashboard').classList.remove('hidden');
                 document.getElementById('test-ref-display').innerText = REF_LINK;
                 
-                // If user is logged in but NOT a tester account, force signout to start fresh test
-                if (user && !user.displayName?.startsWith('TESTER_')) {
-                    console.log("Existing session found in test mode. Resetting...");
-                    await signOut(auth);
-                    return; // Will re-trigger onAuthStateChanged with null
-                }
-                
-                // If no user, create test account automatically
-                if (!user) {
-                    try {
-                        const randomId = Math.random().toString(36).substring(2, 6);
-                        const testEmail = `test_${randomId}@eugeneevons.com`;
-                        const testPass = 'test123456';
-                        
-                        document.getElementById('loading-txt').innerText = "GENERATING_TEST_IDENTITY...";
-                        const creds = await createUserWithEmailAndPassword(auth, testEmail, testPass);
-                        await updateProfile(creds.user, { displayName: `TESTER_${randomId.toUpperCase()}` });
-                        return; // Will re-trigger with user
-                    } catch(e) {
-                        alert("TEST MODE INIT FAILED: " + e.message);
+                if (user) {
+                    // Check if it's a valid tester account
+                    if (user.displayName && user.displayName.startsWith('TESTER_')) {
+                        // Already logged in as tester, proceed
+                        logTestAction(`RESUMED_SESSION: ${user.uid}`);
+                        document.getElementById('test-id-display').innerText = user.email;
+                    } else {
+                        // Logged in as normal user or unverified tester -> Logout
+                        console.log("Non-tester account detected in test mode. Signing out...");
+                        await signOut(auth);
+                        return;
                     }
+                } else {
+                    // No user, Create one
+                    if (!isCreatingTestAccount) {
+                        isCreatingTestAccount = true;
+                        try {
+                            const randomId = Math.random().toString(36).substring(2, 6) + Date.now().toString().slice(-4);
+                            const testEmail = `test_${randomId}@eugeneevons.com`;
+                            const testPass = 'test123456';
+                            
+                            document.getElementById('loading-txt').innerText = "GENERATING_TEST_IDENTITY...";
+                            
+                            // Use Auth to create
+                            const creds = await createUserWithEmailAndPassword(auth, testEmail, testPass);
+                            await updateProfile(creds.user, { displayName: `TESTER_${randomId.toUpperCase()}` });
+                            // Force page reload to catch the new profile cleanly or just let onAuthStateChanged re-fire
+                            // Ideally, updateProfile completes, then we just let the logic flow.
+                        } catch(e) {
+                            alert("TEST CREATION FAILED: " + e.message);
+                            isCreatingTestAccount = false;
+                        }
+                    }
+                    return; // Wait for auth state change
                 }
             }
 
@@ -376,11 +390,6 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
-                if (IS_TEST_MODE) {
-                     document.getElementById('test-id-display').innerText = user.email;
-                     logTestAction(`SESSION_STARTED: ${user.uid}`);
-                }
-
                 isModerator = (user.email === ADMIN_EMAIL);
                 if(isModerator) document.getElementById('admin-panel-btn').classList.remove('hidden');
                 
@@ -405,7 +414,9 @@
                     appScreen.classList.remove('hidden');
                     startListeners();
                 } catch(e) {
-                    alert("DB CONNECT ERROR: " + e.message);
+                    console.error("DB Init Error", e);
+                    loading.classList.add('hidden');
+                    appScreen.classList.remove('hidden');
                 }
             } else {
                 currentUser = null;
@@ -415,8 +426,6 @@
                 authScreen.classList.remove('hidden');
             }
         });
-
-        // --- LISTENERS & RENDERERS ---
 
         function startListeners() {
             if(channelsUnsub) channelsUnsub();
@@ -487,7 +496,6 @@
 
         window.toggleUserList = () => {
             showAllUsers = !showAllUsers;
-            logTestAction(showAllUsers ? "EXPANDED_USER_LIST" : "COLLAPSED_USER_LIST");
             renderUserList();
         };
 
@@ -573,7 +581,6 @@
             });
         }
 
-        // --- LOGIC ---
         window.switchChannel = (targetId) => {
             logTestAction(`SWITCH_CHANNEL: ${targetId}`);
             if(targetId === 'global' || channelsCache[targetId]) {
@@ -583,7 +590,7 @@
                 currentChannel = `${ids[0]}_${ids[1]}`;
             }
             updateHeaderUI();
-            startListeners(); // Re-filter messages
+            startListeners();
             toggleSidebar(true);
         };
 
@@ -621,7 +628,7 @@
         window.endTestSession = async () => {
             if(confirm("TERMINATE TEST SESSION AND WIPE DATA?")) {
                 try { await deleteUser(currentUser); } catch(e) {}
-                window.location.href = window.location.pathname; // Reload strip params
+                window.location.href = window.location.pathname; 
             }
         };
 
@@ -708,7 +715,7 @@
 
         window.authGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { alert(e.message); } };
         window.authGuest = async () => { try { await signInAnonymously(auth); } catch(e) { alert(e.message); } };
-        window.handleEmailSubmit = async (e) => { e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value; try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else { const u = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert(err.message); } };
+        window.handleEmailSubmit = async (e) => { e.preventDefault(); const email = document.getElementById('email-input').value, pass = document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value; try { if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass); else { const u = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(u.user, {displayName:email.split('@')[0]}); } } catch(err) { alert("AUTH_ERROR: " + err.message); } };
         window.logout = () => signOut(auth);
         
         window.showEmailAuth = (mode) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); setMode(mode); };
@@ -725,3 +732,5 @@
     </script>
 </body>
 </html>
+
+
