@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERM-CHAT v10.5 // TEST_SUITE_FIXED</title>
+    <title>TERM-CHAT v10.6 // AUTO_GROUP_JOIN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -70,7 +70,7 @@
 
     <!-- LOADING -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v10.5 ]</div>
+        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v10.6 ]</div>
         <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Checking Parameters...</div>
     </div>
 
@@ -141,6 +141,9 @@
                 
                 <div class="p-3 pb-1 text-[9px] text-green-900 font-bold uppercase tracking-widest border-b border-green-900/30 mt-2">ACTIVE NODES</div>
                 <div id="user-list" class="space-y-0.5 px-2 py-2"></div>
+                <button id="expand-users-btn" onclick="toggleUserList()" class="hidden w-full text-[9px] text-green-800 hover:text-green-500 py-2 border-t border-green-900/30 uppercase tracking-widest">
+                    [ SHOW_ALL_NODES ]
+                </button>
             </div>
 
             <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
@@ -187,10 +190,39 @@
         </div>
     </div>
 
-    <!-- MODALS (All retained, collapsed for brevity) -->
-    <div id="modal-group" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim"><h3 class="text-xs font-bold mb-4 tracking-widest text-green-500 uppercase">NEW_CHANNEL_INIT</h3><input id="group-name" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-4 outline-none text-sm uppercase placeholder-green-900" placeholder="CHANNEL_NAME"><div class="flex items-center gap-2 mb-4 p-2 border border-green-900 bg-green-900/10"><input type="checkbox" id="group-private" class="accent-green-500"><label for="group-private" class="text-[10px] text-green-400 uppercase font-bold cursor-pointer">PRIVATE_ENCRYPTED (INVITE ONLY)</label></div><div class="mb-6"><button onclick="document.getElementById('group-icon-input').click()" class="w-full border border-dashed border-green-800 p-4 text-[9px] text-green-600 hover:text-white">[ UPLOAD ICON ]</button><input type="file" id="group-icon-input" class="hidden" accept="image/*"></div><div class="flex gap-2"><button onclick="createGroup()" class="flex-1 btn-base btn-green py-2">CREATE</button><button onclick="document.getElementById('modal-group').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
-    <div id="modal-add-member" class="hidden absolute inset-0 bg-black/95 z-[80] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim"><h3 class="text-xs font-bold mb-4 tracking-widest text-green-500 uppercase">ADD_NODE_TO_CHANNEL</h3><div class="h-64 overflow-y-auto custom-scroll border border-green-900/50 p-2 mb-4" id="add-member-list"></div><button onclick="document.getElementById('modal-add-member').classList.add('hidden')" class="w-full btn-base border-zinc-800 text-zinc-600 py-2">CLOSE</button></div></div>
-    <div id="modal-global-icon" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim border-yellow-600"><h3 class="text-xs font-bold mb-4 tracking-widest text-yellow-500 uppercase">GLOBAL_ICON_CONFIG</h3><div class="mb-6"><button onclick="document.getElementById('global-icon-input').click()" class="w-full border border-dashed border-yellow-800 p-4 text-[9px] text-yellow-600 hover:text-white">[ SELECT_FILE ]</button><input type="file" id="global-icon-input" class="hidden" accept="image/*"></div><div class="flex gap-2"><button onclick="updateGlobalIcon()" class="flex-1 btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-2">UPDATE</button><button onclick="document.getElementById('modal-global-icon').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
+    <!-- MODAL: CREATE GROUP -->
+    <div id="modal-group" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim">
+            <h3 class="text-xs font-bold mb-4 tracking-widest text-green-500 uppercase">NEW_CHANNEL_INIT</h3>
+            <input id="group-name" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-4 outline-none text-sm uppercase placeholder-green-900" placeholder="CHANNEL_NAME">
+            
+            <div class="flex items-center gap-2 mb-4 p-2 border border-green-900 bg-green-900/10">
+                <input type="checkbox" id="group-private" class="accent-green-500">
+                <label for="group-private" class="text-[10px] text-green-400 uppercase font-bold cursor-pointer">PRIVATE_ENCRYPTED (INVITE ONLY)</label>
+            </div>
+
+            <div class="mb-6">
+                <button onclick="document.getElementById('group-icon-input').click()" class="w-full border border-dashed border-green-800 p-4 text-[9px] text-green-600 hover:text-white">[ UPLOAD ICON ]</button>
+                <input type="file" id="group-icon-input" class="hidden" accept="image/*">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="createGroup()" class="flex-1 btn-base btn-green py-2">CREATE</button>
+                <button onclick="document.getElementById('modal-group').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD MEMBER -->
+    <div id="modal-add-member" class="hidden absolute inset-0 bg-black/95 z-[80] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim">
+            <h3 class="text-xs font-bold mb-4 tracking-widest text-green-500 uppercase">ADD_NODE_TO_CHANNEL</h3>
+            <div class="h-64 overflow-y-auto custom-scroll border border-green-900/50 p-2 mb-4" id="add-member-list"></div>
+            <button onclick="document.getElementById('modal-add-member').classList.add('hidden')" class="w-full btn-base border-zinc-800 text-zinc-600 py-2">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Other Modals (Global Icon, Wipe, Name, Admin, Ban, Edit) -->
+    <div id="modal-global-icon" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim border-yellow-600"><h3 class="text-xs font-bold mb-4 tracking-widest text-yellow-500 uppercase">GLOBAL_ICON_CONFIG</h3><div class="mb-6"><button onclick="document.getElementById('global-icon-input').click()" class="w-full border border-dashed border-yellow-800 p-4 text-[9px] text-yellow-600 hover:text-white">[ SELECT_FILE ]</button><input type="file" id="global-icon-input" class="hidden" accept="image/*"></div><div class="flex gap-2"><button onclick="updateGlobalIcon()" class="flex-1 btn-base border-yellow-600 text-yellow-500 py-2">UPDATE</button><button onclick="document.getElementById('modal-global-icon').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
     <div id="modal-wipe" class="hidden absolute inset-0 bg-black/95 z-[110] flex items-center justify-center p-4"><div class="w-full max-w-xs alert-border p-6 bg-black text-center modal-anim"><h3 class="text-red-500 font-black text-lg mb-2">CRITICAL</h3><p class="text-[9px] text-red-900 uppercase mb-6">PERMANENTLY PURGE IDENTITY?</p><input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase" placeholder="TYPE 'TERMINATE'"><div class="flex flex-col gap-2"><button onclick="confirmDecommission()" class="btn-base btn-red py-3">EXECUTE</button><button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort</button></div></div></div>
     <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-8 bg-black modal-anim"><h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE</h3><input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS"><div class="flex gap-4"><button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button><button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button></div></div></div>
     <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-4"><div class="w-full max-w-md alert-border p-6 md:p-8 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.3)] modal-anim"><button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold text-lg">×</button><h2 class="text-xl font-bold text-red-500 mb-4 text-center uppercase tracking-tighter">ROOT_CONTROL</h2><div class="space-y-4"><div class="grid grid-cols-2 gap-3"><button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP</button><button onclick="alert('Import disabled.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT</button></div><button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button><button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button><div class="pt-4 border-t border-red-950"><button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">WIPE_ALL_DATA</button></div></div></div></div>
@@ -203,7 +235,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, limit, deleteDoc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, limit, deleteDoc, updateDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
@@ -235,7 +267,9 @@
         let channelsCache = {};
         
         let allUsers = [];
-        let testLock = false; // PREVENTS LOOPING
+        let showAllUsers = false;
+        let isCreatingTestAccount = false;
+        let testLock = false;
 
         function logTestAction(action) {
             if (!IS_TEST_MODE) return;
@@ -245,6 +279,31 @@
             li.innerText = `> ${action}`;
             li.className = action.includes("FAIL") ? "text-red-500" : "text-green-400";
             logList.prepend(li);
+        }
+
+        async function ensureTestGroupAndJoin(uid) {
+            const groupId = 'test-suite-group';
+            const groupRef = doc(db, 'channels', groupId);
+            try {
+                const snap = await getDoc(groupRef);
+                if (!snap.exists()) {
+                    await setDoc(groupRef, {
+                        name: "TEST GROUP",
+                        type: 'private',
+                        createdBy: 'system',
+                        createdAt: serverTimestamp(),
+                        members: [uid]
+                    });
+                } else {
+                    await updateDoc(groupRef, {
+                        members: arrayUnion(uid)
+                    });
+                }
+                logTestAction("JOINED_GROUP: TEST GROUP");
+            } catch(e) {
+                console.error("Test Group Error", e);
+                logTestAction("GROUP_JOIN_FAIL");
+            }
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -258,7 +317,6 @@
                 document.getElementById('test-ref-display').innerText = REF_LINK;
                 
                 if (user && !user.displayName?.startsWith('TESTER_')) {
-                    // Wrong user type for test mode, sign out
                     if(!testLock) {
                         testLock = true;
                         logTestAction("CLEANING_NON_TEST_USER");
@@ -269,7 +327,6 @@
                 }
                 
                 if (!user && !testLock) {
-                    // Create new test user
                     testLock = true;
                     try {
                         const r = Math.random().toString(36).substring(2,6);
@@ -277,7 +334,6 @@
                         const creds = await createUserWithEmailAndPassword(auth, `test_${Date.now()}_${r}@eugeneevons.com`, 'test123456');
                         await updateProfile(creds.user, { displayName: `TESTER_${r.toUpperCase()}` });
                         logTestAction("IDENTITY_CREATED");
-                        // User is now signed in, onAuthStateChanged will refire
                         return;
                     } catch(e) {
                         logTestAction("CREATION_FAIL: " + e.message);
@@ -296,6 +352,11 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
+                // AUTO-JOIN TEST GROUP IF TEST MODE
+                if (IS_TEST_MODE) {
+                    await ensureTestGroupAndJoin(user.uid);
+                }
+
                 isModerator = (user.email === ADMIN_EMAIL);
                 if(isModerator) document.getElementById('admin-panel-btn').classList.remove('hidden');
                 
@@ -320,7 +381,7 @@
                     appScreen.classList.remove('hidden');
                     startListeners();
                 } catch(e) {
-                    console.error(e);
+                    console.error("DB Init Error", e);
                     loading.classList.add('hidden');
                     appScreen.classList.remove('hidden');
                 }
@@ -333,6 +394,11 @@
                 }
             }
         });
+
+        // ... [Rest of the helper functions: startListeners, renderChannelItem, subscribeMessages, etc.] ...
+        // Note: For brevity in the single-file response, I am keeping the logic identical to v10.5 
+        // but ensuring 'arrayUnion' and 'arrayRemove' are imported and used.
+        // The full implementation of these functions is below.
 
         function startListeners() {
             if(channelsUnsub) channelsUnsub();
@@ -378,6 +444,46 @@
             subscribeMessages();
         }
 
+        function renderUserList() {
+            const list = document.getElementById('user-list');
+            const btn = document.getElementById('expand-users-btn');
+            list.innerHTML = '';
+
+            const limit = 7;
+            const usersToShow = showAllUsers ? allUsers : allUsers.slice(0, limit);
+
+            usersToShow.forEach(u => {
+                const div = document.createElement('div');
+                const isSelected = currentChannel.includes(u.id);
+                div.className = `user-item ${isSelected ? 'active' : 'border-transparent'} rounded-r`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden mr-2">
+                         <div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-[10px] border border-green-800 font-bold shrink-0">
+                            ${u.nickname.substring(0,1).toUpperCase()}
+                        </div>
+                        <div class="flex flex-col overflow-hidden">
+                            <span class="text-xs font-bold truncate group-hover:text-white transition-colors uppercase">${escapeHtml(u.nickname)}</span>
+                            <span class="text-[8px] text-green-900 font-mono">ID: ${u.id.substring(0,4)}</span>
+                        </div>
+                    </div>
+                    <button onclick="switchChannel('${u.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-1.5 py-0.5 transition-all rounded uppercase">MSG</button>
+                `;
+                list.appendChild(div);
+            });
+
+            if (allUsers.length > limit) {
+                btn.classList.remove('hidden');
+                btn.innerText = showAllUsers ? "[ COLLAPSE_LIST ]" : `[ SHOW_${allUsers.length - limit}_MORE ]`;
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        window.toggleUserList = () => {
+            showAllUsers = !showAllUsers;
+            renderUserList();
+        };
+
         function renderChannelItem(id, data, container) {
             const div = document.createElement('div');
             const isSelected = currentChannel === id;
@@ -385,9 +491,13 @@
             div.onclick = () => switchChannel(id);
             
             let iconHtml = `<div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-xs border border-green-800 font-bold shrink-0"><i class="fas fa-hashtag"></i></div>`;
-            if (data.icon) iconHtml = `<img src="${data.icon}" class="w-6 h-6 rounded border border-green-800 object-cover bg-black shrink-0">`;
-            else if (id === 'global') iconHtml = `<div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-xs border border-green-800 font-bold shrink-0"><i class="fas fa-globe"></i></div>`;
-            else if (data.type === 'private') iconHtml = `<div class="w-6 h-6 rounded bg-red-900/20 flex items-center justify-center text-xs border border-red-800 font-bold shrink-0 text-red-500"><i class="fas fa-lock"></i></div>`;
+            if (data.icon) {
+                iconHtml = `<img src="${data.icon}" class="w-6 h-6 rounded border border-green-800 object-cover bg-black shrink-0">`;
+            } else if (id === 'global') {
+                iconHtml = `<div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-xs border border-green-800 font-bold shrink-0"><i class="fas fa-globe"></i></div>`;
+            } else if (data.type === 'private') {
+                iconHtml = `<div class="w-6 h-6 rounded bg-red-900/20 flex items-center justify-center text-xs border border-red-800 font-bold shrink-0 text-red-500"><i class="fas fa-lock"></i></div>`;
+            }
 
             div.innerHTML = `${iconHtml}<div class="flex flex-col overflow-hidden"><span class="text-xs font-bold truncate uppercase ${data.type === 'private' ? 'text-red-400' : ''}">${escapeHtml(data.name || id)}</span><span class="text-[8px] opacity-40 uppercase">${id === 'global' ? 'PUBLIC' : 'GROUP'}</span></div>`;
             container.appendChild(div);
@@ -414,7 +524,7 @@
                     }
                     const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
                     const highlightClass = isMentioned ? 'ping-glow' : (isMe ? 'border-green-500/50' : 'border-green-900');
-                    const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[ ! MENTION ! ]</span>` : '';
+                    const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : '';
                     const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DM" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
                     let actions = '';
                     if (isMe) actions += `<button onclick="openEditModal('${m.id}', '${content.startsWith('data:image') ? '' : escapeHtml(m.text)}')" class="ml-2 text-[8px] text-green-600 hover:text-white font-bold uppercase">[EDIT]</button>`;
@@ -511,37 +621,48 @@
         };
 
         window.sendMessage = async (e) => { e.preventDefault(); const input = document.getElementById('msg-input'); const text = input.value.trim(); if(!text) return; logTestAction("MSG_SENT"); try { await addDoc(collection(db, 'messages'), { text, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel }); input.value = ''; } catch(e) { alert("MSG FAIL: " + e.message); } };
-        window.handleImage = (input) => { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { await addDoc(collection(db, 'messages'), { text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel }); }; reader.readAsDataURL(file); input.value = ''; };
-        window.deleteMsg = async (id) => { if(confirm("DELETE?")) await deleteDoc(doc(db, "messages", id)); };
+        window.handleImage = (input) => { const file = input.files[0]; if(!file) return; logTestAction("SENT_IMAGE"); const reader = new FileReader(); reader.onload = async (e) => { await addDoc(collection(db, 'messages'), { text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel }); }; reader.readAsDataURL(file); input.value = ''; };
+        window.deleteMsg = async (id) => { if(confirm("DELETE?")) { logTestAction("DELETED_MSG"); await deleteDoc(doc(db, "messages", id)); } };
         window.openEditModal = (id,t) => { if(t.startsWith('<img')) return; document.getElementById('modal-edit').classList.remove('hidden'); document.getElementById('edit-input').value=t; document.getElementById('edit-id').value=id; };
-        window.submitEdit = async () => { const id=document.getElementById('edit-id').value, t=document.getElementById('edit-input').value.trim(); if(t) { await updateDoc(doc(db,'messages',id),{text:t}); document.getElementById('modal-edit').classList.add('hidden'); } };
+        window.submitEdit = async () => { const id=document.getElementById('edit-id').value, t=document.getElementById('edit-input').value.trim(); if(t) { logTestAction("EDITED_MSG"); await updateDoc(doc(db,'messages',id),{text:t}); document.getElementById('modal-edit').classList.add('hidden'); } };
         
-        window.endTestSession = async () => { if(confirm("WIPE TEST USER?")) { try{await deleteUser(currentUser);}catch(e){} window.location.href=window.location.pathname; } };
+        window.endTestSession = async () => {
+            if(confirm("TERMINATE TEST SESSION AND WIPE DATA?")) {
+                try {
+                    const groupId = 'test-suite-group';
+                    await updateDoc(doc(db, 'channels', groupId), { members: arrayRemove(currentUser.uid) });
+                } catch(e) {}
+                try { await deleteUser(currentUser); } catch(e) {}
+                window.location.href = window.location.pathname; 
+            }
+        };
+
         window.authGoogle = async () => { try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){alert(e.message)} };
         window.authGuest = async () => { try{await signInAnonymously(auth)}catch(e){alert(e.message)} };
         window.handleEmailSubmit = async (e) => { e.preventDefault(); const em=document.getElementById('email-input').value,pw=document.getElementById('password-input').value,m=document.getElementById('auth-mode').value; try{if(m==='login') await signInWithEmailAndPassword(auth,em,pw); else {const u=await createUserWithEmailAndPassword(auth,em,pw); await updateProfile(u.user,{displayName:em.split('@')[0]});}}catch(e){alert(e.message)} };
         window.logout = () => signOut(auth);
         
-        // Modal Toggles
+        window.showEmailAuth = (m) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value=m; document.getElementById('email-submit-btn').innerText=m==='login'?"LOGIN":"REGISTER"; };
+        window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
+        window.toggleEmailMode = () => { const m = document.getElementById('auth-mode').value; window.showEmailAuth(m==='login'?'signup':'login'); };
+        
+        window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
+        window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
+        window.confirmDecommission = async () => { if(document.getElementById('wipe-confirm').value!=='TERMINATE') return; try{await deleteUser(currentUser); location.reload();}catch(e){alert("RE-LOGIN");} };
+        window.saveName = async () => { const n=document.getElementById('new-name').value.trim(); if(n) { logTestAction("CHANGED_NAME"); await updateProfile(currentUser,{displayName:n}); await setDoc(doc(db,'users',currentUser.uid),{nickname:n},{merge:true}); location.reload(); } };
         window.openGroupModal = () => document.getElementById('modal-group').classList.remove('hidden');
         window.openGlobalIconModal = () => document.getElementById('modal-global-icon').classList.remove('hidden');
+        window.updateGlobalIcon = async () => { const f=document.getElementById('global-icon-input'); if(f.files.length===0) return; const i=await new Promise(r=>{const fr=new FileReader(); fr.onload=e=>r(e.target.result); fr.readAsDataURL(f.files[0]);}); await setDoc(doc(db,'channels','global'),{name:'GLOBAL FEED',icon:i,type:'global'},{merge:true}); document.getElementById('modal-global-icon').classList.add('hidden'); };
+
         window.openAdminPanel = () => document.getElementById('admin-modal').classList.remove('hidden');
         window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
-        window.openBanList = async () => { document.getElementById('ban-list-modal').classList.remove('hidden'); const s=await getDocs(collection(db,'banned_users')); document.getElementById('ban-list-content').innerHTML=s.docs.map(d=>`<div class="border border-red-900 p-2 mb-1 flex justify-between"><span class="text-xs text-red-500">${d.data().nickname}</span><button onclick="unbanUser('${d.id}')" class="text-[8px] border border-green-800 text-green-500 px-2">UNBAN</button></div>`).join(''); };
+        window.openBanList = async () => { document.getElementById('ban-list-modal').classList.remove('hidden'); const s=await getDocs(collection(db,'banned_users')); document.getElementById('ban-list-content').innerHTML=s.docs.map(d=>`<div class="border border-red-900 p-2 mb-1 flex justify-between"><span class="text-xs text-red-500">${d.data().nickname}</span><button onclick="unbanUser('${d.id}')" class="text-[8px] px-2 text-green-500 border border-green-800">REVOKE</button></div>`).join(''); };
         window.unbanUser = async (id) => { await deleteDoc(doc(db,'banned_users',id)); openBanList(); };
         window.broadcastAnnouncement = async () => { const t=prompt("MSG:"); if(t) await addDoc(collection(db,'messages'),{text:t,nickname:"SYSTEM",uid:"SYSTEM",type:'announcement',timestamp:serverTimestamp(),channel:'global'}); };
         window.confirmBan = async (uid,name) => { if(confirm(`BAN ${name}?`)) await setDoc(doc(db,'banned_users',uid),{nickname:name,reason:"ADMIN_BAN"}); };
         window.confirmSystemFlush = async () => { if(prompt("CONFIRM")!=='CONFIRM') return; const s=await getDocs(collection(db,'messages')); s.forEach(d=>deleteDoc(d.ref)); };
         window.exportData = () => { const blob=new Blob([JSON.stringify(rawMessages)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dump.json'; a.click(); };
-        
-        window.showEmailAuth = (m) => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); document.getElementById('auth-mode').value=m; document.getElementById('email-submit-btn').innerText=m==='login'?"LOGIN":"REGISTER"; };
-        window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
-        window.toggleEmailMode = () => { const m = document.getElementById('auth-mode').value; window.showEmailAuth(m==='login'?'signup':'login'); };
-        window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
-        window.openDecommissionModal = () => document.getElementById('modal-wipe').classList.remove('hidden');
-        window.confirmDecommission = async () => { if(document.getElementById('wipe-confirm').value!=='TERMINATE') return; try{await deleteUser(currentUser); location.reload();}catch(e){alert("RE-LOGIN");} };
-        window.saveName = async () => { const n=document.getElementById('new-name').value.trim(); if(n) { await updateProfile(currentUser,{displayName:n}); await setDoc(doc(db,'users',currentUser.uid),{nickname:n},{merge:true}); location.reload(); } };
-        window.updateGlobalIcon = async () => { const f=document.getElementById('global-icon-input'); if(f.files.length===0) return; const i=await new Promise(r=>{const fr=new FileReader(); fr.onload=e=>r(e.target.result); fr.readAsDataURL(f.files[0]);}); await setDoc(doc(db,'channels','global'),{name:'GLOBAL FEED',icon:i,type:'global'},{merge:true}); document.getElementById('modal-global-icon').classList.add('hidden'); };
+
         window.toggleSidebar = (f) => { const s=document.getElementById('sidebar'),b=document.getElementById('mobile-sidebar-bg'); if(f){s.classList.add('hidden');b.classList.add('hidden'); return;} s.classList.toggle('hidden'); if(!s.classList.contains('hidden')){s.classList.add('absolute','z-50','h-full');b.classList.remove('hidden');}else{b.classList.add('hidden');} };
         function escapeHtml(t) { return t?t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):''; }
     </script>
