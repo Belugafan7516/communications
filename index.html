@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERM-CHAT v10.6 // AUTO_GROUP_JOIN</title>
+    <title>TERM-CHAT v10.7 // CLOUD_LOGGING</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -70,26 +70,29 @@
 
     <!-- LOADING -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v10.6 ]</div>
+        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v10.7 ]</div>
         <div id="loading-txt" class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Checking Parameters...</div>
     </div>
 
     <!-- TESTER DASHBOARD (Fixed Overlay) -->
-    <div id="tester-dashboard" class="hidden fixed top-2 right-2 z-[200] bg-black/95 border border-yellow-600 p-3 shadow-lg w-64 max-h-[50vh] flex flex-col modal-anim">
+    <div id="tester-dashboard" class="hidden fixed top-2 right-2 z-[200] bg-black/95 border border-yellow-600 p-3 shadow-lg w-64 max-h-[60vh] flex flex-col modal-anim">
         <div class="flex items-center justify-between border-b border-yellow-800 pb-2 mb-2">
             <div class="flex items-center gap-2">
                 <i class="fas fa-flask text-yellow-500 animate-pulse"></i>
-                <h3 class="text-yellow-500 font-bold text-[10px] uppercase">TEST_MODE_ACTIVE</h3>
+                <h3 class="text-yellow-500 font-bold text-[10px] uppercase">TEST_SUITE</h3>
             </div>
-            <button onclick="endTestSession()" class="text-red-500 hover:text-white text-[9px] font-bold border border-red-900 px-2 bg-red-900/10">[ WIPE & EXIT ]</button>
+            <button onclick="endTestSession()" class="text-red-500 hover:text-white text-[9px] font-bold border border-red-900 px-2 bg-red-900/10">[ WIPE ]</button>
         </div>
         <div class="text-[9px] text-zinc-400 mb-1">REF: <span id="test-ref-display" class="text-green-400 font-bold">NONE</span></div>
         <div class="text-[9px] text-zinc-400 mb-2">ID: <span id="test-id-display" class="text-green-400 font-mono">INIT...</span></div>
-        <div class="flex-1 overflow-y-auto custom-scroll border border-zinc-800 bg-zinc-900/50 p-2 h-24">
+        <div class="flex-1 overflow-y-auto custom-scroll border border-zinc-800 bg-zinc-900/50 p-2 h-24 mb-2">
             <ul id="test-logs" class="space-y-1 font-mono text-[8px] text-zinc-300">
                 <li class="text-yellow-500">> TEST_SUITE_MOUNTED</li>
             </ul>
         </div>
+        <button onclick="exportTestLogs()" class="w-full border border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black text-[9px] font-bold py-1 uppercase transition-all">
+            [ EXPORT LOGS ]
+        </button>
     </div>
 
     <!-- AUTH SCREEN -->
@@ -222,7 +225,7 @@
     </div>
 
     <!-- Other Modals (Global Icon, Wipe, Name, Admin, Ban, Edit) -->
-    <div id="modal-global-icon" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim border-yellow-600"><h3 class="text-xs font-bold mb-4 tracking-widest text-yellow-500 uppercase">GLOBAL_ICON_CONFIG</h3><div class="mb-6"><button onclick="document.getElementById('global-icon-input').click()" class="w-full border border-dashed border-yellow-800 p-4 text-[9px] text-yellow-600 hover:text-white">[ SELECT_FILE ]</button><input type="file" id="global-icon-input" class="hidden" accept="image/*"></div><div class="flex gap-2"><button onclick="updateGlobalIcon()" class="flex-1 btn-base border-yellow-600 text-yellow-500 py-2">UPDATE</button><button onclick="document.getElementById('modal-global-icon').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
+    <div id="modal-global-icon" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim border-yellow-600"><h3 class="text-xs font-bold mb-4 tracking-widest text-yellow-500 uppercase">GLOBAL_ICON_CONFIG</h3><div class="mb-6"><button onclick="document.getElementById('global-icon-input').click()" class="w-full border border-dashed border-yellow-800 p-4 text-[9px] text-yellow-600 hover:text-white">[ SELECT_FILE ]</button><input type="file" id="global-icon-input" class="hidden" accept="image/*"></div><div class="flex gap-2"><button onclick="updateGlobalIcon()" class="flex-1 btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-2">UPDATE</button><button onclick="document.getElementById('modal-global-icon').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
     <div id="modal-wipe" class="hidden absolute inset-0 bg-black/95 z-[110] flex items-center justify-center p-4"><div class="w-full max-w-xs alert-border p-6 bg-black text-center modal-anim"><h3 class="text-red-500 font-black text-lg mb-2">CRITICAL</h3><p class="text-[9px] text-red-900 uppercase mb-6">PERMANENTLY PURGE IDENTITY?</p><input id="wipe-confirm" type="text" class="w-full bg-red-950/20 border-b border-red-500 p-2 mb-6 text-red-500 outline-none text-center text-xs uppercase" placeholder="TYPE 'TERMINATE'"><div class="flex flex-col gap-2"><button onclick="confirmDecommission()" class="btn-base btn-red py-3">EXECUTE</button><button onclick="document.getElementById('modal-wipe').classList.add('hidden')" class="text-[9px] text-zinc-600 hover:text-white uppercase font-bold p-2">Abort</button></div></div></div>
     <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-8 bg-black modal-anim"><h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE</h3><input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS"><div class="flex gap-4"><button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button><button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button></div></div></div>
     <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-4"><div class="w-full max-w-md alert-border p-6 md:p-8 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.3)] modal-anim"><button onclick="closeAdminPanel()" class="absolute top-2 right-4 text-red-500 hover:text-white font-bold text-lg">×</button><h2 class="text-xl font-bold text-red-500 mb-4 text-center uppercase tracking-tighter">ROOT_CONTROL</h2><div class="space-y-4"><div class="grid grid-cols-2 gap-3"><button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP</button><button onclick="alert('Import disabled.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT</button></div><button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button><button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button><div class="pt-4 border-t border-red-950"><button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">WIPE_ALL_DATA</button></div></div></div></div>
@@ -270,16 +273,47 @@
         let showAllUsers = false;
         let isCreatingTestAccount = false;
         let testLock = false;
+        let pendingTestLogs = []; // Buffer for logs before auth
 
-        function logTestAction(action) {
+        // TEST LOGGER
+        async function logTestAction(action) {
             if (!IS_TEST_MODE) return;
+            
             const logList = document.getElementById('test-logs');
-            if(!logList) return;
-            const li = document.createElement('li');
-            li.innerText = `> ${action}`;
-            li.className = action.includes("FAIL") ? "text-red-500" : "text-green-400";
-            logList.prepend(li);
+            if(logList) {
+                const li = document.createElement('li');
+                li.innerText = `> ${action}`;
+                li.className = action.includes("FAIL") ? "text-red-500" : "text-green-400";
+                logList.prepend(li);
+            }
+
+            const entry = { action, timestamp: serverTimestamp(), localTime: new Date().toISOString() };
+
+            if (currentUser) {
+                // If user is ready, flush pending and write new
+                if (pendingTestLogs.length > 0) {
+                    pendingTestLogs.forEach(async (log) => {
+                        try { await addDoc(collection(db, 'test_sessions', currentUser.uid, 'logs'), log); } catch(e){}
+                    });
+                    pendingTestLogs = [];
+                }
+                try {
+                    await addDoc(collection(db, 'test_sessions', currentUser.uid, 'logs'), entry);
+                } catch(e) { console.error("Cloud log fail", e); }
+            } else {
+                // Buffer logs if not ready
+                pendingTestLogs.push(entry);
+            }
         }
+
+        window.exportTestLogs = async () => {
+            if(!currentUser) return;
+            const q = query(collection(db, 'test_sessions', currentUser.uid, 'logs'), orderBy('timestamp', 'desc'));
+            const snap = await getDocs(q);
+            const logs = snap.docs.map(d => d.data());
+            const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'test_session_logs.json'; a.click();
+        };
 
         async function ensureTestGroupAndJoin(uid) {
             const groupId = 'test-suite-group';
@@ -395,11 +429,8 @@
             }
         });
 
-        // ... [Rest of the helper functions: startListeners, renderChannelItem, subscribeMessages, etc.] ...
-        // Note: For brevity in the single-file response, I am keeping the logic identical to v10.5 
-        // but ensuring 'arrayUnion' and 'arrayRemove' are imported and used.
-        // The full implementation of these functions is below.
-
+        // ... [Rest of the logic from v10.6 is preserved below] ...
+        
         function startListeners() {
             if(channelsUnsub) channelsUnsub();
             channelsUnsub = onSnapshot(collection(db, 'channels'), (snap) => {
@@ -588,6 +619,7 @@
 
         // --- ACTIONS ---
         window.createGroup = async () => {
+            logTestAction("CREATE_GROUP");
             const name = document.getElementById('group-name').value.trim();
             const isPrivate = document.getElementById('group-private').checked;
             const fileInput = document.getElementById('group-icon-input');
