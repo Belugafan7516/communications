@@ -306,6 +306,7 @@
                 <button onclick="openProvisionModal()" class="w-full btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black py-2">[ PROVISION_NEW_NODE ]</button>
                 <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button>
                 <button onclick="openBanList()" class="w-full btn-base btn-red">[ MANAGE_BLACKLIST ]</button>
+                <button onclick="openPromoteModal()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ PROMOTE_TO_MOD ]</button>
                 <button onclick="promptTerminateNode()" class="w-full btn-base btn-red py-2 bg-red-950/40 border-dashed">[ TERMINATE_NODE_BY_ID ]</button>
                 <div class="pt-4 border-t border-red-950">
                     <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">WIPE_ALL_DATA</button>
@@ -518,7 +519,8 @@
                 
                 if (IS_TEST_MODE) await ensureTestGroupAndJoin(user.uid);
 
-                isModerator = (user.email === ADMIN_EMAIL);
+                const userData = userDocSnap.exists() ? userDocSnap.data() : {};
+                isModerator = (user.email === ADMIN_EMAIL || userData.isMod === true);
                 if(isModerator) document.getElementById('admin-panel-btn').classList.remove('hidden');
                 
                 if(banCheckUnsub) banCheckUnsub();
@@ -927,6 +929,18 @@
 
         window.openAdminPanel = () => document.getElementById('admin-modal').classList.remove('hidden');
         window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
+        
+        window.openPromoteModal = () => {
+            showPromptBox("PROMOTE NODE", "ENTER TARGET NODE ID:", async (id) => {
+                if(!id) return;
+                const target = allUsers.find(u => u.id.startsWith(id));
+                if (!target) return showMsgBox("ERROR", "NODE NOT FOUND.");
+                showConfirmBox("CONFIRM", `PROMOTE ${target.nickname} TO MODERATOR?`, async () => {
+                    await updateDoc(doc(db, 'users', target.id), { isMod: true });
+                    showMsgBox("SUCCESS", "NODE PROMOTED.");
+                });
+            });
+        };
         
         window.openBanList = async () => { document.getElementById('ban-list-modal').classList.remove('hidden'); const s=await getDocs(collection(db,'banned_users')); document.getElementById('ban-list-content').innerHTML=s.docs.map(d=>`<div class="border border-red-900 p-2 mb-1 flex justify-between"><span class="text-xs text-red-500">${d.data().nickname}</span><button onclick="unbanUser('${d.id}')" class="text-[8px] px-2 text-green-500 border border-green-800">REVOKE</button></div>`).join(''); };
         window.unbanUser = async (id) => { await deleteDoc(doc(db,'banned_users',id)); openBanList(); };
