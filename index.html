@@ -320,18 +320,12 @@
     <div id="modal-edit" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim"><h3 class="text-xs font-bold mb-4 tracking-widest text-green-800 uppercase">MODIFY_PACKET</h3><input id="edit-input" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-6 outline-none text-center text-sm uppercase"><input type="hidden" id="edit-id"><div class="flex gap-2"><button onclick="submitEdit()" class="flex-1 btn-base btn-green py-2">SAVE</button><button onclick="document.getElementById('modal-edit').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
     <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-8"><div class="border-2 border-red-600 p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)] modal-anim"><div class="text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div><div class="text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div><p class="text-red-400 font-mono mb-6 text-xs leading-relaxed uppercase">Identity flagged or missing authorization.</p><div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-black">REASON: BLACKLISTED</div><button onclick="location.reload()" class="border border-red-600 text-red-600 px-4 py-2 text-xs hover:bg-red-600 hover:text-black uppercase">Retry</button></div></div>
 
-    <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40 backdrop-blur-sm transition-opacity"></div>
-
-    <!-- HIDDEN PRINT AREA FOR PROVISIONING -->
-    <div id="print-area" class="hidden">
-        <h1 class="print-text" style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">TERM-CHAT - SECURE NODE CREDENTIALS</h1>
-        <div class="print-border">
-            <p class="print-text" style="margin-bottom: 10px;"><strong>ATTN:</strong> Handle this document with strict confidentiality.</p>
-            <p class="print-text" style="margin-bottom: 10px;"><strong>URL:</strong> <span id="print-url"></span></p>
-            <p class="print-text" style="margin-bottom: 10px;"><strong>NODE IDENT (EMAIL):</strong> <span id="print-email"></span></p>
-            <p class="print-text" style="margin-bottom: 20px;"><strong>TEMPORARY KEY:</strong> <span id="print-pass"></span></p>
-            <p class="print-text" style="font-size: 12px;"><strong>INSTRUCTIONS:</strong> Navigate to the URL above. Use the provided Node Ident and Temporary Key to authenticate. Upon your initial uplink, the system will enforce a mandatory key rotation. Establish a permanent, secure key immediately.</p>
-        </div>
+    <!-- MAINTENANCE SCREEN -->
+    <div id="maintenance-screen" class="hidden absolute inset-0 bg-black z-[200] flex flex-col items-center justify-center text-center p-8">
+        <div class="text-yellow-500 text-6xl mb-4"><i class="fas fa-tools animate-spin"></i></div>
+        <div class="text-2xl font-black text-yellow-500 uppercase tracking-widest">SYSTEM_MAINTENANCE</div>
+        <div class="text-xs text-yellow-800 mt-2 font-mono uppercase">Offline_mode_active</div>
+    </div>
     </div>
 
     <script type="module">
@@ -369,6 +363,7 @@
         let usersUnsub = null;
         let channelsUnsub = null;
         let banCheckUnsub = null;
+        let diagnosticsUnsub = null; // New listener
         let rawMessages = [];
         let channelsCache = {};
         
@@ -473,6 +468,25 @@
             const loading = document.getElementById('loading');
             const authScreen = document.getElementById('auth-screen');
             const appScreen = document.getElementById('app-screen');
+
+            // --- MAINTENANCE GATEKEEPER ---
+            const diagSnap = await getDoc(doc(db, '_diagnostics', 'online'));
+            const isOnline = diagSnap.exists() ? diagSnap.data().online : true;
+
+            if (!isOnline && user && user.email !== ADMIN_EMAIL && !user.displayName?.startsWith('TESTER_')) {
+                document.getElementById('maintenance-screen').classList.remove('hidden');
+                signOut(auth);
+                return;
+            }
+
+            // --- REALTIME DIAGNOSTIC MONITOR ---
+            if(diagnosticsUnsub) diagnosticsUnsub();
+            diagnosticsUnsub = onSnapshot(doc(db, '_diagnostics', 'online'), (doc) => {
+                const online = doc.exists() ? doc.data().online : true;
+                if (!online && currentUser && currentUser.email !== ADMIN_EMAIL && !currentUser.displayName?.startsWith('TESTER_')) {
+                    location.reload(); // Force logout/refresh if maintenance toggled
+                }
+            });
 
             // --- TEST MODE HANDLER ---
             if (IS_TEST_MODE) {
