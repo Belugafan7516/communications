@@ -2,48 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>// TERM-CHAT 10.9 \</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>// TERM-CHAT 10.9 \\</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
-        :root { --term-green: #22c55e; --term-yellow: #eab308; --term-bg: #050505; --term-glow: 0 0 10px rgba(34, 197, 94, 0.4); --term-alert: #ef4444; }
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--term-bg); color: var(--term-green); font-family: 'Courier New', monospace; overflow: hidden; position: fixed; inset: 0; }
-        .scanline::before { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); z-index: 50; background-size: 100% 2px, 3px 100%; pointer-events: none; }
-        .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
-        .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
-        .custom-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #15803d; border-radius: 2px; }
-        .btn-base { @apply border px-3 py-1 text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none active:scale-95; }
-        .btn-green { @apply border-green-600 text-green-500 hover:bg-green-600 hover:text-black; }
-        .btn-red { @apply border-red-600 text-red-500 hover:bg-red-600 hover:text-black; }
-        .btn-yellow { @apply border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black; }
-        .user-item { @apply p-2 border-l-2 border-transparent transition-all cursor-pointer flex items-center gap-3 bg-green-900/5 mb-1; }
-        .user-item.active { @apply bg-green-900/30 border-green-500 pl-3; }
-        .msg-anim { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-anim { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+        :root { --term-green: #22c55e; --term-yellow: #eab308; --term-bg: #050505; --term-alert: #ef4444; }
+        body { background: var(--term-bg); color: var(--term-green); font-family: 'Courier New', monospace; }
+        .neon-border { border: 1px solid var(--term-green); box-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
     </style>
 </head>
-<body class="scanline">
-    <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500">[ SYSTEM_BOOT_v10.9 ]</div>
+<body class="h-screen overflow-hidden">
+    <!-- MAINTENANCE GATE -->
+    <div id="maintenance-screen" class="hidden fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center text-center p-8">
+        <div class="text-4xl font-black text-yellow-500 mb-4 tracking-tighter">MAINTENANCE_MODE</div>
+        <p class="text-zinc-400 font-mono text-xs">SYSTEM_DIAGNOSTICS_IN_PROGRESS</p>
     </div>
-    
-    <!-- (Core structure identical to previous iteration for brevity, logic below) -->
-    <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4">
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="absolute inset-0 flex items-center justify-center p-4">
         <div class="w-full max-w-sm neon-border p-8 bg-black">
             <h1 class="text-4xl font-black text-center mb-8">TERM-CHAT</h1>
-            <button onclick="authGoogle()" class="w-full btn-base btn-green py-4">ACCESS_VIA_GOOGLE</button>
+            <div id="auth-forms" class="space-y-4">
+                <button onclick="authGoogle()" class="w-full border border-green-600 p-3 hover:bg-green-600 hover:text-black uppercase font-bold text-[10px]">ACCESS_VIA_GOOGLE</button>
+                <input id="email-field" type="email" placeholder="EMAIL" class="w-full bg-transparent border border-green-900 p-3 outline-none text-xs">
+                <input id="pass-field" type="password" placeholder="KEY" class="w-full bg-transparent border border-green-900 p-3 outline-none text-xs">
+                <button onclick="signInEmail()" class="w-full border border-green-800 p-3 hover:bg-green-800 uppercase font-bold text-[10px]">VALIDATE_CREDENTIALS</button>
+            </div>
         </div>
     </div>
 
-    <!-- APP_SCREEN, MODALS, and FIREBASE_MODULE_SCRIPT go here -->
+    <!-- APP SCREEN -->
+    <div id="app-screen" class="hidden h-full flex">
+        <div id="sidebar" class="w-64 border-r border-green-900 bg-black p-4">
+            <div id="my-id-display" class="font-bold mb-4">...</div>
+            <button id="admin-panel-btn" onclick="openAdminPanel()" class="hidden w-full border border-yellow-600 text-yellow-500 py-2 mb-4 uppercase text-[10px]">ADMIN_CONSOLE</button>
+            <div id="channel-list"></div>
+        </div>
+        <div class="flex-1 flex flex-col">
+            <div id="msg-container" class="flex-1 overflow-y-auto p-4"></div>
+            <form onsubmit="sendMessage(event)" class="p-4 border-t border-green-900">
+                <input id="msg-input" type="text" class="w-full bg-transparent outline-none uppercase" placeholder="TRANSMIT_DATA...">
+            </form>
+        </div>
+    </div>
+
     <script type="module">
-        // [Logic: Real-time _diagnostics listener, Admin Email Guardrails, Admin Prompts replaced with Custom Modals]
-        // [Note: Logic implementation as per previous v10.9 specifications]
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = { /* ... Your Config ... */ };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.signInEmail = async () => {
+            const email = document.getElementById('email-field').value;
+            const pass = document.getElementById('pass-field').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (e) { alert("ACCESS_DENIED: " + e.message); }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            const maintenance = document.getElementById('maintenance-screen');
+            onSnapshot(doc(db, '_diagnostics', 'online'), (snap) => {
+                const online = snap.data()?.online;
+                const isAdmin = user && user.email === 'leeeugene1574@gmail.com';
+                const isTester = user && user.email.includes('@eugeneevons.com');
+                
+                if (!online && !isAdmin && !isTester) {
+                    maintenance.classList.remove('hidden');
+                    if (user) signOut(auth);
+                } else {
+                    maintenance.classList.add('hidden');
+                    if(user) {
+                        document.getElementById('auth-screen').classList.add('hidden');
+                        document.getElementById('app-screen').classList.remove('hidden');
+                    }
+                }
+            });
+        });
+
+        window.authGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
     </script>
 </body>
 </html>
