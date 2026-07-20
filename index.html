@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>// TERM-CHAT 12.1 \</title>
+    <title>// TERM-CHAT 12.5 \</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
@@ -15,7 +15,6 @@
             --term-alert: #ef4444;
         }
 
-        /* LAYOUT CORE */
         html, body {
             height: 100%; height: 100dvh; width: 100%; margin: 0; padding: 0;
             background: var(--term-bg); color: var(--term-green);
@@ -33,7 +32,6 @@
         .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
         .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
 
-        /* SCROLLBARS */
         .custom-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: #001100; }
@@ -49,7 +47,6 @@
         .user-item { @apply p-2 border-l-2 border-transparent transition-all cursor-pointer flex items-center gap-3 bg-green-900/5 mb-1 hover:bg-green-900/20 hover:pl-3; }
         .user-item.active { @apply bg-green-900/30 border-green-500 pl-3; }
 
-        /* KEYFRAMES */
         .msg-anim { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -64,13 +61,11 @@
 
         .ping-glow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); border-color: #eab308 !important; background-color: rgba(234, 179, 8, 0.1) !important; }
 
-        /* MARKDOWN CONTENT */
         .msg-md code { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.4); padding: 0 4px; border-radius: 3px; font-size: 0.9em; }
         .msg-md pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(34,197,94,0.4); padding: 6px 8px; border-radius: 4px; overflow-x: auto; margin: 4px 0; }
         .msg-md pre code { border: none; background: none; padding: 0; }
         .msg-md strong { color: #fff; font-weight: 900; }
         .msg-md em { color: #86efac; font-style: italic; }
-        .msg-md del { opacity: 0.6; }
         .msg-md a { color: #eab308; text-decoration: underline; word-break: break-all; }
         .msg-md blockquote { border-left: 2px solid #15803d; padding-left: 8px; opacity: 0.8; margin: 2px 0; display: block; }
         
@@ -79,16 +74,13 @@
 </head>
 <body class="scanline">
 
-    <!-- TOAST CONTAINER -->
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none w-64"></div>
 
-    <!-- LOADING SCREEN -->
     <div id="loading" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center">
-        <div class="text-2xl font-bold animate-pulse text-green-500 glitch-text">[ SYSTEM_BOOT_v12.1 ]</div>
+        <div class="text-2xl font-bold animate-pulse text-green-500 glitch-text">[ SYSTEM_BOOT_v12.5 ]</div>
         <div class="text-[10px] text-green-800 mt-2 font-mono uppercase tracking-[0.2em]">Synchronizing nodes...</div>
     </div>
 
-    <!-- AUTH SCREEN -->
     <div id="auth-screen" class="hidden absolute inset-0 z-50 bg-black flex items-center justify-center p-4 overflow-y-auto custom-scroll">
         <div class="w-full max-w-sm neon-border p-6 md:p-8 bg-black modal-anim my-auto modal-content-scroll shadow-[0_0_40px_rgba(34,197,94,0.15)]">
             <h1 class="text-4xl font-black text-center mb-2 tracking-tighter text-green-500">TERM-CHAT</h1>
@@ -112,14 +104,13 @@
         </div>
     </div>
 
-    <!-- REFERRAL GATE MODAL -->
     <div id="modal-referral" class="hidden absolute inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-4 backdrop-blur-sm">
         <div class="w-full max-w-sm border-2 border-yellow-600 shadow-[0_0_50px_rgba(234,179,8,0.2)] p-6 md:p-8 bg-black relative modal-anim">
             <h2 class="text-xl font-bold text-yellow-500 mb-2 text-center uppercase tracking-tighter">RESTRICTED ACCESS</h2>
             <div class="text-xs text-yellow-600 mb-6 text-center font-mono uppercase leading-relaxed">
-                Network entry requires a valid admin referral token. Unauthorized nodes will be purged.
+                Network entry requires a valid referral token. Unauthorized nodes will be purged.
             </div>
-            <input type="text" id="ref-code-input" class="w-full bg-yellow-950/20 border border-yellow-800 p-4 md:p-3 mb-6 outline-none text-center text-lg md:text-base font-black uppercase text-yellow-400 focus:border-yellow-500 tracking-widest placeholder-yellow-900/50" placeholder="ENTER REFERRAL TOKEN">
+            <input type="text" id="ref-code-input" class="w-full bg-yellow-950/20 border border-yellow-800 p-4 md:p-3 mb-6 outline-none text-center text-lg md:text-base font-black uppercase text-yellow-400 focus:border-yellow-500 tracking-widest placeholder-yellow-900/50" placeholder="ENTER TOKEN">
             <div class="flex gap-2">
                 <button onclick="submitReferral()" class="flex-1 btn-base btn-yellow py-3 text-sm">VERIFY</button>
                 <button onclick="abortReferral()" class="flex-1 btn-base border-red-900 text-red-600 hover:bg-red-900/30 hover:text-red-400 py-3 text-sm">ABORT</button>
@@ -127,7 +118,6 @@
         </div>
     </div>
 
-    <!-- GLOBAL SYSTEM OVERRIDE MODALS -->
     <div id="modal-msgbox" class="hidden absolute inset-0 bg-black/95 z-[999] flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm alert-border p-6 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.2)] modal-anim modal-content-scroll">
             <h2 id="msgbox-title" class="text-lg font-bold text-red-500 mb-2 text-center uppercase tracking-tighter">ALERT</h2>
@@ -159,10 +149,9 @@
         </div>
     </div>
 
-    <!-- MAIN APP CONTAINER -->
     <div id="app-screen" class="hidden flex h-[100dvh] w-full relative overflow-hidden">
         
-        <!-- SINGLE FLAT SIDEBAR -->
+        <!-- SINGLE FLAT SIDEBAR (Scrollable) -->
         <div id="sidebar" class="hidden md:flex flex-col w-72 md:w-64 lg:w-72 border-r border-green-900 bg-[#0a0a0a] h-full shrink-0 absolute md:relative z-40 inset-y-0 left-0 transition-transform duration-300 shadow-xl">
             
             <div class="p-4 border-b border-green-900 bg-black shrink-0 shadow-md relative">
@@ -193,15 +182,19 @@
                 <button id="expand-users-btn" onclick="toggleUserList()" class="hidden w-full text-[9px] text-green-800 hover:text-green-500 py-3 mt-2 border-t border-green-900/30 uppercase tracking-widest">[ SHOW_ALL_NODES ]</button>
             </div>
 
+            <!-- DANGER ZONE / OPERATIONS -->
             <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0 pb-safe">
                 <div class="space-y-2">
+                    <!-- REFERRAL GENERATION FOR NORMAL USERS -->
+                    <button onclick="generateReferral()" class="w-full btn-base border-blue-800 text-blue-500 hover:text-white !py-2 bg-blue-900/10 border-dashed" title="Generate an invite code for a friend">
+                        <i class="fas fa-ticket-alt"></i> GENERATE_REFERRAL
+                    </button>
                     <button onclick="openNameModal()" class="w-full btn-base btn-green !py-2">REASSIGN_ALIAS</button>
                     <button onclick="logout()" class="w-full btn-base border-zinc-700 text-zinc-500 hover:text-white !py-2">[ LOG_OUT ]</button>
                 </div>
             </div>
         </div>
 
-        <!-- CHAT AREA -->
         <div class="flex-1 flex flex-col bg-black relative min-w-0 h-full">
             <div class="h-14 md:h-16 border-b border-green-900 bg-zinc-950 flex items-center justify-between px-3 md:px-4 shrink-0 shadow-sm">
                 <button onclick="toggleSidebar()" class="md:hidden text-green-500 border border-green-900 p-2 rounded hover:bg-green-900/20 mr-3"><i class="fas fa-bars"></i></button>
@@ -229,4 +222,551 @@
                     <span class="font-bold text-lg text-green-500 animate-pulse hidden sm:inline">&gt;</span>
                     <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-base sm:text-sm font-mono placeholder-green-900 uppercase min-w-0" placeholder="TRANSMIT_DATA..." autocomplete="off">
                     <button type="button" onclick="document.getElementById('md-help').classList.toggle('hidden')" class="text-green-800 hover:text-green-500 h-10 w-10 md:h-auto md:w-auto md:px-3 md:py-1 flex items-center justify-center border border-green-900 text-[10px] rounded font-black shrink-0">MD</button>
-                    <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 h-10 w-10 md:h-auto md:w-auto md:px-
+                    <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 h-10 w-10 md:h-auto md:w-auto md:px-3 md:py-1 flex items-center justify-center border border-green-900 text-[12px] md:text-[10px] rounded shrink-0"><i class="fas fa-image"></i></button>
+                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
+                    <button type="submit" class="btn-base btn-green h-10 md:h-auto md:px-4 shrink-0">EXEC</button>
+                </form>
+                
+                <div id="md-help" class="hidden max-w-5xl mx-auto mt-2 text-[9px] text-green-800 border border-green-900/50 bg-green-900/5 p-2 flex flex-wrap gap-3 uppercase">
+                    <span><b>**bold**</b></span><span><i>*italic*</i></span><span>~~strike~~</span><span>`code`</span><span>```block```</span><span>&gt; quote</span><span>[label](url)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-group" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim modal-content-scroll">
+            <h3 class="text-xs font-bold mb-4 tracking-widest text-green-500 uppercase">NEW_CHANNEL_INIT</h3>
+            <input id="group-name" type="text" class="w-full bg-transparent border-b border-green-500 p-3 mb-4 outline-none text-base md:text-sm uppercase placeholder-green-900" placeholder="CHANNEL_NAME">
+            <div class="flex items-center gap-2 mb-4 p-3 border border-green-900 bg-green-900/10">
+                <input type="checkbox" id="group-private" class="accent-green-500">
+                <label for="group-private" class="text-[10px] text-green-400 uppercase font-bold cursor-pointer flex-1">PRIVATE_ENCRYPTED</label>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="createGroup()" class="flex-1 btn-base btn-green py-3">CREATE</button>
+                <button onclick="document.getElementById('modal-group').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-3">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-6 bg-black modal-anim">
+            <h3 class="text-xs font-bold mb-4 tracking-widest text-green-800 uppercase">MODIFY_PACKET</h3>
+            <input id="edit-input" type="text" class="w-full bg-transparent border-b border-green-500 p-3 mb-6 outline-none text-center text-base uppercase">
+            <input type="hidden" id="edit-id">
+            <div class="flex gap-2">
+                <button onclick="submitEdit()" class="flex-1 btn-base btn-green py-3">SAVE</button>
+                <button onclick="document.getElementById('modal-edit').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-3">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border p-6 md:p-8 bg-black modal-anim">
+            <h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE</h3>
+            <input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-4 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS">
+            <div class="flex gap-4">
+                <button onclick="saveName()" class="flex-1 btn-base btn-green py-4">UPDATE</button>
+                <button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-4">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md alert-border p-6 md:p-8 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.3)] modal-anim modal-content-scroll">
+            <button onclick="closeAdminPanel()" class="absolute top-2 right-2 md:right-4 p-2 text-red-500 hover:text-white font-bold text-xl md:text-lg">×</button>
+            <h2 class="text-xl font-bold text-red-500 mb-4 text-center uppercase tracking-tighter">ROOT_CONTROL</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black py-3">BACKUP</button>
+                    <button onclick="showMsgBox('RESTRICTED', 'Import disabled.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed py-3">IMPORT</button>
+                </div>
+                <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-3">[ GLOBAL_BROADCAST ]</button>
+                <button onclick="openBanList()" class="w-full btn-base btn-red py-3">[ MANAGE_BLACKLIST ]</button>
+                <button onclick="openPromoteModal()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-3">[ PROMOTE_TO_MOD ]</button>
+                <button onclick="confirmDemoteSelf()" class="w-full btn-base border-red-800 text-red-500 hover:bg-red-800 hover:text-black py-3">[ DEMOTE_SELF ]</button>
+                <button onclick="promptTerminateNode()" class="w-full btn-base btn-red py-3 bg-red-950/40 border-dashed">[ TERMINATE_NODE_BY_ID ]</button>
+                <div class="pt-4 border-t border-red-950">
+                    <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-4 bg-red-950/20 font-black tracking-widest">WIPE_ALL_DATA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mod-modal" class="hidden absolute inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md border border-yellow-600 shadow-[0_0_50px_rgba(234,179,8,0.3)] p-6 md:p-8 bg-black relative modal-anim modal-content-scroll">
+            <button onclick="closeModPanel()" class="absolute top-2 right-2 md:right-4 p-2 text-yellow-500 hover:text-white font-bold text-xl md:text-lg">×</button>
+            <h2 class="text-xl font-bold text-yellow-500 mb-1 text-center uppercase tracking-tighter">MOD_PANEL</h2>
+            <div class="text-[9px] text-yellow-800 text-center uppercase mb-4 tracking-widest">MODERATION_TOOLS_ONLY</div>
+            <div class="space-y-3">
+                <button onclick="switchChannel('mod_reports'); document.getElementById('mod-modal').classList.add('hidden');" class="w-full btn-base border-red-600 text-red-500 hover:bg-red-600 hover:text-black py-3"><i class="fas fa-siren-on"></i> VIEW_REPORTS</button>
+                <button onclick="switchChannel('surveillance'); document.getElementById('mod-modal').classList.add('hidden');" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-3"><i class="fas fa-eye"></i> VIEW_SURVEILLANCE</button>
+                <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-3">[ GLOBAL_BROADCAST ]</button>
+                <button onclick="openBanList()" class="w-full btn-base btn-red py-3">[ MANAGE_BLACKLIST ]</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/95 z-[110] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md alert-border p-6 bg-black relative modal-anim modal-content-scroll">
+            <button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-2 p-2 text-red-500 hover:text-white text-xl">×</button>
+            <h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2>
+            <div id="ban-list-content" class="space-y-2 max-h-[50dvh] overflow-y-auto pr-1 custom-scroll"></div>
+        </div>
+    </div>
+
+    <div id="suspended-screen" class="hidden absolute inset-0 bg-black flex items-center justify-center z-[200] text-center p-4">
+        <div class="border-2 border-red-600 p-6 md:p-8 bg-black max-w-xl shadow-[0_0_60px_rgba(255,0,0,0.5)] modal-anim">
+            <div class="text-3xl md:text-4xl font-black text-red-600 mb-2 tracking-tighter uppercase">FATAL_ERROR</div>
+            <div class="text-base md:text-lg font-bold text-red-500 mb-4 tracking-widest uppercase">ACCESS_DENIED</div>
+            <div id="ban-reason-display" class="text-[10px] text-red-900 border border-red-900 p-4 mb-6 uppercase font-bold italic bg-black">REASON: BLACKLISTED</div>
+            <button onclick="location.reload()" class="border border-red-600 text-red-600 px-6 py-3 text-xs hover:bg-red-600 hover:text-black uppercase font-bold">Retry</button>
+        </div>
+    </div>
+    
+    <div id="mobile-sidebar-bg" onclick="toggleSidebar()" class="hidden md:hidden absolute inset-0 bg-black/90 z-40 backdrop-blur-sm transition-opacity"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, getDoc, getDocs, query, orderBy, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBaczro2aBxwQVElAwgM3qhlMb3C7OmBKI",
+            authDomain: "communiacationtor.firebaseapp.com",
+            projectId: "communiacationtor",
+            storageBucket: "communiacationtor.firebasestorage.app",
+            messagingSenderId: "493961543278",
+            appId: "1:493961543278:web:3b2e092de12d8acf01f07f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ADMIN_EMAIL = 'leeeugene1574@gmail.com';
+
+        let currentUser = null, pendingNewUser = null;
+        let isModerator = false, isRootAdmin = false;
+        let currentChannel = 'global';
+        let messagesUnsub = null, usersUnsub = null, channelsUnsub = null, banCheckUnsub = null;
+        let channelsCache = {}, allUsers = [], rawMessages = [];
+        let showAllUsers = false;
+
+        window.addToast = (msg, type = 'default') => {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast-in border-l-4 p-3 shadow-lg flex items-center gap-2 font-mono text-[10px] uppercase font-bold tracking-widest ${type === 'red' ? 'border-red-500 bg-red-950/90 text-red-400' : 'border-green-500 bg-black/90 text-green-400'}`;
+            el.innerHTML = `<i class="fas ${type === 'red' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> <span>${msg}</span>`;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.animation = 'toastSlide 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards';
+                setTimeout(() => el.remove(), 300);
+            }, 3500);
+        };
+
+        window.showMsgBox = (title, msg) => { document.getElementById('msgbox-title').innerText = title; document.getElementById('msgbox-text').innerText = msg; document.getElementById('modal-msgbox').classList.remove('hidden'); };
+        window.showConfirmBox = (title, msg, callback) => { document.getElementById('confirmbox-title').innerText = title; document.getElementById('confirmbox-text').innerText = msg; const modal = document.getElementById('modal-confirmbox'); const yesBtn = document.getElementById('confirmbox-yes'); const handleYes = () => { modal.classList.add('hidden'); yesBtn.removeEventListener('click', handleYes); callback(); }; yesBtn.addEventListener('click', handleYes); modal.classList.remove('hidden'); };
+        window.showPromptBox = (title, msg, callback) => { document.getElementById('promptbox-title').innerText = title; document.getElementById('promptbox-text').innerText = msg; const modal = document.getElementById('modal-promptbox'); const submitBtn = document.getElementById('promptbox-submit'); const input = document.getElementById('promptbox-input'); input.value = ''; const handleSubmit = () => { modal.classList.add('hidden'); submitBtn.removeEventListener('click', handleSubmit); callback(input.value.trim()); }; submitBtn.addEventListener('click', handleSubmit); modal.classList.remove('hidden'); };
+
+        onAuthStateChanged(auth, async (user) => {
+            const loading = document.getElementById('loading');
+            const authScreen = document.getElementById('auth-screen');
+            const appScreen = document.getElementById('app-screen');
+
+            if (user) {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                
+                // REFERRAL GATE FOR ALL NEW ACCOUNTS
+                if (!userDocSnap.exists()) {
+                    pendingNewUser = user;
+                    loading.classList.add('hidden');
+                    authScreen.classList.add('hidden');
+                    document.getElementById('modal-referral').classList.remove('hidden');
+                    return; 
+                }
+
+                finalizeLogin(user, userDocSnap.data());
+            } else {
+                currentUser = null; appScreen.classList.add('hidden'); loading.classList.add('hidden'); authScreen.classList.remove('hidden');
+            }
+        });
+
+        window.submitReferral = async () => {
+            const code = document.getElementById('ref-code-input').value.trim().toUpperCase();
+            if(!code) return window.addToast("ENTER CODE", "red");
+            
+            try {
+                // Check if code exists and hasn't been used yet
+                const refRef = doc(db, 'referrals', code);
+                const refSnap = await getDoc(refRef);
+
+                if (refSnap.exists() && refSnap.data().used === false) {
+                    // Mark as used
+                    await updateDoc(refRef, { used: true, usedBy: pendingNewUser.uid });
+                    
+                    // Create User Profile
+                    const nickname = pendingNewUser.displayName || pendingNewUser.email.split('@')[0];
+                    await setDoc(doc(db, 'users', pendingNewUser.uid), { nickname, email: pendingNewUser.email, createdAt: serverTimestamp() });
+                    
+                    document.getElementById('modal-referral').classList.add('hidden');
+                    window.addToast("AUTHORIZATION GRANTED");
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    window.addToast("INVALID OR USED TOKEN", "red");
+                }
+            } catch(e) { window.addToast("VALIDATION ERROR", "red"); }
+        };
+
+        window.abortReferral = async () => {
+            if(pendingNewUser) {
+                try { await deleteUser(pendingNewUser); } catch(e) {}
+                await signOut(auth);
+                document.getElementById('modal-referral').classList.add('hidden');
+                pendingNewUser = null;
+                window.addToast("REGISTRATION ABORTED", "red");
+            }
+        };
+
+        async function finalizeLogin(user, userData) {
+            const loading = document.getElementById('loading');
+            const authScreen = document.getElementById('auth-screen');
+            const appScreen = document.getElementById('app-screen');
+            
+            currentUser = user;
+            authScreen.classList.add('hidden');
+            
+            isRootAdmin = (user.email === ADMIN_EMAIL);
+            isModerator = (isRootAdmin || userData.isMod === true);
+            if(isRootAdmin) document.getElementById('admin-panel-btn').classList.remove('hidden');
+            if(isModerator) document.getElementById('mod-panel-btn').classList.remove('hidden');
+            
+            if(banCheckUnsub) banCheckUnsub();
+            banCheckUnsub = onSnapshot(doc(db, 'banned_users', user.uid), async (docSnap) => {
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('ban-reason-display').innerText = "REASON: " + data.reason;
+                    document.getElementById('suspended-screen').classList.remove('hidden');
+                    if (data.triggerAuthDelete && auth.currentUser) { try { await deleteUser(auth.currentUser); } catch(e) { console.warn("Could not self-destruct."); } }
+                    signOut(auth);
+                }
+            });
+
+            try {
+                await setDoc(doc(db, 'users', user.uid), { nickname: user.displayName || 'Anonymous', email: user.email || 'guest', lastSeen: serverTimestamp() }, { merge: true });
+                document.getElementById('my-id-display').innerText = user.displayName || 'GUEST';
+                loading.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                window.addToast("UPLINK ESTABLISHED");
+                startListeners();
+            } catch(e) { loading.classList.add('hidden'); appScreen.classList.remove('hidden'); }
+        }
+
+        window.generateReferral = async () => {
+            // Generates a random referral string REF-XXXXXX
+            const code = 'REF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            try {
+                await setDoc(doc(db, 'referrals', code), {
+                    createdBy: currentUser.uid,
+                    used: false,
+                    createdAt: serverTimestamp()
+                });
+                
+                showPromptBox("REFERRAL TOKEN GENERATED", "COPY THIS TOKEN AND PROVIDE IT TO THE NEW NODE:", () => {
+                    window.addToast("TOKEN CREATION LOGGED");
+                });
+                
+                // Pre-fill the input so they can easily copy it
+                const inputElement = document.getElementById('promptbox-input');
+                inputElement.value = code;
+                inputElement.select(); // auto-select text
+                
+            } catch(e) {
+                window.addToast("ERROR GENERATING TOKEN", "red");
+            }
+        };
+
+        function startListeners() {
+            if(channelsUnsub) channelsUnsub();
+            channelsUnsub = onSnapshot(collection(db, 'channels'), (snap) => {
+                channelsCache = {};
+                let globalDoc = snap.docs.find(d => d.id === 'global');
+                if(globalDoc) channelsCache['global'] = globalDoc.data();
+                else channelsCache['global'] = {name: "GLOBAL_FEED", type: 'global'};
+
+                const chanList = document.getElementById('channel-list');
+                const sysList = document.getElementById('system-channel-list');
+                chanList.innerHTML = ''; sysList.innerHTML = '';
+
+                renderChannelItem('global', channelsCache['global'], sysList);
+                if (isModerator) {
+                    renderChannelItem('surveillance', {name: "SURVEILLANCE_FEED", type: 'system'}, sysList);
+                    renderChannelItem('mod_reports', {name: "🔴 MOD_REPORTS", type: 'system'}, sysList);
+                }
+
+                snap.forEach(d => { 
+                    if(d.id !== 'global') {
+                        channelsCache[d.id] = d.data(); 
+                        renderChannelItem(d.id, d.data(), chanList);
+                    }
+                });
+            });
+
+            if(usersUnsub) usersUnsub();
+            usersUnsub = onSnapshot(collection(db, 'users'), (snap) => {
+                allUsers = []; snap.forEach(d => { if(d.id !== currentUser.uid) allUsers.push({id: d.id, ...d.data()}); });
+                renderUserList();
+            });
+
+            subscribeMessages();
+        }
+
+        function renderUserList() {
+            const list = document.getElementById('user-list');
+            const btn = document.getElementById('expand-users-btn');
+            if(!list) return; list.innerHTML = '';
+            const limitCount = 7; const usersToShow = showAllUsers ? allUsers : allUsers.slice(0, limitCount);
+
+            usersToShow.forEach(u => {
+                const div = document.createElement('div');
+                const isSelected = currentChannel.includes(u.id);
+                div.className = `user-item ${isSelected ? 'active' : 'border-transparent'} rounded-r`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden mr-2 w-full">
+                         <div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-[10px] border border-green-800 font-bold shrink-0">${u.nickname.substring(0,1).toUpperCase()}</div>
+                        <div class="flex flex-col overflow-hidden flex-1">
+                            <span class="text-xs font-bold truncate group-hover:text-white transition-colors uppercase">${escapeHtml(u.nickname)}</span>
+                            <span class="text-[8px] text-green-900 font-mono">ID: ${u.id.substring(0,4)}</span>
+                        </div>
+                    </div>
+                    <button onclick="switchChannel('${u.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-2 py-1 transition-all rounded uppercase ml-auto">MSG</button>
+                `;
+                list.appendChild(div);
+            });
+            if (allUsers.length > limitCount) { btn.classList.remove('hidden'); btn.innerText = showAllUsers ? "[ COLLAPSE_LIST ]" : `[ SHOW_${allUsers.length - limitCount}_MORE ]`; } 
+            else { btn.classList.add('hidden'); }
+        }
+
+        window.toggleUserList = () => { showAllUsers = !showAllUsers; renderUserList(); };
+
+        function renderChannelItem(id, data, container) {
+            const div = document.createElement('div');
+            const isSelected = currentChannel === id;
+            div.className = `user-item ${isSelected ? 'active' : 'border-transparent'} rounded-r`;
+            div.onclick = () => switchChannel(id);
+            
+            let iconHtml = `<div class="w-5 h-5 md:w-6 md:h-6 rounded bg-green-900/20 flex items-center justify-center text-[10px] md:text-xs border border-green-800 font-bold shrink-0 text-green-600"><i class="fas fa-hashtag"></i></div>`;
+            if (id === 'global') iconHtml = `<div class="w-5 h-5 md:w-6 md:h-6 rounded bg-green-900/20 flex items-center justify-center text-[10px] md:text-xs border border-green-800 font-bold shrink-0 text-green-500"><i class="fas fa-globe"></i></div>`;
+            else if (id === 'surveillance') iconHtml = `<div class="w-5 h-5 md:w-6 md:h-6 rounded bg-red-900/20 flex items-center justify-center text-[10px] md:text-xs border border-red-800 font-bold shrink-0 text-red-500"><i class="fas fa-eye"></i></div>`;
+            else if (id === 'mod_reports') iconHtml = `<div class="w-5 h-5 md:w-6 md:h-6 rounded bg-red-900/20 flex items-center justify-center text-[10px] md:text-xs border border-red-800 font-bold shrink-0 text-red-500 animate-pulse"><i class="fas fa-siren-on"></i></div>`;
+
+            const titleColor = (id === 'surveillance' || id === 'mod_reports') ? 'text-red-400' : 'text-green-500';
+            div.innerHTML = `${iconHtml}<div class="flex flex-col overflow-hidden w-full"><span class="text-[10px] md:text-xs font-bold truncate uppercase group-hover:text-white transition-colors ${titleColor}">${escapeHtml(data.name || id)}</span></div>`;
+            container.appendChild(div);
+        }
+
+        window.insertMarkdown = (prefix, suffix) => {
+            const input = document.getElementById('msg-input');
+            const start = input.selectionStart, end = input.selectionEnd, text = input.value, selected = text.substring(start, end);
+            const replacement = prefix + selected + suffix;
+            input.value = text.substring(0, start) + replacement + text.substring(end);
+            input.focus(); input.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+        };
+
+        function renderMarkdown(escaped) {
+            let codeBlocks = [];
+            let t = escaped.replace(/```([\s\S]*?)```/g, (m, code) => { codeBlocks.push(code); return `\u0000CODEBLOCK${codeBlocks.length - 1}\u0000`; });
+            let inlineCode = [];
+            t = t.replace(/`([^`\n]+)`/g, (m, code) => { inlineCode.push(code); return `\u0000INLINECODE${inlineCode.length - 1}\u0000`; });
+            t = t.replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, (m, label, url) => `<a href="${url}" target="_blank" rel="noopener noreferrer nofollow">${label}</a>`);
+            t = t.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+            t = t.replace(/~~([^~\n]+)~~/g, '<del>$1</del>');
+            t = t.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
+            t = t.replace(/(^|\n)&gt; ?([^\n]*)/g, '$1<blockquote>$2</blockquote>');
+            t = t.replace(/\n/g, '<br>');
+            t = t.replace(/\u0000INLINECODE(\d+)\u0000/g, (m, i) => `<code>${inlineCode[parseInt(i)]}</code>`);
+            t = t.replace(/\u0000CODEBLOCK(\d+)\u0000/g, (m, i) => `<pre><code>${codeBlocks[parseInt(i)]}</code></pre>`);
+            return `<span class="msg-md">${t}</span>`;
+        }
+
+        window.reportMsg = async (reportedUid, nickname, text) => {
+            showPromptBox("REPORT PACKET", "ENTER REASON FOR RED FLAG:", async (reason) => {
+                if(!reason) return;
+                try {
+                    const reportText = `[FLAGGED_USER]: ${nickname} (ID: ${reportedUid})\n[REPORTER]: ${currentUser.displayName}\n[REASON]: ${reason}\n[CONTENT]: ${text.substring(0, 100)}...`;
+                    await addDoc(collection(db, 'messages'), { text: reportText, uid: 'TERMCHAT', nickname: '🚨 TERM-CHAT SYS', timestamp: serverTimestamp(), channel: 'mod_reports', type: 'system_alert' });
+                    window.addToast("REPORT DISPATCHED TO MODERATORS", "red");
+                } catch(e) { window.addToast("REPORT FAILED", "red"); }
+            });
+        };
+
+        function subscribeMessages() {
+            if(messagesUnsub) messagesUnsub();
+            const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc')); 
+            messagesUnsub = onSnapshot(q, (snap) => {
+                const container = document.getElementById('msg-container');
+                const messages = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                rawMessages = messages;
+                
+                const isSurveillance = currentChannel === 'surveillance' && isModerator;
+                const filtered = isSurveillance ? messages : messages.filter(m => m.channel === currentChannel);
+                
+                const html = filtered.map(m => {
+                    const isMe = m.uid === currentUser.uid;
+                    const date = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
+                    
+                    if (m.type === 'system_alert') {
+                        return `<div class="msg-anim mb-4 border-l-4 border-red-600 bg-red-950/30 p-3 mx-2 rounded shadow-[0_0_15px_rgba(239,68,68,0.2)]"><div class="flex items-center gap-2 mb-2"><i class="fas fa-siren-on text-red-500 animate-pulse"></i><span class="text-[10px] font-black text-red-500 tracking-widest uppercase">SYS_ALERT // MOD_REPORT</span><span class="text-[8px] text-red-900 ml-auto">${date}</span></div><div class="text-xs font-mono text-red-400 whitespace-pre-wrap">${escapeHtml(m.text)}</div></div>`;
+                    }
+                    if(m.type === 'announcement') return `<div class="my-6 text-center border-y-2 border-yellow-600 bg-yellow-900/20 p-3 mx-4 text-[10px] font-black text-yellow-500 uppercase tracking-widest shadow-[0_0_15px_rgba(234,179,8,0.2)] msg-anim">⚠ SYSTEM_BROADCAST: ${escapeHtml(m.text)} ⚠</div>`;
+                    
+                    let content = m.text;
+                    if(m.isFile || content.startsWith('data:image')) {
+                        content = `<img src="${content}" class="max-w-[200px] border-2 border-green-800 rounded opacity-90 hover:opacity-100 transition-opacity">`;
+                    } else {
+                        const mentionRegex = new RegExp(`@${currentUser.displayName}\\b`, 'gi');
+                        let escaped = content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        content = renderMarkdown(escaped);
+                        if (m.text.match(mentionRegex) && !isMe) content = content.replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded shadow-lg">@${currentUser.displayName}</span>`);
+                    }
+                    
+                    const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
+                    const highlightClass = isMentioned ? 'ping-glow' : (isMe ? 'border-green-500/50' : 'border-green-900');
+                    const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : '';
+                    let survTag = isSurveillance ? `<span class="text-[8px] text-red-500 ml-2 font-black border border-red-900 px-1">CHAN: ${m.channel.substring(0,8)}</span>` : '';
+                    const nickAction = isMe ? '' : `onclick="switchChannel('${m.uid}')" title="DM" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
+                    
+                    let actions = '';
+                    if (!isMe && currentChannel !== 'surveillance' && currentChannel !== 'mod_reports' && m.uid !== 'SYSTEM' && m.uid !== 'TERMCHAT') {
+                        const safeText = m.text.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+                        actions += `<button onclick="reportMsg('${m.uid}', '${escapeHtml(m.nickname)}', '${safeText}')" class="ml-1 text-[8px] text-yellow-600 bg-yellow-900/20 px-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity uppercase font-bold" title="REPORT RED FLAG">[REP]</button>`;
+                    }
+                    if (isMe) actions += `<button onclick="openEditModal('${m.id}', '${m.isFile || content.startsWith('<img') ? '' : escapeHtml(m.text)}')" class="ml-2 text-[8px] text-green-600 hover:text-white font-bold uppercase p-1">[EDIT]</button>`;
+                    if (isMe || isModerator) actions += `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 font-bold uppercase p-1">[DEL]</button>`;
+                    if (isModerator && !isMe) actions += `<button onclick="confirmBan('${m.uid}', '${m.nickname}')" class="ml-1 text-[8px] text-red-500 bg-red-900/20 px-2 py-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity uppercase font-bold">[BAN]</button>`;
+
+                    return `<div class="msg-anim mb-4 flex flex-col ${isMe ? 'items-end' : 'items-start'} group"><div class="flex flex-wrap items-center gap-2 mb-1 px-1"><span class="text-[9px] text-green-700 font-bold tracking-tighter">${date}</span><span ${nickAction} class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'} uppercase tracking-tight">${m.nickname}</span>${survTag}${headerBadge}${actions}</div><div class="max-w-[95%] md:max-w-[75%] text-sm font-mono break-words bg-green-900/10 border ${highlightClass} p-3 rounded-lg shadow-sm leading-relaxed">${content}</div></div>`;
+                });
+                container.innerHTML = html.join('');
+                requestAnimationFrame(() => { setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); });
+            });
+        }
+
+        window.switchChannel = (targetId) => {
+            if(targetId === 'global' || targetId === 'surveillance' || targetId === 'mod_reports' || channelsCache[targetId]) {
+                currentChannel = targetId;
+            } else if (targetId !== 'null') {
+                const ids = [currentUser.uid, targetId].sort();
+                currentChannel = `${ids[0]}_${ids[1]}`;
+            } else {
+                currentChannel = 'null';
+            }
+            updateHeaderUI();
+            
+            // Re-render sidebar to highlight active channel
+            const chanList = document.getElementById('channel-list');
+            const sysList = document.getElementById('system-channel-list');
+            if(chanList) {
+                Array.from(chanList.children).forEach(el => el.classList.remove('active', 'bg-green-900/30', 'border-green-500', 'pl-3'));
+            }
+            if(sysList) {
+                Array.from(sysList.children).forEach(el => el.classList.remove('active', 'bg-green-900/30', 'border-green-500', 'pl-3'));
+            }
+            startListeners(); // Easiest way to force active highlight refresh
+
+            if(window.innerWidth < 768 && targetId !== 'null') toggleSidebar(true);
+        };
+
+        function updateHeaderUI() {
+            const title = document.getElementById('mobile-title');
+            const sub = document.getElementById('mobile-subtitle');
+            
+            if(currentChannel === 'null') { title.innerText = "NO_CHANNEL_SELECTED"; sub.innerText = "STANDBY"; return; }
+            
+            let chanData = channelsCache[currentChannel];
+            
+            if (currentChannel === 'global') { title.innerText = "GLOBAL_FEED"; sub.innerText = "PUBLIC_NET"; } 
+            else if (currentChannel === 'surveillance') { title.innerText = "ALL_TRAFFIC_SURVEILLANCE"; sub.innerText = "RESTRICTED_ACCESS"; } 
+            else if (currentChannel === 'mod_reports') { title.innerText = "SYSTEM_REPORTS"; sub.innerText = "HIGH_PRIORITY_ALERTS"; } 
+            else if (chanData) { title.innerText = chanData.name; sub.innerText = "ENCLAVE"; } 
+            else { title.innerText = "PRIVATE_DM"; sub.innerText = "ENCRYPTED_P2P"; }
+        }
+
+        window.sendMessage = async (e) => { 
+            e.preventDefault(); const input = document.getElementById('msg-input'); const text = input.value.trim(); 
+            if(!text || currentChannel === 'null' || currentChannel === 'mod_reports' || currentChannel === 'surveillance') return; 
+            try { await addDoc(collection(db, 'messages'), { text, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, isFile: false }); input.value = ''; } 
+            catch(e) { window.addToast("TRANSMISSION FAIL", "red"); } 
+        };
+
+        window.handleImage = (input) => { 
+            const file = input.files[0]; if(!file || currentChannel === 'null') return; 
+            window.addToast("ENCODING FILE...");
+            const reader = new FileReader(); 
+            reader.onload = async (e) => { 
+                try {
+                    await addDoc(collection(db, 'messages'), { text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, isFile: true }); 
+                } catch(err) { window.addToast("UPLOAD ERROR", "red"); }
+            }; reader.readAsDataURL(file); input.value = ''; 
+        };
+
+        window.deleteMsg = async (id) => { showConfirmBox("DELETE", "PURGE THIS DATA PACKET?", async () => { await deleteDoc(doc(db, "messages", id)); window.addToast("PACKET PURGED"); }); };
+        window.openEditModal = (id,t) => { if(t === '') return; document.getElementById('modal-edit').classList.remove('hidden'); document.getElementById('edit-input').value=t; document.getElementById('edit-id').value=id; };
+        window.submitEdit = async () => { const id=document.getElementById('edit-id').value, t=document.getElementById('edit-input').value.trim(); if(t) { await updateDoc(doc(db,'messages',id),{text:t}); document.getElementById('modal-edit').classList.add('hidden'); window.addToast("PACKET MODIFIED"); } };
+
+        window.openCreateChannelModal = () => document.getElementById('modal-group').classList.remove('hidden');
+        window.createGroup = async () => {
+            const name = document.getElementById('group-name').value.trim().replace(/\s+/g, '-').toLowerCase();
+            if(!name) return window.addToast("NAME REQUIRED", "red");
+            try {
+                await addDoc(collection(db, 'channels'), { name, createdBy: currentUser.uid, type: 'public' });
+                document.getElementById('modal-group').classList.add('hidden'); window.addToast("CHANNEL ADDED");
+            } catch(e) { window.addToast("ERROR", "red"); }
+        };
+
+        window.showEmailAuth = (mode) => { 
+            document.getElementById('auth-landing').classList.add('hidden'); 
+            document.getElementById('auth-email-form').classList.remove('hidden'); 
+            document.getElementById('auth-mode').value = mode;
+            document.getElementById('email-submit-btn').innerText = mode === 'register' ? 'INITIALIZE NODE' : 'AUTHENTICATE';
+        };
+        window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
+
+        window.authGoogle = async () => { 
+            try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { window.addToast("AUTH ERROR", "red"); } 
+        };
+        
+        window.handleEmailSubmit = async (e) => { 
+            e.preventDefault(); 
+            const em=document.getElementById('email-input').value, pw=document.getElementById('password-input').value, mode = document.getElementById('auth-mode').value; 
+            try {
+                if (mode === 'register') await createUserWithEmailAndPassword(auth,em,pw);
+                else await signInWithEmailAndPassword(auth,em,pw); 
+            } catch(e) { window.addToast(e.code === 'auth/email-already-in-use' ? "NODE ALREADY EXISTS" : "INVALID CREDENTIALS", "red"); } 
+        };
+        window.logout = () => signOut(auth);
+
+        window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
+        window.saveName = async () => { const n=document.getElementById('new-name').value.trim(); if(n) { await updateProfile(currentUser,{displayName:n}); await setDoc(doc(db,'users',currentUser.uid),{nickname:n},{merge:true}); location.reload(); } };
+
+        window.openAdminPanel = () => document.getElementById('admin-modal').classList.remove('hidden');
+        window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
+        window.openModPanel = () => document.getElementById('mod-modal').classList.remove('hidden');
+        window.closeModPanel = () => document.getElementById('mod-modal').classList.add('hidden');
+        
+        window.confirmDemoteSelf = async () => { showConfirmBox("DEMOTE", "REVOKE YOUR OWN ADMIN PRIVILEGES?", async () => { await updateDoc(doc(db, 'users', currentUser.uid), { isMod: false }); location.reload(); }); };
+        window.openPromoteModal = () => { showPromptBox("PROMOTE NODE", "ENTER TARGET NODE ID:", async (id) => { if(id){ const target = allUsers.find(u => u.id.startsWith(id)); if (!target) return window.addToast("NODE NOT FOUND", "red"); showConfirmBox("CONFIRM", `PROMOTE ${target.nickname} TO MODERATOR?`, async () => { await updateDoc(doc(db, 'users', target.id), { isMod: true }); window.addToast("NODE PROMOTED"); }); }}); };
+        window.openBanList = async () => { document.getElementById('ban-list-modal').classList.remove('hidden'); const s=await getDocs(collection(db,'banned_users')); document.getElementById('ban-list-content').innerHTML=s.docs.map(d=>`<div class="border border-red-900 p-3 md:p-2 mb-1 flex justify-between items-center"><span class="text-xs text-red-500">${d.data().nickname}</span><button onclick="unbanUser('${d.id}')" class="text-[8px] p-2 md:px-2 md:py-1 text-green-500 border border-green-800">REVOKE</button></div>`).join(''); };
+        window.unbanUser = async (id) => { await deleteDoc(doc(db,'banned_users',id)); openBanList(); };
+        window.broadcastAnnouncement = async () => { showPromptBox("SYSTEM BROADCAST", "ENTER ANNOUNCEMENT:", async (t) => { if(t) { await addDoc(collection(db,'messages'),{text:t,nickname:"SYSTEM",uid:"SYSTEM",type:'announcement',timestamp:serverTimestamp(),channel:'global'}); window.addToast("BROADCAST SENT"); } }); };
+        window.confirmBan = async (uid,name) => { showConfirmBox("ROOT ACTION", `PERMANENTLY BLACKLIST ${name}?`, async () => { await setDoc(doc(db,'banned_users',uid),{nickname:name,reason:"ADMIN_BAN", triggerAuthDelete: false}); window.addToast("NODE BLACKLISTED", "red"); }); };
+        window.promptTerminateNode = () => { showPromptBox("TERMINATE NODE", "ENTER NODE ID:", async (id) => { if(id){ const target = allUsers.find(u => u.id.startsWith(id)); if (!target) return window.addToast("NODE NOT FOUND", "red"); showConfirmBox("CRITICAL", `PURGE DATA AND TRIGGER AUTH DELETION FOR ${target.nickname}?`, async () => { try { await deleteDoc(doc(db, 'users', target.id)); await setDoc(doc(db, 'banned_users', target.id), {nickname: target.nickname, reason: "ADMIN_TERMINATION", triggerAuthDelete: true}); window.addToast("NODE DB PURGED", "red"); } catch(e) { window.addToast("TERMINATION FAILED", "red"); } }); }}); };
+        window.confirmSystemFlush = async () => { showPromptBox("CRITICAL DANGER", "TYPE 'CONFIRM' TO FLUSH ALL COMMS", async (res) => { if(res==='CONFIRM') { const s=await getDocs(collection(db,'messages')); s.forEach(d=>deleteDoc(d.ref)); window.addToast("SYSTEM FLUSHED", "red"); } }); };
+        window.exportData = () => { const blob=new Blob([JSON.stringify(rawMessages)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dump.json'; a.click(); };
+
+        window.toggleSidebar = (f) => { const s=document.getElementById('sidebar'),b=document.getElementById('mobile-sidebar-bg'); if(f){s.classList.add('hidden');b.classList.add('hidden'); return;} s.classList.toggle('hidden'); if(!s.classList.contains('hidden')){s.classList.add('absolute','z-50','h-full');b.classList.remove('hidden');}else{b.classList.add('hidden');} };
+        function escapeHtml(t) { return t?t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):''; }
+    </script>
+</body>
+</html>
