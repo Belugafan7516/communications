@@ -281,6 +281,7 @@
                     <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black py-3">BACKUP</button>
                     <button onclick="showMsgBox('RESTRICTED', 'Import disabled.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed py-3">IMPORT</button>
                 </div>
+                <button onclick="generateTesterLink()" class="w-full btn-base border-blue-600 text-blue-500 hover:bg-blue-600 hover:text-black py-3">[ GENERATE_TESTER_LINK ]</button>
                 <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-3">[ GLOBAL_BROADCAST ]</button>
                 <button onclick="openBanList()" class="w-full btn-base btn-red py-3">[ MANAGE_BLACKLIST ]</button>
                 <button onclick="openPromoteModal()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-3">[ PROMOTE_TO_MOD ]</button>
@@ -381,9 +382,18 @@
                 // REFERRAL GATE FOR ALL NEW ACCOUNTS
                 if (!userDocSnap.exists()) {
                     pendingNewUser = user;
-                    loading.classList.add('hidden');
-                    authScreen.classList.add('hidden');
-                    document.getElementById('modal-referral').classList.remove('hidden');
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const testID = urlParams.get('testID');
+
+                    if (testID) {
+                        // Auto-submit the test ID as the referral code
+                        document.getElementById('ref-code-input').value = testID;
+                        window.submitReferral();
+                    } else {
+                        loading.classList.add('hidden');
+                        authScreen.classList.add('hidden');
+                        document.getElementById('modal-referral').classList.remove('hidden');
+                    }
                     return; 
                 }
 
@@ -412,11 +422,23 @@
                     
                     document.getElementById('modal-referral').classList.add('hidden');
                     window.addToast("AUTHORIZATION GRANTED");
+
+                    // Clear URL parameters
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
                     setTimeout(() => location.reload(), 500);
                 } else {
                     window.addToast("INVALID OR USED TOKEN", "red");
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('modal-referral').classList.remove('hidden');
                 }
-            } catch(e) { window.addToast("VALIDATION ERROR", "red"); }
+            } catch(e) { 
+                window.addToast("VALIDATION ERROR", "red"); 
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('modal-referral').classList.remove('hidden');
+            }
         };
 
         window.abortReferral = async () => {
@@ -473,17 +495,32 @@
                     createdAt: serverTimestamp()
                 });
                 
-                showPromptBox("REFERRAL TOKEN GENERATED", "COPY THIS TOKEN AND PROVIDE IT TO THE NEW NODE:", () => {
-                    window.addToast("TOKEN CREATION LOGGED");
-                });
-                
-                // Pre-fill the input so they can easily copy it
-                const inputElement = document.getElementById('promptbox-input');
-                inputElement.value = code;
-                inputElement.select(); // auto-select text
+                showMsgBox("REFERRAL TOKEN GENERATED", code);
+                try { navigator.clipboard.writeText(code); } catch(err) {}
+                window.addToast("TOKEN CREATED & COPIED");
                 
             } catch(e) {
                 window.addToast("ERROR GENERATING TOKEN", "red");
+            }
+        };
+
+        window.generateTesterLink = async () => {
+            const code = 'TEST-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+            try {
+                await setDoc(doc(db, 'referrals', code), {
+                    createdBy: currentUser.uid,
+                    used: false,
+                    isTesterLink: true,
+                    createdAt: serverTimestamp()
+                });
+                
+                const link = `https://chat.eugeneevons.com?testID=${code}`;
+                showMsgBox("TESTER LINK GENERATED", link);
+                try { navigator.clipboard.writeText(link); } catch(err) {}
+                window.addToast("LINK CREATED & COPIED");
+                
+            } catch(e) {
+                window.addToast("ERROR GENERATING LINK", "red");
             }
         };
 
@@ -610,7 +647,7 @@
                 rawMessages = messages;
                 
                 const isSurveillance = currentChannel === 'surveillance' && isModerator;
-                const filtered = isSurveillance ? messages : messages.filter(m => m.channel === currentChannel);
+                const filtered = isSurveillance ? messages : messages.filter(m => m.channel === currentChannel || m.type === 'announcement');
                 
                 const html = filtered.map(m => {
                     const isMe = m.uid === currentUser.uid;
