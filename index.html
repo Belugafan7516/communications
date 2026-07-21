@@ -15,6 +15,7 @@
             --term-alert: #ef4444;
         }
 
+        /* LAYOUT CORE */
         html, body {
             height: 100%; height: 100dvh; width: 100%; margin: 0; padding: 0;
             background: var(--term-bg); color: var(--term-green);
@@ -32,11 +33,13 @@
         .neon-border { border: 1px solid var(--term-green); box-shadow: var(--term-glow); }
         .alert-border { border: 1px solid var(--term-alert); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
 
+        /* SCROLLBARS */
         .custom-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: #001100; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #15803d; border-radius: 2px; }
 
+        /* COMPONENTS */
         .btn-base {
             @apply border px-4 py-2 md:px-3 md:py-1 text-[10px] md:text-[10px] font-bold uppercase transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none active:scale-95;
         }
@@ -47,6 +50,7 @@
         .user-item { @apply p-2 border-l-2 border-transparent transition-all cursor-pointer flex items-center gap-3 bg-green-900/5 mb-1 hover:bg-green-900/20 hover:pl-3; }
         .user-item.active { @apply bg-green-900/30 border-green-500 pl-3; }
 
+        /* KEYFRAMES */
         .msg-anim { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -61,12 +65,13 @@
 
         .ping-glow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); border-color: #eab308 !important; background-color: rgba(234, 179, 8, 0.1) !important; }
 
+        /* MARKDOWN CONTENT */
         .msg-md code { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.4); padding: 0 4px; border-radius: 3px; font-size: 0.9em; }
         .msg-md pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(34,197,94,0.4); padding: 6px 8px; border-radius: 4px; overflow-x: auto; margin: 4px 0; }
         .msg-md pre code { border: none; background: none; padding: 0; }
         .msg-md strong { color: #fff; font-weight: 900; }
         .msg-md em { color: #86efac; font-style: italic; }
-        .msg-md a { color: #eab308; text-decoration: underline; word-break: break-all; }
+        .msg-md a { color: #eab308; text-decoration: underline; word-break: break-all; cursor: pointer; }
         .msg-md blockquote { border-left: 2px solid #15803d; padding-left: 8px; opacity: 0.8; margin: 2px 0; display: block; }
         
         .modal-content-scroll { @apply max-h-[80dvh] overflow-y-auto custom-scroll; }
@@ -87,7 +92,7 @@
             <div class="text-[10px] text-center text-green-800 mb-8 tracking-[0.4em] uppercase">Encrypted_Network</div>
             
             <div id="auth-landing" class="space-y-4">
-                <button onclick="authGoogle()" class="w-full btn-base btn-green py-4 text-xs tracking-widest"><i class="fab fa-google"></i> UPLINK_VIA_GOOGLE</button>
+                <button onclick="showGoogleTos()" class="w-full btn-base btn-green py-4 text-xs tracking-widest"><i class="fab fa-google"></i> UPLINK_VIA_GOOGLE</button>
                 <div class="flex gap-2">
                     <button onclick="showEmailAuth('login')" class="flex-1 btn-base border-green-800 text-green-600 hover:text-green-400 py-3">LOGIN</button>
                     <button onclick="showEmailAuth('register')" class="flex-1 btn-base border-green-800 text-green-600 hover:text-green-400 py-3">REGISTER</button>
@@ -98,9 +103,49 @@
                 <button type="button" onclick="showLanding()" class="text-[10px] text-green-700 hover:text-green-400 mb-2 tracking-tighter p-2 -ml-2">&lt;&lt; BACK</button>
                 <input type="email" id="email-input" class="w-full bg-black border border-green-900 p-4 md:p-3 text-green-500 focus:border-green-500 outline-none text-base md:text-xs font-mono uppercase placeholder-green-900 transition-colors" placeholder="IDENT_EMAIL" required>
                 <input type="password" id="password-input" class="w-full bg-black border border-green-900 p-4 md:p-3 text-green-500 focus:border-green-500 outline-none text-base md:text-xs font-mono uppercase placeholder-green-900 transition-colors" placeholder="SECURE_KEY" required>
+                
+                <label class="flex items-start gap-2 mt-2 cursor-pointer p-2 bg-green-900/10 border border-green-900">
+                    <input type="checkbox" required class="mt-0.5 accent-green-500 shrink-0">
+                    <span class="text-[9px] text-green-500 uppercase leading-tight font-bold">I agree to the Code of Conduct and Privacy Policy.</span>
+                </label>
+
                 <input type="hidden" id="auth-mode" value="login">
                 <button type="submit" id="email-submit-btn" class="w-full btn-base btn-green py-4 md:py-3 mt-4">EXECUTE</button>
             </form>
+        </div>
+    </div>
+
+    <div id="modal-google-tos" class="hidden absolute inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm border border-yellow-600 shadow-[0_0_50px_rgba(234,179,8,0.2)] p-6 bg-black relative modal-anim">
+            <h2 class="text-lg font-bold text-yellow-500 mb-4 text-center uppercase tracking-tighter">EXTERNAL_UPLINK</h2>
+            <div class="text-sm text-green-400 mb-4 font-mono text-center">
+                You are about to be redirected to Google to log in.
+            </div>
+            <div class="text-[10px] text-green-600 mb-6 font-mono text-center uppercase leading-relaxed font-bold">
+                By clicking the button below to go to Google, You agree to Google's Terms Of Service and Privacy Policy and our Code of Conduct.
+            </div>
+            <label class="flex items-center gap-3 mb-6 p-4 bg-green-900/20 border border-green-700 cursor-pointer hover:bg-green-900/40 transition-colors">
+                <input type="checkbox" id="google-tos-check" class="w-5 h-5 accent-green-500" onchange="document.getElementById('btn-google-proceed').disabled = !this.checked; document.getElementById('btn-google-proceed').classList.toggle('opacity-50', !this.checked)">
+                <span class="text-xs text-green-400 uppercase font-bold">I ACCEPT THE CODE OF CONDUCT</span>
+            </label>
+            <div class="flex gap-2">
+                <button id="btn-google-proceed" onclick="executeGoogleAuth()" class="flex-1 btn-base btn-green py-3 opacity-50 transition-opacity" disabled>PROCEED</button>
+                <button onclick="document.getElementById('modal-google-tos').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-3">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-outbound" class="hidden absolute inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm alert-border p-6 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.2)] modal-anim">
+            <h2 class="text-lg font-bold text-red-500 mb-4 text-center uppercase tracking-tighter">EXTERNAL_LINK_WARNING</h2>
+            <div class="text-sm text-green-400 mb-2 font-mono text-center">
+                You are about to be redirected to this site:
+            </div>
+            <div id="outbound-url-display" class="text-[10px] text-yellow-400 mb-6 font-mono text-center bg-yellow-900/20 p-3 border border-yellow-900/50 break-all select-all"></div>
+            <div class="flex gap-2">
+                <button id="btn-outbound-yes" class="flex-1 btn-base btn-red py-3">YES</button>
+                <button onclick="document.getElementById('modal-outbound').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-3">CANCEL</button>
+            </div>
         </div>
     </div>
 
@@ -354,6 +399,19 @@
         let channelsCache = {}, allUsers = [], rawMessages = [], myConnections = [];
         let showAllUsers = false;
 
+        // Auto-detect testID on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const testID = urlParams.get('testID');
+            if (testID) {
+                const refInput = document.getElementById('ref-code-input');
+                if (refInput) {
+                    refInput.value = testID;
+                    // Will auto-submit during the referral gate check below if pendingNewUser exists
+                }
+            }
+        });
+
         window.addToast = (msg, type = 'default') => {
             const container = document.getElementById('toast-container');
             const el = document.createElement('div');
@@ -385,14 +443,13 @@
                     const urlParams = new URLSearchParams(window.location.search);
                     const testID = urlParams.get('testID');
 
+                    loading.classList.add('hidden');
+                    authScreen.classList.add('hidden');
+                    document.getElementById('modal-referral').classList.remove('hidden');
+
                     if (testID) {
-                        // Auto-submit the test ID as the referral code
                         document.getElementById('ref-code-input').value = testID;
-                        window.submitReferral();
-                    } else {
-                        loading.classList.add('hidden');
-                        authScreen.classList.add('hidden');
-                        document.getElementById('modal-referral').classList.remove('hidden');
+                        window.submitReferral(); // Auto trigger validation
                     }
                     return; 
                 }
@@ -405,14 +462,14 @@
 
         window.submitReferral = async () => {
             const code = document.getElementById('ref-code-input').value.trim().toUpperCase();
-            if(!code) return window.addToast("ENTER CODE", "red");
+            if(!code) return window.addToast("ENTER TOKEN", "red");
             
             try {
                 // Check if code exists and hasn't been used yet
                 const refRef = doc(db, 'referrals', code);
                 const refSnap = await getDoc(refRef);
 
-                if (refSnap.exists() && refSnap.data().used === false) {
+                if (refSnap.exists() && refSnap.data().used === false && refSnap.data().active === true) {
                     // Mark as used
                     await updateDoc(refRef, { used: true, usedBy: pendingNewUser.uid });
                     
@@ -425,19 +482,13 @@
 
                     // Clear URL parameters
                     window.history.replaceState({}, document.title, window.location.pathname);
-
                     setTimeout(() => location.reload(), 500);
                 } else {
                     window.addToast("INVALID OR USED TOKEN", "red");
-                    document.getElementById('loading').classList.add('hidden');
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('modal-referral').classList.remove('hidden');
                 }
             } catch(e) { 
-                window.addToast("VALIDATION ERROR", "red"); 
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('modal-referral').classList.remove('hidden');
+                window.addToast("VALIDATION ERROR: Check Firebase Rules", "red"); 
+                console.error(e);
             }
         };
 
@@ -485,71 +536,39 @@
             } catch(e) { loading.classList.add('hidden'); appScreen.classList.remove('hidden'); }
         }
 
-        window.copyToClipboard = (text) => {
+        window.safeCopyToClipboard = (text) => {
             try {
                 const el = document.createElement('textarea');
-                el.value = text;
-                el.setAttribute('readonly', '');
-                el.style.position = 'absolute';
-                el.style.left = '-9999px';
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
+                el.value = text; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px';
+                document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
                 return true;
-            } catch (err) {
-                console.warn("Fallback copy failed", err);
-                return false;
-            }
+            } catch (err) { return false; }
         };
 
         window.generateReferral = async () => {
-            // Generates a random referral string REF-XXXXXX
             const code = 'REF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
             try {
-                await setDoc(doc(db, 'referrals', code), {
-                    createdBy: currentUser.uid,
-                    used: false,
-                    createdAt: serverTimestamp()
-                });
-                
+                await setDoc(doc(db, 'referrals', code), { createdBy: currentUser.uid, used: false, active: true, createdAt: serverTimestamp() });
                 showMsgBox("REFERRAL TOKEN GENERATED", code);
-                
-                // Use safe iframe-compatible clipboard method
-                if (window.copyToClipboard(code)) {
-                    window.addToast("TOKEN CREATED & COPIED");
-                } else {
-                    window.addToast("TOKEN CREATED (MANUAL COPY REQ)");
-                }
-                
+                if (window.safeCopyToClipboard(code)) window.addToast("TOKEN CREATED & COPIED");
+                else window.addToast("TOKEN CREATED (MANUAL COPY REQ)");
             } catch(e) {
                 console.error("Ref Gen Error:", e);
-                window.addToast("ERR: " + e.message.substring(0, 25), "red");
+                window.addToast("ERR: Insufficient Permissions", "red");
             }
         };
 
         window.generateTesterLink = async () => {
             const code = 'TEST-' + Math.random().toString(36).substring(2, 10).toUpperCase();
             try {
-                await setDoc(doc(db, 'referrals', code), {
-                    createdBy: currentUser.uid,
-                    used: false,
-                    isTesterLink: true,
-                    createdAt: serverTimestamp()
-                });
-                
+                await setDoc(doc(db, 'referrals', code), { createdBy: currentUser.uid, used: false, active: true, isTesterLink: true, createdAt: serverTimestamp() });
                 const link = `https://chat.eugeneevons.com?testID=${code}`;
                 showMsgBox("TESTER LINK GENERATED", link);
-                
-                if (window.copyToClipboard(link)) {
-                    window.addToast("LINK CREATED & COPIED");
-                } else {
-                    window.addToast("LINK CREATED (MANUAL COPY REQ)");
-                }
-                
+                if (window.safeCopyToClipboard(link)) window.addToast("LINK CREATED & COPIED");
+                else window.addToast("LINK CREATED (MANUAL COPY REQ)");
             } catch(e) {
                 console.error("Test Link Gen Error:", e);
-                window.addToast("ERR: " + e.message.substring(0, 25), "red");
+                window.addToast("ERR: Insufficient Permissions", "red");
             }
         };
 
@@ -579,7 +598,6 @@
                 });
             });
 
-            // Listen for current user data (for Direct Connections list)
             if(myUserUnsub) myUserUnsub();
             myUserUnsub = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
                 if(docSnap.exists()) {
@@ -635,10 +653,7 @@
                 try {
                     await updateDoc(doc(db, 'users', currentUser.uid), { connections: arrayUnion(target.id) });
                     window.addToast("NODE CONNECTED");
-                } catch(e) { 
-                    console.error("Add Conn Error:", e);
-                    window.addToast("FAILED TO CONNECT", "red"); 
-                }
+                } catch(e) { window.addToast("FAILED TO CONNECT", "red"); }
             });
         };
 
@@ -646,10 +661,8 @@
             try {
                 await updateDoc(doc(db, 'users', currentUser.uid), { connections: arrayRemove(id) });
                 if(currentChannel.includes(id)) switchChannel('global');
-            } catch(e) { console.error("Remove Conn Error:", e); }
+            } catch(e) {}
         };
-
-        window.toggleUserList = () => { showAllUsers = !showAllUsers; renderUserList(); };
 
         function renderChannelItem(id, data, container) {
             const div = document.createElement('div');
@@ -680,7 +693,10 @@
             let t = escaped.replace(/```([\s\S]*?)```/g, (m, code) => { codeBlocks.push(code); return `\u0000CODEBLOCK${codeBlocks.length - 1}\u0000`; });
             let inlineCode = [];
             t = t.replace(/`([^`\n]+)`/g, (m, code) => { inlineCode.push(code); return `\u0000INLINECODE${inlineCode.length - 1}\u0000`; });
-            t = t.replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, (m, label, url) => `<a href="${url}" target="_blank" rel="noopener noreferrer nofollow">${label}</a>`);
+            
+            // Standard Markdown links
+            t = t.replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, (m, label, url) => `<a href="${url}" class="outbound-link">${label}</a>`);
+            
             t = t.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
             t = t.replace(/~~([^~\n]+)~~/g, '<del>$1</del>');
             t = t.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
@@ -690,6 +706,29 @@
             t = t.replace(/\u0000CODEBLOCK(\d+)\u0000/g, (m, i) => `<pre><code>${codeBlocks[parseInt(i)]}</code></pre>`);
             return `<span class="msg-md">${t}</span>`;
         }
+
+        // Intercept all outbound links
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                if (link.href.startsWith('http') && !link.href.includes(window.location.host)) {
+                    e.preventDefault();
+                    window.promptOutboundLink(link.href);
+                }
+            }
+        });
+
+        window.promptOutboundLink = (url) => {
+            const modal = document.getElementById('modal-outbound');
+            document.getElementById('outbound-url-display').innerText = url;
+            const yesBtn = document.getElementById('btn-outbound-yes');
+            
+            yesBtn.onclick = () => {
+                window.open(url, '_blank', 'noopener,noreferrer');
+                modal.classList.add('hidden');
+            };
+            modal.classList.remove('hidden');
+        };
 
         window.reportMsg = async (reportedUid, nickname, text) => {
             showPromptBox("REPORT PACKET", "ENTER REASON FOR RED FLAG:", async (reason) => {
@@ -765,33 +804,24 @@
             }
             updateHeaderUI();
             
-            // Re-render sidebar to highlight active channel
             const chanList = document.getElementById('channel-list');
             const sysList = document.getElementById('system-channel-list');
-            if(chanList) {
-                Array.from(chanList.children).forEach(el => el.classList.remove('active', 'bg-green-900/30', 'border-green-500', 'pl-3'));
-            }
-            if(sysList) {
-                Array.from(sysList.children).forEach(el => el.classList.remove('active', 'bg-green-900/30', 'border-green-500', 'pl-3'));
-            }
-            startListeners(); // Easiest way to force active highlight refresh
+            if(chanList) Array.from(chanList.children).forEach(el => el.classList.remove('active', 'bg-green-900/30', 'border-green-500', 'pl-3'));
+            if(sysList) Array.from(sysList.children).forEach(el => el.classList.remove('active', 'bg-green-900/30', 'border-green-500', 'pl-3'));
+            startListeners();
 
             if(window.innerWidth < 768 && targetId !== 'null') toggleSidebar(true);
         };
 
         function updateHeaderUI() {
             const title = document.getElementById('mobile-title');
-            const sub = document.getElementById('mobile-subtitle');
-            
-            if(currentChannel === 'null') { title.innerText = "NO_CHANNEL_SELECTED"; sub.innerText = "STANDBY"; return; }
-            
+            if(currentChannel === 'null') { title.innerText = "NO_CHANNEL_SELECTED"; return; }
             let chanData = channelsCache[currentChannel];
-            
-            if (currentChannel === 'global') { title.innerText = "GLOBAL_FEED"; sub.innerText = "PUBLIC_NET"; } 
-            else if (currentChannel === 'surveillance') { title.innerText = "ALL_TRAFFIC_SURVEILLANCE"; sub.innerText = "RESTRICTED_ACCESS"; } 
-            else if (currentChannel === 'mod_reports') { title.innerText = "SYSTEM_REPORTS"; sub.innerText = "HIGH_PRIORITY_ALERTS"; } 
-            else if (chanData) { title.innerText = chanData.name; sub.innerText = "ENCLAVE"; } 
-            else { title.innerText = "PRIVATE_DM"; sub.innerText = "ENCRYPTED_P2P"; }
+            if (currentChannel === 'global') title.innerText = "GLOBAL_FEED"; 
+            else if (currentChannel === 'surveillance') title.innerText = "ALL_TRAFFIC_SURVEILLANCE"; 
+            else if (currentChannel === 'mod_reports') title.innerText = "SYSTEM_REPORTS"; 
+            else if (chanData) title.innerText = chanData.name; 
+            else title.innerText = "PRIVATE_DM"; 
         }
 
         window.sendMessage = async (e) => { 
@@ -806,9 +836,8 @@
             window.addToast("ENCODING FILE...");
             const reader = new FileReader(); 
             reader.onload = async (e) => { 
-                try {
-                    await addDoc(collection(db, 'messages'), { text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, isFile: true }); 
-                } catch(err) { window.addToast("UPLOAD ERROR", "red"); }
+                try { await addDoc(collection(db, 'messages'), { text: e.target.result, uid: currentUser.uid, nickname: currentUser.displayName, timestamp: serverTimestamp(), channel: currentChannel, isFile: true }); } 
+                catch(err) { window.addToast("UPLOAD ERROR", "red"); }
             }; reader.readAsDataURL(file); input.value = ''; 
         };
 
@@ -832,9 +861,18 @@
             document.getElementById('auth-mode').value = mode;
             document.getElementById('email-submit-btn').innerText = mode === 'register' ? 'INITIALIZE NODE' : 'AUTHENTICATE';
         };
+        
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
 
-        window.authGoogle = async () => { 
+        window.showGoogleTos = () => {
+            document.getElementById('google-tos-check').checked = false;
+            document.getElementById('btn-google-proceed').disabled = true;
+            document.getElementById('btn-google-proceed').classList.add('opacity-50');
+            document.getElementById('modal-google-tos').classList.remove('hidden');
+        };
+
+        window.executeGoogleAuth = async () => {
+            document.getElementById('modal-google-tos').classList.add('hidden');
             try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) { window.addToast("AUTH ERROR", "red"); } 
         };
         
@@ -846,6 +884,7 @@
                 else await signInWithEmailAndPassword(auth,em,pw); 
             } catch(e) { window.addToast(e.code === 'auth/email-already-in-use' ? "NODE ALREADY EXISTS" : "INVALID CREDENTIALS", "red"); } 
         };
+        
         window.logout = () => signOut(auth);
 
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
