@@ -171,6 +171,7 @@
             <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
                 <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
                 <div class="space-y-2">
+                    <button onclick="generateLink('ref')" class="w-full btn-base border-purple-800 text-purple-500 hover:text-white hover:bg-purple-900 !py-1.5">GENERATE_INVITE_LINK</button>
                     <button onclick="openEditProfile()" class="w-full btn-base btn-green !py-1.5">EDIT_PROFILE</button>
                     <button onclick="confirmDecommission()" class="w-full btn-base btn-red !py-1.5">DECOMMISSION_NODE</button>
                 </div>
@@ -390,10 +391,10 @@
                 <button onclick="toggleMaintenanceMode()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ TOGGLE_MAINTENANCE_MODE ]</button>
                 <button onclick="openBanList()" class="w-full btn-base border-red-800 text-red-500 hover:bg-red-900">[ MANAGE_BLACKLIST ]</button>
                 <button onclick="promptPromoteUser()" class="w-full btn-base border-green-800 text-green-500 hover:bg-green-900">[ PROMOTE_TO_MOD ]</button>
+                <button onclick="openReferralList()" class="w-full btn-base border-purple-800 text-purple-500 hover:bg-purple-900">[ VIEW_REFERRAL_LOGS ]</button>
                 
                 <div class="pt-4 border-t border-red-950 space-y-2">
                     <button onclick="generateLink('test')" class="w-full btn-base border-cyan-800 text-cyan-500 hover:bg-cyan-900">GENERATE_TEST_LINK</button>
-                    <button onclick="generateLink('ref')" class="w-full btn-base border-purple-800 text-purple-500 hover:bg-purple-900">GENERATE_REF_LINK</button>
                 </div>
 
                 <div class="pt-4 border-t border-red-950 space-y-2">
@@ -404,6 +405,14 @@
     </div>
     
     <div id="ban-list-modal" class="hidden absolute inset-0 bg-black/95 z-[110] flex flex-col items-center justify-center p-4"><div class="w-full max-w-md alert-border p-6 bg-black relative modal-anim"><button onclick="document.getElementById('ban-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-red-500 hover:text-white text-lg">×</button><h2 class="text-sm font-bold text-red-500 mb-6 text-center uppercase tracking-widest">BLACKLISTED_NODES</h2><div id="ban-list-content" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 custom-scroll"></div></div></div>
+    
+    <div id="referral-list-modal" class="hidden absolute inset-0 bg-black/95 z-[110] flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md neon-border border-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.2)] p-6 bg-black relative modal-anim">
+            <button onclick="document.getElementById('referral-list-modal').classList.add('hidden')" class="absolute top-2 right-4 text-purple-500 hover:text-white text-lg">×</button>
+            <h2 class="text-sm font-bold text-purple-500 mb-6 text-center uppercase tracking-widest">REFERRAL_LOGS</h2>
+            <div id="referral-list-content" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 custom-scroll"></div>
+        </div>
+    </div>
     
     <div id="modal-edit" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim"><h3 class="text-xs font-bold mb-4 tracking-widest text-green-800 uppercase">MODIFY_PACKET</h3><input id="edit-input" type="text" class="w-full bg-transparent border-b border-green-500 p-2 mb-6 outline-none text-center text-sm uppercase"><input type="hidden" id="edit-id"><div class="flex gap-2"><button onclick="submitEdit()" class="flex-1 btn-base btn-green py-2">SAVE</button><button onclick="document.getElementById('modal-edit').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
     
@@ -646,7 +655,12 @@
                     const uRef = doc(db, 'users', user.uid);
                     const uSnap = await getDoc(uRef);
                     if (!uSnap.exists()) {
-                        await setDoc(uRef, { nickname: user.displayName || 'Anonymous', email: user.email || 'guest', lastSeen: serverTimestamp() });
+                        await setDoc(uRef, { 
+                            nickname: user.displayName || 'Anonymous', 
+                            email: user.email || 'guest', 
+                            lastSeen: serverTimestamp(),
+                            referredBy: REF_LINK !== 'NONE' ? REF_LINK : null
+                        });
                     } else {
                         await updateDoc(uRef, { lastSeen: serverTimestamp() });
                         if (uSnap.data().isMod) isModerator = true;
@@ -1337,6 +1351,30 @@
         
         window.openBanList = async () => { document.getElementById('ban-list-modal').classList.remove('hidden'); const s=await getDocs(collection(db,'banned_users')); document.getElementById('ban-list-content').innerHTML=s.docs.map(d=>`<div class="border border-red-900 p-2 mb-1 flex justify-between"><span class="text-xs text-red-500">${d.data().nickname}</span><button onclick="unbanUser('${d.id}')" class="text-[8px] px-2 text-green-500 border border-green-800">REVOKE</button></div>`).join(''); };
         window.unbanUser = async (id) => { await deleteDoc(doc(db,'banned_users',id)); openBanList(); };
+        
+        window.openReferralList = async () => {
+            document.getElementById('referral-list-modal').classList.remove('hidden');
+            const content = document.getElementById('referral-list-content');
+            content.innerHTML = '<div class="text-[10px] text-purple-500 text-center uppercase animate-pulse py-4">FETCHING_LOGS...</div>';
+            
+            const s = await getDocs(collection(db, 'users'));
+            const refList = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.referredBy);
+                
+            if (refList.length === 0) {
+                content.innerHTML = '<div class="text-center text-[10px] text-zinc-500 uppercase py-4 font-bold tracking-widest">NO_REFERRAL_DATA_FOUND</div>';
+                return;
+            }
+            
+            content.innerHTML = refList.map(u => `
+                <div class="border border-purple-900/50 bg-purple-900/10 p-2 mb-1 flex flex-col">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs text-purple-400 font-bold uppercase">${escapeHtml(u.nickname)}</span>
+                        <span class="text-[8px] text-purple-600 font-mono">ID: ${u.id.substring(0,6)}...</span>
+                    </div>
+                    <span class="text-[9px] text-zinc-400 uppercase">INVITED BY CODE: <span class="text-purple-300 font-bold">${escapeHtml(u.referredBy)}</span></span>
+                </div>
+            `).join('');
+        };
         
         window.broadcastAnnouncement = async () => { 
             showPromptBox("BROADCAST", "ENTER GLOBAL MESSAGE:", async (t) => {
