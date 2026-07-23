@@ -171,7 +171,7 @@
             <div class="p-4 bg-red-950/10 border-t border-red-900/50 shrink-0">
                 <div class="text-[9px] text-red-900 font-black mb-3 tracking-widest uppercase">DANGER_ZONE</div>
                 <div class="space-y-2">
-                    <button onclick="openNameModal()" class="w-full btn-base btn-green !py-1.5">REASSIGN_ALIAS</button>
+                    <button onclick="openEditProfile()" class="w-full btn-base btn-green !py-1.5">EDIT_PROFILE</button>
                     <button onclick="confirmDecommission()" class="w-full btn-base btn-red !py-1.5">DECOMMISSION_NODE</button>
                 </div>
                 <button onclick="logout()" class="w-full btn-base border-zinc-700 text-zinc-500 hover:text-white !py-1.5 mt-2">[ LOG_OUT ]</button>
@@ -304,7 +304,78 @@
     <!-- Other Modals (Global Icon, Name, Admin, Ban, Edit) -->
     <div id="modal-global-icon" class="hidden absolute inset-0 bg-black/95 z-[70] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-6 bg-black modal-anim border-yellow-600"><h3 class="text-xs font-bold mb-4 tracking-widest text-yellow-500 uppercase">GLOBAL_ICON_CONFIG</h3><div class="mb-6"><button onclick="document.getElementById('global-icon-input').click()" class="w-full border border-dashed border-yellow-800 p-4 text-[9px] text-yellow-600 hover:text-white">[ SELECT_FILE ]</button><input type="file" id="global-icon-input" class="hidden" accept="image/*"></div><div class="flex gap-2"><button onclick="updateGlobalIcon()" class="flex-1 btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black py-2">UPDATE</button><button onclick="document.getElementById('modal-global-icon').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 py-2">CANCEL</button></div></div></div>
     
-    <div id="modal-name" class="hidden absolute inset-0 bg-black/95 z-[60] flex items-center justify-center p-4"><div class="w-full max-w-sm neon-border p-8 bg-black modal-anim"><h3 class="text-sm font-bold mb-6 tracking-widest text-green-500 uppercase text-center">IDENT_UPDATE</h3><input id="new-name" type="text" class="w-full bg-transparent border-b-2 border-green-800 focus:border-green-500 p-3 mb-8 outline-none text-center text-lg uppercase font-bold text-green-300" placeholder="NEW_ALIAS"><div class="flex gap-4"><button onclick="saveName()" class="flex-1 btn-base btn-green py-3">UPDATE</button><button onclick="document.getElementById('modal-name').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-3">CANCEL</button></div></div></div>
+    <!-- PROFILE VIEW -->
+    <div id="modal-user-profile" class="hidden absolute inset-0 bg-black/95 z-[90] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border bg-black modal-anim flex flex-col relative">
+            <div id="profile-bg" class="h-24 bg-zinc-900 border-b border-green-900 bg-cover bg-center"></div>
+            <div class="absolute top-12 left-4 w-20 h-20 rounded border-2 border-green-500 bg-black overflow-hidden flex items-center justify-center z-10 shadow-lg">
+                <img id="profile-pfp" src="" class="w-full h-full object-cover hidden">
+                <span id="profile-initial" class="text-3xl font-bold text-green-500">?</span>
+            </div>
+            <div class="pt-10 pb-4 px-6 flex-1">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1 overflow-hidden">
+                        <h2 id="profile-nickname" class="text-xl font-bold text-green-400 uppercase tracking-tighter truncate">NICKNAME</h2>
+                        <p id="profile-id" class="text-[9px] text-green-800 font-mono truncate">ID: 123456</p>
+                    </div>
+                    <button id="profile-msg-btn" class="btn-base btn-green !py-1 ml-2 shrink-0">MSG</button>
+                </div>
+                <div class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1 mt-4">BIOGRAPHY</div>
+                <div class="text-xs font-mono text-zinc-300 whitespace-pre-wrap border border-green-900/30 bg-green-900/10 p-3 h-24 custom-scroll overflow-y-auto" id="profile-bio"></div>
+            </div>
+            <button onclick="document.getElementById('modal-user-profile').classList.add('hidden')" class="w-full btn-base border-t border-zinc-800 text-zinc-600 hover:text-white py-3 bg-zinc-950 font-bold">CLOSE_PROFILE</button>
+        </div>
+    </div>
+
+    <!-- EDIT PROFILE -->
+    <div id="modal-edit-profile" class="hidden absolute inset-0 bg-black/95 z-[90] flex items-center justify-center p-4">
+        <div class="w-full max-w-sm neon-border bg-black modal-anim flex flex-col overflow-hidden max-h-[90vh]">
+            <div class="p-4 border-b border-green-900 bg-zinc-950 text-center shrink-0">
+                <h3 class="text-xs font-bold tracking-widest text-green-500 uppercase">UPDATE_IDENTITY</h3>
+            </div>
+            
+            <div class="p-4 overflow-y-auto custom-scroll space-y-4">
+                <!-- BG Upload -->
+                <div>
+                    <div class="text-[9px] text-green-700 uppercase mb-1 font-bold">BACKGROUND_IMG</div>
+                    <div id="edit-bg-preview" class="h-24 border border-dashed border-green-800 flex items-center justify-center bg-cover bg-center bg-zinc-900 cursor-pointer relative group transition-all hover:border-green-500" onclick="document.getElementById('upload-bg-input').click()">
+                        <div class="absolute inset-0 bg-black/60 hidden group-hover:flex items-center justify-center text-[9px] text-green-400 font-bold tracking-widest uppercase">CLICK_TO_CHANGE</div>
+                    </div>
+                    <input type="file" id="upload-bg-input" class="hidden" accept="image/*" onchange="handleProfileImg(this, 'bg')">
+                </div>
+
+                <!-- PFP Upload -->
+                <div>
+                    <div class="text-[9px] text-green-700 uppercase mb-1 font-bold">AVATAR_IMG</div>
+                    <div class="w-20 h-20 border border-dashed border-green-800 flex items-center justify-center cursor-pointer relative group bg-black overflow-hidden transition-all hover:border-green-500 rounded" onclick="document.getElementById('upload-pfp-input').click()">
+                        <img id="edit-pfp-preview" src="" class="w-full h-full object-cover hidden z-10">
+                        <div class="absolute inset-0 bg-black/60 hidden group-hover:flex items-center justify-center z-20">
+                            <i class="fas fa-camera text-green-400"></i>
+                        </div>
+                        <i id="edit-pfp-icon" class="fas fa-camera text-green-800"></i>
+                    </div>
+                    <input type="file" id="upload-pfp-input" class="hidden" accept="image/*" onchange="handleProfileImg(this, 'pfp')">
+                </div>
+
+                <!-- Name -->
+                <div>
+                    <div class="text-[9px] text-green-700 uppercase mb-1 font-bold">ALIAS</div>
+                    <input id="edit-profile-name" type="text" class="w-full bg-black border border-green-900 p-3 outline-none text-sm uppercase text-green-300 focus:border-green-500 transition-colors" placeholder="NEW_ALIAS">
+                </div>
+
+                <!-- Bio -->
+                <div>
+                    <div class="text-[9px] text-green-700 uppercase mb-1 font-bold">BIOGRAPHY</div>
+                    <textarea id="edit-profile-bio" class="w-full bg-black border border-green-900 p-3 outline-none text-xs font-mono text-zinc-300 focus:border-green-500 h-20 resize-none custom-scroll transition-colors" placeholder="ENTER_BIO..."></textarea>
+                </div>
+            </div>
+
+            <div class="flex gap-2 p-4 border-t border-green-900 bg-zinc-950 shrink-0">
+                <button onclick="saveProfile()" class="flex-1 btn-base btn-green py-2 font-bold">SAVE_CHANGES</button>
+                <button onclick="document.getElementById('modal-edit-profile').classList.add('hidden')" class="flex-1 btn-base border-zinc-800 text-zinc-600 hover:text-white py-2">CANCEL</button>
+            </div>
+        </div>
+    </div>
     
     <div id="admin-modal" class="hidden absolute inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-4 overflow-y-auto">
         <div class="w-full max-w-md alert-border p-6 md:p-8 bg-black relative shadow-[0_0_50px_rgba(255,0,0,0.3)] modal-anim my-auto">
@@ -377,6 +448,7 @@
         let channelsCache = {};
         
         let allUsers = [];
+        let globalUsersCache = {};
         let showAllUsers = false;
         let testLock = false;
         let pendingTestLogs = [];
@@ -678,9 +750,12 @@
             if(usersUnsub) usersUnsub();
             usersUnsub = onSnapshot(collection(db, 'users'), (snap) => {
                 allUsers = [];
+                globalUsersCache = {};
                 snap.forEach(d => {
+                    const data = d.data();
+                    globalUsersCache[d.id] = { id: d.id, ...data };
                     if(d.id === currentUser.uid) return;
-                    allUsers.push({id: d.id, ...d.data()});
+                    allUsers.push({id: d.id, ...data});
                 });
                 renderUserList();
             });
@@ -701,16 +776,17 @@
                 const div = document.createElement('div');
                 const isSelected = currentChannel.includes(u.id) && !currentChannel.startsWith('modmail_');
                 div.className = `user-item ${isSelected ? 'active' : 'border-transparent'} rounded-r`;
+                div.onclick = () => openUserProfile(u.id);
                 div.innerHTML = `
                     <div class="flex items-center gap-2 overflow-hidden mr-2 w-full">
-                         <div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-[10px] border border-green-800 font-bold shrink-0">
-                            ${u.nickname.substring(0,1).toUpperCase()}
+                         <div class="w-6 h-6 rounded bg-green-900/20 flex items-center justify-center text-[10px] border border-green-800 font-bold shrink-0 overflow-hidden">
+                            ${u.pfp ? `<img src="${u.pfp}" class="w-full h-full object-cover">` : u.nickname.substring(0,1).toUpperCase()}
                         </div>
                         <div class="flex flex-col overflow-hidden flex-1">
                             <span class="text-xs font-bold truncate group-hover:text-white transition-colors uppercase">${escapeHtml(u.nickname)}</span>
                             <span class="text-[8px] text-green-900 font-mono">ID: ${u.id.substring(0,4)}</span>
                         </div>
-                        <button onclick="switchChannel('${u.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-1.5 py-0.5 transition-all rounded uppercase shrink-0">MSG</button>
+                        <button onclick="event.stopPropagation(); switchChannel('${u.id}')" class="text-[9px] border border-green-900 hover:border-green-500 text-green-800 hover:text-green-400 px-1.5 py-0.5 transition-all rounded uppercase shrink-0">MSG</button>
                     </div>
                 `;
                 list.appendChild(div);
@@ -791,7 +867,7 @@
                         headerBadge = `<span class="text-[8px] text-yellow-600 border border-yellow-800 px-1 ml-2 rounded">ADMIN</span>`;
                     }
 
-                    const nickAction = (isMe || isSysAdmin || isBot) ? '' : `onclick="switchChannel('${m.uid}')" title="DM" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
+                    const nickAction = (isSysAdmin || isBot) ? '' : `onclick="openUserProfile('${m.uid}')" title="VIEW_PROFILE" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
                     const displayNick = isBot ? 'MMTC' : m.nickname;
                     
                     let actions = '';
@@ -821,34 +897,41 @@
 
         // --- STREAMING_CHUNK:Implementing MMTC Bot Form State Machine... ---
         window.openModmail = async () => {
-            const channelId = `modmail_${currentUser.uid}`;
-            const chanRef = doc(db, 'channels', channelId);
-            const chanSnap = await getDoc(chanRef);
+            let activeTicketId = null;
             
-            // Force optimistic local cache update to prevent rendering glitches
-            let newStatus = 'bot_q1';
+            // Search local cache for an active ticket belonging to this user
+            for (const [id, data] of Object.entries(channelsCache)) {
+                if (data.type === 'modmail' && data.createdBy === currentUser.uid && data.status !== 'closed') {
+                    activeTicketId = id;
+                    break;
+                }
+            }
             
-            if (!chanSnap.exists()) {
+            if (activeTicketId) {
+                // If there's already an active ticket, resume it
+                switchChannel(activeTicketId);
+            } else {
+                // Generate a fresh, one-time use ticket with a unique timestamp
+                const channelId = `modmail_${currentUser.uid}_${Date.now()}`;
+                const chanRef = doc(db, 'channels', channelId);
+                
                 const initData = {
                     name: `TICKET_${currentUser.displayName}`,
                     type: 'modmail',
-                    status: newStatus,
+                    status: 'bot_q1',
                     createdBy: currentUser.uid,
                     createdAt: serverTimestamp()
                 };
                 
-                // Cache it so updateHeaderUI doesn't fail
+                // Cache it locally so UI transitions don't glitch
                 channelsCache[channelId] = initData; 
                 
                 await setDoc(chanRef, initData);
                 await sendBotMsg("Hello! I am MODMAIL-TERMCHAT (MMTC) and I will help you today.", channelId);
                 await sendBotMsg("What would you like to contact support today for?\n1. APPEAL REQUEST\n2. REPORT ABUSE\n3. TECH SUPPORT\n4. ACCT DELETION\n5. I WANT ADMIN", channelId);
-            } else {
-                // If it exists, make sure it's cached properly for UI transitions
-                channelsCache[channelId] = chanSnap.data();
+                
+                switchChannel(channelId);
             }
-            
-            switchChannel(channelId);
         };
 
         window.sendBotMsg = async (text, targetChan = currentChannel) => {
@@ -1115,8 +1198,100 @@
         window.showEmailAuth = () => { document.getElementById('auth-landing').classList.add('hidden'); document.getElementById('auth-email-form').classList.remove('hidden'); };
         window.showLanding = () => { document.getElementById('auth-email-form').classList.add('hidden'); document.getElementById('auth-landing').classList.remove('hidden'); };
 
-        window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
-        window.saveName = async () => { const n=document.getElementById('new-name').value.trim(); if(n) { logTestAction("CHANGED_NAME"); await updateProfile(currentUser,{displayName:n}); await setDoc(doc(db,'users',currentUser.uid),{nickname:n},{merge:true}); location.reload(); } };
+        // --- STREAMING_CHUNK:User Identity & Profile Handling... ---
+        window.openUserProfile = async (uid) => {
+            const u = globalUsersCache[uid];
+            if(!u) return showMsgBox("ERROR", "USER DATA NOT FOUND.");
+            
+            document.getElementById('profile-nickname').innerText = u.nickname || 'UNKNOWN';
+            document.getElementById('profile-id').innerText = `ID: ${uid}`;
+            document.getElementById('profile-bio').innerText = u.bio || 'No bio provided.';
+            
+            const pfp = document.getElementById('profile-pfp');
+            const initial = document.getElementById('profile-initial');
+            if(u.pfp) { pfp.src = u.pfp; pfp.classList.remove('hidden'); initial.classList.add('hidden'); }
+            else { pfp.classList.add('hidden'); initial.classList.remove('hidden'); initial.innerText = (u.nickname || '?').charAt(0).toUpperCase(); }
+            
+            const bg = document.getElementById('profile-bg');
+            if(u.bg) { bg.style.backgroundImage = `url(${u.bg})`; bg.classList.remove('bg-zinc-900'); }
+            else { bg.style.backgroundImage = 'none'; bg.classList.add('bg-zinc-900'); }
+            
+            const msgBtn = document.getElementById('profile-msg-btn');
+            if(uid === currentUser.uid) { 
+                msgBtn.innerText = "EDIT"; 
+                msgBtn.onclick = () => { document.getElementById('modal-user-profile').classList.add('hidden'); openEditProfile(); }; 
+            } else { 
+                msgBtn.innerText = "MSG"; 
+                msgBtn.onclick = () => { document.getElementById('modal-user-profile').classList.add('hidden'); switchChannel(uid); }; 
+            }
+            
+            document.getElementById('modal-user-profile').classList.remove('hidden');
+        };
+
+        window.openEditProfile = () => {
+            const u = globalUsersCache[currentUser.uid] || {};
+            document.getElementById('edit-profile-name').value = u.nickname || currentUser.displayName || '';
+            document.getElementById('edit-profile-bio').value = u.bio || '';
+            
+            const pfp = document.getElementById('edit-pfp-preview');
+            const icon = document.getElementById('edit-pfp-icon');
+            if(u.pfp) { pfp.src = u.pfp; pfp.classList.remove('hidden'); icon.classList.add('hidden'); }
+            else { pfp.src = ''; pfp.classList.add('hidden'); icon.classList.remove('hidden'); }
+            
+            document.getElementById('edit-bg-preview').style.backgroundImage = u.bg ? `url(${u.bg})` : 'none';
+            
+            // Clear temporary uploads
+            pfp.dataset.b64 = '';
+            document.getElementById('edit-bg-preview').dataset.b64 = '';
+            
+            document.getElementById('modal-edit-profile').classList.remove('hidden');
+        };
+
+        window.handleProfileImg = async (input, targetId) => {
+            if(!input.files.length) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { 
+                const b64 = e.target.result;
+                if(targetId === 'pfp') {
+                    const img = document.getElementById('edit-pfp-preview');
+                    img.src = b64; img.classList.remove('hidden');
+                    img.dataset.b64 = b64;
+                    document.getElementById('edit-pfp-icon').classList.add('hidden');
+                } else {
+                    const bg = document.getElementById('edit-bg-preview');
+                    bg.style.backgroundImage = `url(${b64})`;
+                    bg.dataset.b64 = b64;
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        };
+
+        window.saveProfile = async () => {
+            const n = document.getElementById('edit-profile-name').value.trim();
+            const b = document.getElementById('edit-profile-bio').value.trim();
+            const pfpB64 = document.getElementById('edit-pfp-preview').dataset.b64;
+            const bgB64 = document.getElementById('edit-bg-preview').dataset.b64;
+            
+            if(!n) return showMsgBox("ERROR", "ALIAS REQUIRED");
+            
+            logTestAction("UPDATED_PROFILE");
+            try {
+                if (currentUser.displayName !== n) await updateProfile(currentUser, { displayName: n });
+                
+                const updateData = { nickname: n, bio: b };
+                if (pfpB64) updateData.pfp = pfpB64;
+                if (bgB64) updateData.bg = bgB64;
+
+                await setDoc(doc(db, 'users', currentUser.uid), updateData, { merge: true });
+                document.getElementById('modal-edit-profile').classList.add('hidden');
+                
+                // Immediately refresh cache for seamless UI
+                globalUsersCache[currentUser.uid] = { ...globalUsersCache[currentUser.uid], ...updateData };
+                showMsgBox("SUCCESS", "PROFILE UPDATED.");
+            } catch(e) {
+                showMsgBox("ERROR", e.message);
+            }
+        };
         
         // --- STREAMING_CHUNK:Securing Root and Administrative Panels... ---
         window.confirmDemoteSelf = async () => {
