@@ -226,15 +226,12 @@
                 </form>
 
                 <!-- BOT Q1: Topic Selection -->
-                <div id="bot-q1-form" class="hidden flex gap-2 max-w-5xl mx-auto w-full">
-                    <select id="bot-q1-select" class="flex-1 bg-black border border-cyan-900 text-cyan-500 p-2 outline-none uppercase font-bold text-xs cursor-pointer">
-                        <option value="Appeal request">Appeal request</option>
-                        <option value="Report Abuse">Report Abuse</option>
-                        <option value="Technical Support">Technical Support</option>
-                        <option value="Account Deletion">Account Deletion</option>
-                        <option value="I want admin">I want admin</option>
-                    </select>
-                    <button onclick="advanceBotFlow('q1')" class="btn-base btn-bot px-6">SUBMIT</button>
+                <div id="bot-q1-form" class="hidden flex flex-wrap gap-2 justify-center max-w-5xl mx-auto w-full">
+                    <button onclick="advanceBotFlow('q1', 'Appeal request')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">1. APPEAL REQUEST</button>
+                    <button onclick="advanceBotFlow('q1', 'Report Abuse')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">2. REPORT ABUSE</button>
+                    <button onclick="advanceBotFlow('q1', 'Technical Support')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">3. TECH SUPPORT</button>
+                    <button onclick="advanceBotFlow('q1', 'Account Deletion')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">4. ACCT DELETION</button>
+                    <button onclick="advanceBotFlow('q1', 'I want admin')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">5. I WANT ADMIN</button>
                 </div>
 
                 <!-- BOT Q2: Target Selection -->
@@ -888,7 +885,7 @@
             let optimisticData = channelsCache[currentChannel] || {};
             
             if (step === 'q1') {
-                const val = document.getElementById('bot-q1-select').value;
+                const val = overrideValue;
                 await sendBotMsg(`> USER SELECTED: ${val}`);
                 
                 if (val === 'I want admin') {
