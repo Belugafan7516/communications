@@ -225,27 +225,6 @@
                     <button type="submit" class="btn-base btn-green px-4">EXEC</button>
                 </form>
 
-                <!-- BOT Q1: Topic Selection -->
-                <div id="bot-q1-form" class="hidden flex flex-wrap gap-2 justify-center max-w-5xl mx-auto w-full">
-                    <button onclick="advanceBotFlow('q1', 'Appeal request')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">1. APPEAL REQUEST</button>
-                    <button onclick="advanceBotFlow('q1', 'Report Abuse')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">2. REPORT ABUSE</button>
-                    <button onclick="advanceBotFlow('q1', 'Technical Support')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">3. TECH SUPPORT</button>
-                    <button onclick="advanceBotFlow('q1', 'Account Deletion')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">4. ACCT DELETION</button>
-                    <button onclick="advanceBotFlow('q1', 'I want admin')" class="btn-base btn-bot flex-1 min-w-[140px] py-2">5. I WANT ADMIN</button>
-                </div>
-
-                <!-- BOT Q2: Target Selection -->
-                <div id="bot-q2-form" class="hidden flex gap-4 max-w-5xl mx-auto w-full justify-center">
-                    <button onclick="advanceBotFlow('q2', 'Myself')" class="btn-base btn-bot px-8 py-3">MYSELF</button>
-                    <button onclick="advanceBotFlow('q2', 'A friend')" class="btn-base btn-bot px-8 py-3">A FRIEND</button>
-                </div>
-
-                <!-- BOT Q3: Friend ID Input -->
-                <div id="bot-q3-form" class="hidden flex gap-2 max-w-5xl mx-auto w-full">
-                    <input id="bot-q3-input" type="text" class="flex-1 bg-black border border-cyan-900 text-cyan-500 p-2 outline-none uppercase font-bold text-xs" placeholder="ENTER FRIEND ID...">
-                    <button onclick="advanceBotFlow('q3')" class="btn-base btn-bot px-6">SUBMIT</button>
-                </div>
-
                 <!-- CLOSED TICKET MESSAGE -->
                 <div id="ticket-closed-msg" class="hidden text-center text-red-500 font-bold text-xs py-3 uppercase tracking-widest border border-red-900 bg-red-950/20 w-full">
                     <i class="fas fa-lock mr-2"></i> TICKET LOCKED BY ADMINISTRATION
@@ -789,9 +768,10 @@
                     
                     if(content.startsWith('data:image')) content = `<img src="${content}" class="max-w-[200px] border-2 border-green-800 rounded opacity-90 hover:opacity-100 transition-opacity">`;
                     else {
+                        // Support multi-line formatting for bot messages
+                        content = escapeHtml(content).replace(/\n/g, '<br>');
                         const mentionRegex = new RegExp(`@${currentUser.displayName}\\b`, 'gi');
-                        if (m.text.match(mentionRegex) && !isMe) content = escapeHtml(content).replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded shadow-lg">@${currentUser.displayName}</span>`);
-                        else content = escapeHtml(content);
+                        if (m.text.match(mentionRegex) && !isMe) content = content.replace(mentionRegex, `<span class="bg-yellow-900 text-yellow-500 font-bold px-1 rounded shadow-lg">@${currentUser.displayName}</span>`);
                     }
                     
                     const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
@@ -862,7 +842,7 @@
                 
                 await setDoc(chanRef, initData);
                 await sendBotMsg("Hello! I am MODMAIL-TERMCHAT (MMTC) and I will help you today.", channelId);
-                await sendBotMsg("What would you like to contact support today for?", channelId);
+                await sendBotMsg("What would you like to contact support today for?\n1. APPEAL REQUEST\n2. REPORT ABUSE\n3. TECH SUPPORT\n4. ACCT DELETION\n5. I WANT ADMIN", channelId);
             } else {
                 // If it exists, make sure it's cached properly for UI transitions
                 channelsCache[channelId] = chanSnap.data();
@@ -880,49 +860,46 @@
             } catch(e) { console.error("Bot Msg Fail:", e); }
         };
 
-        window.advanceBotFlow = async (step, overrideValue = null) => {
+        window.handleBotLogic = async (text, chanData) => {
             const chanRef = doc(db, 'channels', currentChannel);
-            let optimisticData = channelsCache[currentChannel] || {};
+            let optimisticData = { ...chanData };
             
-            if (step === 'q1') {
-                const val = overrideValue;
-                await sendBotMsg(`> USER SELECTED: ${val}`);
-                
-                if (val === 'I want admin') {
+            if (chanData.status === 'bot_q1') {
+                if (text === '5') {
                     await sendBotMsg("This is not a valid option to contact support. Look out for applications when they come out.");
                     optimisticData.status = 'closed';
                     await updateDoc(chanRef, { status: 'closed' });
-                } else {
+                } else if (['1', '2', '3', '4'].includes(text)) {
+                    const topics = { '1': 'Appeal Request', '2': 'Report Abuse', '3': 'Tech Support', '4': 'Acct Deletion' };
+                    const topic = topics[text];
                     optimisticData.status = 'bot_q2';
-                    optimisticData.topic = val;
-                    await updateDoc(chanRef, { topic: val, status: 'bot_q2' });
-                    await sendBotMsg("Are you helping yourself or a friend?");
+                    optimisticData.topic = topic;
+                    await updateDoc(chanRef, { topic: topic, status: 'bot_q2' });
+                    await sendBotMsg("Are you helping yourself or a friend?\n1. MYSELF\n2. A FRIEND");
+                } else {
+                    await sendBotMsg("INVALID_INPUT: Please enter a number between 1 and 5.");
                 }
             } 
-            else if (step === 'q2') {
-                await sendBotMsg(`> USER SELECTED: ${overrideValue}`);
-                if (overrideValue === 'Myself') {
-                    await sendBotMsg("Great! Transferring you to an agent...");
-                    await sendBotMsg("You are currently in queue. Please Wait.");
+            else if (chanData.status === 'bot_q2') {
+                if (text === '1') {
+                    await sendBotMsg("Great! Transferring you to an agent...\nYou are currently in queue. Please Wait.");
                     optimisticData.status = 'queued';
                     await updateDoc(chanRef, { status: 'queued', target: 'self' });
-                } else {
+                } else if (text === '2') {
                     optimisticData.status = 'bot_q3';
                     await updateDoc(chanRef, { status: 'bot_q3', target: 'friend' });
                     await sendBotMsg("Please insert the ID of the friend you are helping.");
+                } else {
+                    await sendBotMsg("INVALID_INPUT: Please enter 1 or 2.");
                 }
             }
-            else if (step === 'q3') {
-                const val = document.getElementById('bot-q3-input').value.trim();
-                if(!val) return;
-                await sendBotMsg(`> FRIEND ID PROVIDED: ${val}`);
-                await sendBotMsg("Great! Transferring you to an agent...");
-                await sendBotMsg("You are currently in queue. Please Wait.");
+            else if (chanData.status === 'bot_q3') {
+                await sendBotMsg("Great! Transferring you to an agent...\nYou are currently in queue. Please Wait.");
                 optimisticData.status = 'queued';
-                await updateDoc(chanRef, { status: 'queued', friendId: val });
+                await updateDoc(chanRef, { status: 'queued', friendId: text });
             }
 
-            // Sync cache and force UI redraw without waiting for slow snapshots
+            // Sync cache and force UI redraw
             channelsCache[currentChannel] = optimisticData;
             updateHeaderUI(); 
         };
@@ -954,9 +931,6 @@
             
             // Input Area Management
             const stdForm = document.getElementById('standard-chat-form');
-            const botQ1 = document.getElementById('bot-q1-form');
-            const botQ2 = document.getElementById('bot-q2-form');
-            const botQ3 = document.getElementById('bot-q3-form');
             const closedMsg = document.getElementById('ticket-closed-msg');
             const modActions = document.getElementById('mod-ticket-actions');
             const inputFooter = document.getElementById('input-footer-text');
@@ -968,9 +942,6 @@
             addMemberBtn.classList.add('hidden');
             cannedResponses.classList.add('hidden');
             stdForm.classList.remove('hidden');
-            botQ1.classList.add('hidden');
-            botQ2.classList.add('hidden');
-            botQ3.classList.add('hidden');
             closedMsg.classList.add('hidden');
             modActions.classList.add('hidden');
             inputFooter.classList.remove('hidden');
@@ -994,13 +965,12 @@
                     cannedResponses.classList.remove('hidden');
                     modActions.classList.remove('hidden');
                 } else {
-                    stdForm.classList.add('hidden');
-                    inputFooter.classList.add('hidden');
-                    if (chanData?.status === 'bot_q1') botQ1.classList.remove('hidden');
-                    else if (chanData?.status === 'bot_q2') botQ2.classList.remove('hidden');
-                    else if (chanData?.status === 'bot_q3') botQ3.classList.remove('hidden');
-                    else if (chanData?.status === 'closed') closedMsg.classList.remove('hidden');
-                    else if (chanData?.status === 'queued') {
+                    if (chanData?.status === 'closed') {
+                        stdForm.classList.add('hidden');
+                        inputFooter.classList.add('hidden');
+                        closedMsg.classList.remove('hidden');
+                    } else {
+                        // Standard chat remains OPEN during bot flows and queued states
                         stdForm.classList.remove('hidden');
                         inputFooter.classList.remove('hidden');
                     }
@@ -1060,6 +1030,14 @@
                     timestamp: serverTimestamp(), channel: currentChannel, isMod: isModerator 
                 }); 
                 input.value = ''; 
+
+                // --- BOT INTERCEPT LOGIC ---
+                if (currentChannel.startsWith('modmail_') && !isModerator) {
+                    let chanData = channelsCache[currentChannel];
+                    if (chanData && chanData.status && chanData.status.startsWith('bot_')) {
+                        await handleBotLogic(text, chanData);
+                    }
+                }
             } catch(e) { showMsgBox("MSG_FAIL", e.message); } 
         };
 
