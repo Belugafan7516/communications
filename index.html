@@ -13,6 +13,7 @@
             --term-bg: #050505;
             --term-glow: 0 0 10px rgba(34, 197, 94, 0.4);
             --term-alert: #ef4444;
+            --term-bot: #06b6d4; /* Cyan for MMTC */
         }
 
         /* LAYOUT CORE */
@@ -47,6 +48,7 @@
         .btn-green { @apply border-green-600 text-green-500 hover:bg-green-600 hover:text-black; }
         .btn-red { @apply border-red-600 text-red-500 hover:bg-red-600 hover:text-black; }
         .btn-yellow { @apply border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black; }
+        .btn-bot { @apply border-cyan-600 text-cyan-500 hover:bg-cyan-600 hover:text-black; }
         
         .user-item { @apply p-2 border-l-2 border-transparent transition-all cursor-pointer flex items-center gap-3 bg-green-900/5 mb-1; }
         .user-item:hover { @apply bg-green-900/20 pl-3; }
@@ -58,11 +60,8 @@
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
         .nickname-link:hover { text-decoration: underline; cursor: pointer; color: #fff; }
         
-        .ping-glow {
-            box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
-            border-color: #eab308 !important;
-            background-color: rgba(234, 179, 8, 0.1) !important;
-        }
+        .ping-glow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); border-color: #eab308 !important; background-color: rgba(234, 179, 8, 0.1) !important; }
+        .bot-glow { box-shadow: 0 0 15px rgba(6, 182, 212, 0.2); border-color: #06b6d4 !important; background-color: rgba(6, 182, 212, 0.1) !important; }
     </style>
 </head>
 <body class="scanline">
@@ -110,7 +109,7 @@
             
             <div id="auth-landing" class="space-y-4">
                 <button onclick="authGoogle()" class="w-full btn-base btn-green py-4"><i class="fab fa-google"></i> ACCESS_VIA_GOOGLE</button>
-                <button onclick="showEmailAuth()" class="w-full btn-base border-green-800 text-green-600 hover:text-green-400 py-3"><i class="fas fa-envelope"></i> ACCESS_VIA_EMAIL</button>
+                <button onclick="showEmailAuth()" class="w-full btn-base border-green-800 text-green-600 hover:text-green-400 py-3"><i class="fas fa-envelope"></i> SECURE_LOGIN (EMAIL)</button>
                 <button onclick="authGuest()" class="w-full btn-base border-zinc-800 text-zinc-600 hover:text-zinc-400 py-2">ANONYMOUS_LINK</button>
             </div>
 
@@ -129,15 +128,16 @@
         
         <!-- SIDEBAR -->
         <div id="sidebar" class="hidden md:flex flex-col w-72 border-r border-green-900 bg-black h-full shrink-0 absolute md:relative z-40 inset-y-0 left-0 transition-transform duration-300">
-            <div class="p-4 border-b border-green-900 bg-zinc-950 shrink-0">
+            <div class="p-4 border-b border-green-900 bg-zinc-950 shrink-0 relative group">
                 <h2 class="text-[9px] font-bold text-green-800 uppercase tracking-widest mb-1">LOCAL_NODE</h2>
                 <div id="my-id-display" class="text-xs font-black truncate uppercase text-green-400">ID_PENDING</div>
+                <div id="mod-badge" class="hidden text-[8px] text-yellow-500 border border-yellow-600 bg-yellow-900/20 px-1 py-0.5 mt-1 inline-block uppercase">ADMIN_ACCESS</div>
                 <div class="text-[8px] text-green-900 mt-1 uppercase">STATUS: ONLINE</div>
             </div>
             
             <div class="flex-1 overflow-y-auto custom-scroll min-h-0">
                 <div id="admin-panel-btn" class="hidden p-2">
-                    <button onclick="openAdminPanel()" class="w-full btn-base btn-yellow mb-2 border-dashed">[ ADMIN_CONSOLE ]</button>
+                    <button onclick="openAdminPanel()" class="w-full btn-base btn-yellow mb-2 border-dashed shadow-[0_0_10px_rgba(234,179,8,0.2)]">[ ROOT_CONSOLE ]</button>
                 </div>
 
                 <div class="p-3 pb-1 flex justify-between items-center border-b border-yellow-900/30 mt-2 bg-yellow-900/10">
@@ -148,7 +148,7 @@
                         <div class="w-6 h-6 rounded bg-yellow-900/40 flex items-center justify-center text-xs border border-yellow-600 font-bold shrink-0 text-yellow-500"><i class="fas fa-shield-alt"></i></div>
                         <div class="flex flex-col overflow-hidden text-left">
                             <span class="text-xs font-bold text-yellow-500 uppercase tracking-tight">CONTACT_SUPPORT</span>
-                            <span class="text-[8px] opacity-60 text-yellow-400 uppercase">MODMAIL SYSTEM</span>
+                            <span class="text-[8px] opacity-60 text-yellow-400 uppercase">MMTC SYSTEM</span>
                         </div>
                     </button>
                     <!-- Mod Only Modmail Ticket List -->
@@ -189,7 +189,7 @@
                     
                     <div class="flex flex-col overflow-hidden">
                         <span id="mobile-title" class="font-bold text-xs tracking-widest truncate uppercase">LOADING...</span>
-                        <span class="text-[8px] text-green-800 animate-pulse">UPLINK_ESTABLISHED</span>
+                        <span id="mobile-subtitle" class="text-[8px] text-green-800 animate-pulse">UPLINK_ESTABLISHED</span>
                     </div>
 
                     <button id="set-global-icon-btn" onclick="openGlobalIconModal()" class="hidden ml-2 text-[8px] border border-yellow-800 text-yellow-600 px-2 py-1" title="Set Icon"><i class="fas fa-pen"></i></button>
@@ -199,7 +199,7 @@
 
             <div id="msg-container" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scroll scroll-smooth relative"></div>
 
-            <div id="mod-canned-responses" class="hidden p-2 border-t border-yellow-900 bg-yellow-950/20 flex flex-wrap gap-2 justify-center items-center">
+            <div id="mod-canned-responses" class="hidden p-2 border-t border-yellow-900 bg-yellow-950/20 flex flex-wrap gap-2 justify-center items-center shrink-0">
                 <span class="text-[9px] text-yellow-600 font-bold mr-2">QUICK_REPLY:</span>
                 <button onclick="sendCannedMsg('Your request has been processed successfully.')" class="btn-base border-yellow-800 text-yellow-600 hover:text-white !text-[8px] !py-0.5">PROCESSED</button>
                 <button onclick="sendCannedMsg('Unfortunately, we couldn\'t verify it was you. Identity check failed.')" class="btn-base border-red-800 text-red-500 hover:text-white !text-[8px] !py-0.5">VERIFY_FAIL</button>
@@ -207,26 +207,54 @@
                 <button onclick="sendCannedMsg('Please provide additional proof of identity or further details regarding this matter.')" class="btn-base border-zinc-700 text-zinc-400 hover:text-white !text-[8px] !py-0.5">NEED_INFO</button>
             </div>
 
-            <div class="p-3 border-t border-green-900 bg-zinc-950 shrink-0 z-20 flex flex-col gap-2">
-                <div id="modmail-topic-selector" class="hidden max-w-5xl mx-auto w-full flex items-center gap-2 mb-1">
-                    <span class="text-[9px] text-yellow-600 font-bold tracking-widest whitespace-nowrap">TOPIC:</span>
-                    <select id="modmail-topic" class="w-full bg-black border border-yellow-900 text-yellow-500 text-[10px] p-1 outline-none uppercase font-bold cursor-pointer">
-                        <option value="GENERAL_INQUIRY">GENERAL_INQUIRY</option>
-                        <option value="ACCOUNT_DELETION_REQUEST">ACCOUNT_DELETION_REQUEST</option>
-                        <option value="ACCOUNT_RECOVERY">ACCOUNT_RECOVERY</option>
-                        <option value="REPORT_ABUSE">REPORT_ABUSE</option>
-                        <option value="TECHNICAL_SUPPORT">TECHNICAL_SUPPORT</option>
-                    </select>
-                </div>
+            <div class="p-3 border-t border-green-900 bg-zinc-950 shrink-0 z-20 flex flex-col relative">
                 
-                <form onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center w-full">
+                <!-- MOD CONTROLS (Only visible to mods in modmail) -->
+                <div id="mod-ticket-actions" class="hidden flex justify-center gap-2 mb-3 pb-3 border-b border-yellow-900/50">
+                    <button onclick="changeTicketStatus('closed')" class="btn-base border-red-800 text-red-500 hover:text-white !py-1">LOCK_TICKET</button>
+                    <button onclick="changeTicketStatus('queued')" class="btn-base border-green-800 text-green-500 hover:text-white !py-1">REOPEN_TICKET</button>
+                    <button onclick="deleteTicket()" class="btn-base border-red-600 bg-red-900/20 text-red-500 hover:text-white !py-1">PURGE_TICKET</button>
+                </div>
+
+                <!-- STANDARD CHAT INPUT -->
+                <form id="standard-chat-form" onsubmit="sendMessage(event)" class="flex gap-2 max-w-5xl mx-auto items-center w-full">
                     <span class="font-bold text-lg text-green-500 animate-pulse">&gt;</span>
                     <input id="msg-input" type="text" class="flex-1 bg-transparent border-none outline-none text-sm font-mono placeholder-green-900 uppercase" placeholder="TRANSMIT_DATA..." autocomplete="off">
                     <button type="button" onclick="document.getElementById('file-input').click()" class="text-green-800 hover:text-green-500 px-3 py-1 border border-green-900 text-[10px] rounded"><i class="fas fa-image"></i></button>
                     <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
                     <button type="submit" class="btn-base btn-green px-4">EXEC</button>
                 </form>
-                <div class="text-[8px] text-center text-green-900 mt-1 uppercase tracking-[0.4em]">SECURE_UPLINK</div>
+
+                <!-- BOT Q1: Topic Selection -->
+                <div id="bot-q1-form" class="hidden flex gap-2 max-w-5xl mx-auto w-full">
+                    <select id="bot-q1-select" class="flex-1 bg-black border border-cyan-900 text-cyan-500 p-2 outline-none uppercase font-bold text-xs cursor-pointer">
+                        <option value="Appeal request">Appeal request</option>
+                        <option value="Report Abuse">Report Abuse</option>
+                        <option value="Technical Support">Technical Support</option>
+                        <option value="Account Deletion">Account Deletion</option>
+                        <option value="I want admin">I want admin</option>
+                    </select>
+                    <button onclick="advanceBotFlow('q1')" class="btn-base btn-bot px-6">SUBMIT</button>
+                </div>
+
+                <!-- BOT Q2: Target Selection -->
+                <div id="bot-q2-form" class="hidden flex gap-4 max-w-5xl mx-auto w-full justify-center">
+                    <button onclick="advanceBotFlow('q2', 'Myself')" class="btn-base btn-bot px-8 py-3">MYSELF</button>
+                    <button onclick="advanceBotFlow('q2', 'A friend')" class="btn-base btn-bot px-8 py-3">A FRIEND</button>
+                </div>
+
+                <!-- BOT Q3: Friend ID Input -->
+                <div id="bot-q3-form" class="hidden flex gap-2 max-w-5xl mx-auto w-full">
+                    <input id="bot-q3-input" type="text" class="flex-1 bg-black border border-cyan-900 text-cyan-500 p-2 outline-none uppercase font-bold text-xs" placeholder="ENTER FRIEND ID...">
+                    <button onclick="advanceBotFlow('q3')" class="btn-base btn-bot px-6">SUBMIT</button>
+                </div>
+
+                <!-- CLOSED TICKET MESSAGE -->
+                <div id="ticket-closed-msg" class="hidden text-center text-red-500 font-bold text-xs py-3 uppercase tracking-widest border border-red-900 bg-red-950/20 w-full">
+                    <i class="fas fa-lock mr-2"></i> TICKET LOCKED BY ADMINISTRATION
+                </div>
+
+                <div class="text-[8px] text-center text-green-900 mt-2 uppercase tracking-[0.4em]" id="input-footer-text">SECURE_UPLINK</div>
             </div>
         </div>
     </div>
@@ -309,11 +337,12 @@
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="exportData()" class="btn-base border-green-600 text-green-500 hover:bg-green-600 hover:text-black">BACKUP_DATA</button>
-                    <button onclick="showMsgBox('NOTICE', 'Import feature restricted.')" class="btn-base border-zinc-700 text-zinc-500 cursor-not-allowed">IMPORT_DATA</button>
+                    <button onclick="confirmDemoteSelf()" class="btn-base border-zinc-700 text-zinc-500 hover:text-white hover:border-zinc-500">DEMOTE_SELF</button>
                 </div>
                 <button onclick="broadcastAnnouncement()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ GLOBAL_BROADCAST ]</button>
                 <button onclick="toggleMaintenanceMode()" class="w-full btn-base border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-black">[ TOGGLE_MAINTENANCE_MODE ]</button>
                 <button onclick="openBanList()" class="w-full btn-base border-red-800 text-red-500 hover:bg-red-900">[ MANAGE_BLACKLIST ]</button>
+                <button onclick="promptPromoteUser()" class="w-full btn-base border-green-800 text-green-500 hover:bg-green-900">[ PROMOTE_TO_MOD ]</button>
                 <div class="pt-4 border-t border-red-950 space-y-2">
                     <button onclick="confirmSystemFlush()" class="w-full btn-base btn-red py-3 bg-red-950/20 font-black tracking-widest">WIPE_ALL_MSG_DATA</button>
                 </div>
@@ -370,7 +399,7 @@
         let testLock = false;
         let pendingTestLogs = [];
         let maintClickCount = 0;
-        let currentSystemOnline = true; // Default assumption
+        let currentSystemOnline = true; 
 
         // --- CUSTOM MODALS LOGIC ---
         let msgBoxCallback = null;
@@ -452,17 +481,23 @@
 
             // --- MAINTENANCE MODE DIAGNOSTIC LISTENER ---
             if (maintenanceUnsub) maintenanceUnsub();
-            maintenanceUnsub = onSnapshot(doc(db, '_diagnostics', 'online'), (snap) => {
+            maintenanceUnsub = onSnapshot(doc(db, '_diagnostics', 'online'), async (snap) => {
                 const isOnline = snap.exists() ? snap.data().online : true;
                 currentSystemOnline = isOnline;
-                const isAdmin = isRootAdmin(user);
+                
+                let isModUser = false;
+                if (user) {
+                    const uSnap = await getDoc(doc(db, 'users', user.uid));
+                    if (uSnap.exists() && uSnap.data().isMod) isModUser = true;
+                }
+
+                const isAdmin = isRootAdmin(user) || isModUser;
                 const isTester = user && (user.email?.includes('@eugeneevons.com') || user.displayName?.startsWith('TESTER_'));
 
                 if (!isOnline && !isAdmin && !isTester) {
                     document.getElementById('maintenance-screen').classList.remove('hidden');
                     if (user) signOut(auth);
                 } else {
-                    // Only hide if we aren't bypassing via clicks
                     if(maintClickCount < 3) {
                         document.getElementById('maintenance-screen').classList.add('hidden');
                     }
@@ -513,26 +548,30 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
-                isModerator = isRootAdmin(user);
-                if(isModerator) {
-                    document.getElementById('admin-panel-btn').classList.remove('hidden');
-                }
-                
                 if(banCheckUnsub) banCheckUnsub();
-                banCheckUnsub = onSnapshot(doc(db, 'banned_users', user.uid), (doc) => {
-                    if(doc.exists()) {
-                        document.getElementById('ban-reason-display').innerText = "REASON: " + doc.data().reason;
+                banCheckUnsub = onSnapshot(doc(db, 'banned_users', user.uid), (docSnap) => {
+                    if(docSnap.exists()) {
+                        document.getElementById('ban-reason-display').innerText = "REASON: " + docSnap.data().reason;
                         document.getElementById('suspended-screen').classList.remove('hidden');
                         signOut(auth);
                     }
                 });
 
                 try {
-                    await setDoc(doc(db, 'users', user.uid), {
-                        nickname: user.displayName || 'Anonymous',
-                        email: user.email || 'guest',
-                        lastSeen: serverTimestamp()
-                    }, { merge: true });
+                    const uRef = doc(db, 'users', user.uid);
+                    const uSnap = await getDoc(uRef);
+                    if (!uSnap.exists()) {
+                        await setDoc(uRef, { nickname: user.displayName || 'Anonymous', email: user.email || 'guest', lastSeen: serverTimestamp() });
+                    } else {
+                        await updateDoc(uRef, { lastSeen: serverTimestamp() });
+                        if (uSnap.data().isMod) isModerator = true;
+                    }
+                    if (isRootAdmin(user)) isModerator = true;
+
+                    if(isModerator) {
+                        document.getElementById('admin-panel-btn').classList.remove('hidden');
+                        document.getElementById('mod-badge').classList.remove('hidden');
+                    }
                     
                     document.getElementById('my-id-display').innerText = user.displayName || 'GUEST';
                     loading.classList.add('hidden');
@@ -546,6 +585,7 @@
             } else {
                 if(!IS_TEST_MODE || (IS_TEST_MODE && !testLock)) {
                     currentUser = null;
+                    isModerator = false;
                     appScreen.classList.add('hidden');
                     loading.classList.add('hidden');
                     if(maintClickCount < 3) authScreen.classList.remove('hidden');
@@ -559,7 +599,7 @@
             if (maintClickCount >= 3) {
                 document.getElementById('maintenance-screen').classList.add('hidden');
                 document.getElementById('auth-screen').classList.remove('hidden');
-                showMsgBox("OVERRIDE_ACTIVATED", "MAINTENANCE BYPASS TRIGGERED.");
+                maintClickCount = 0; // Reset
             }
         };
 
@@ -569,9 +609,7 @@
                 const newStatus = !currentSystemOnline;
                 await setDoc(doc(db, '_diagnostics', 'online'), { online: newStatus }, { merge: true });
                 showMsgBox("SYSTEM_UPDATE", `MAINTENANCE MODE IS NOW ${newStatus ? 'OFFLINE' : 'ONLINE'}`);
-            } catch (err) {
-                showMsgBox("TOGGLE_FAILED", err.message);
-            }
+            } catch (err) { showMsgBox("TOGGLE_FAILED", err.message); }
         };
 
         // --- DATA LISTENERS ---
@@ -607,9 +645,15 @@
                         if (data.type === 'modmail') {
                             const div = document.createElement('div');
                             const isSelected = currentChannel === d.id;
+                            
+                            let statusBadge = '';
+                            if (data.status === 'closed') statusBadge = '<span class="text-[8px] text-red-500">[CLOSED]</span>';
+                            else if (data.status === 'queued') statusBadge = '<span class="text-[8px] text-green-500 animate-pulse">[QUEUED]</span>';
+                            else if (data.status && data.status.startsWith('bot_')) statusBadge = '<span class="text-[8px] text-cyan-500">[BOT_FLOW]</span>';
+
                             div.className = `user-item ${isSelected ? 'active border-yellow-500' : 'border-transparent'} rounded-r !bg-yellow-900/10 hover:!bg-yellow-900/30`;
                             div.onclick = () => switchChannel(d.id);
-                            div.innerHTML = `<div class="flex flex-col overflow-hidden"><span class="text-[10px] font-bold truncate uppercase text-yellow-500">TICKET: ${escapeHtml(data.name)}</span><span class="text-[8px] opacity-60 text-yellow-600">ID: ${d.id.replace('modmail_','').substring(0,5)}...</span></div>`;
+                            div.innerHTML = `<div class="flex flex-col overflow-hidden"><span class="text-[10px] font-bold truncate uppercase text-yellow-500">TICKET: ${escapeHtml(data.name)}</span><span class="text-[8px] opacity-60 text-yellow-600">ID: ${d.id.replace('modmail_','').substring(0,5)}... ${statusBadge}</span></div>`;
                             modTicketList.appendChild(div);
                         }
                     });
@@ -699,8 +743,9 @@
                 rawMessages = messages;
                 const filtered = messages.filter(m => m.channel === currentChannel);
                 const html = filtered.map(m => {
-                    const isMe = m.uid === currentUser.uid;
+                    const isMe = m.uid === currentUser.uid && m.speaker !== 'MMTC';
                     const isSysAdmin = m.uid === 'SYSTEM' || m.nickname === 'SYSTEM';
+                    const isBot = m.speaker === 'MMTC';
                     const date = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...';
                     let content = m.text;
                     
@@ -713,23 +758,33 @@
                         else content = escapeHtml(content);
                     }
                     
-                    // Modmail Topic Styling
-                    if (content.startsWith('[TOPIC:')) {
-                        content = content.replace(/\[TOPIC: (.*?)\]/, '<span class="text-[9px] font-black text-yellow-500 border border-yellow-600 bg-yellow-900/30 px-1 py-0.5 rounded mr-2 uppercase tracking-widest">$1</span>');
+                    const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
+                    
+                    let highlightClass = isMentioned ? 'ping-glow' : (isMe ? 'border-green-500/50' : 'border-green-900');
+                    let nameColor = isMe ? 'text-green-300' : 'text-green-600';
+                    let headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : '';
+                    let modColorClass = '';
+                    
+                    // Mod/Bot Styling Overrides
+                    if (isBot) {
+                        highlightClass = 'bot-glow';
+                        nameColor = 'text-cyan-400';
+                        headerBadge = `<span class="text-[8px] text-cyan-600 border border-cyan-800 px-1 ml-2 rounded"><i class="fas fa-robot"></i> SYSTEM</span>`;
+                    } else if (isSysAdmin || (m.isMod && !isMe)) {
+                        modColorClass = '!border-yellow-600 !bg-yellow-900/10';
+                        nameColor = '!text-yellow-500';
+                        headerBadge = `<span class="text-[8px] text-yellow-600 border border-yellow-800 px-1 ml-2 rounded">ADMIN</span>`;
                     }
 
-                    const isMentioned = !isMe && m.text.includes(`@${currentUser.displayName}`);
-                    const highlightClass = isMentioned ? 'ping-glow' : (isMe ? 'border-green-500/50' : 'border-green-900');
-                    const modColorClass = isSysAdmin || (m.isMod && !isMe) ? '!border-yellow-600 !bg-yellow-900/10' : '';
-                    const headerBadge = isMentioned ? `<span class="text-[9px] text-yellow-500 font-black animate-pulse ml-2">[MENTIONED]</span>` : (m.isMod ? `<span class="text-[8px] text-yellow-600 border border-yellow-800 px-1 ml-2 rounded">ADMIN</span>` : '');
-                    const nickAction = (isMe || isSysAdmin) ? '' : `onclick="switchChannel('${m.uid}')" title="DM" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
+                    const nickAction = (isMe || isSysAdmin || isBot) ? '' : `onclick="switchChannel('${m.uid}')" title="DM" class="nickname-link hover:text-white cursor-pointer hover:underline"`;
+                    const displayNick = isBot ? 'MMTC' : m.nickname;
                     
                     let actions = '';
-                    if (isMe && !content.includes('<img')) actions += `<button onclick="openEditModal('${m.id}', '${escapeHtml(m.text).replace(/'/g, "\\'")}')" class="ml-2 text-[8px] text-green-600 hover:text-white font-bold uppercase">[EDIT]</button>`;
-                    if (isMe || isModerator) actions += `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 font-bold uppercase">[DEL]</button>`;
-                    if (isModerator && !isMe && !isSysAdmin) actions += `<button onclick="confirmBan('${m.uid}', '${m.nickname}')" class="ml-1 text-[8px] text-red-500 bg-red-900/20 px-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">[BAN]</button>`;
+                    if (isMe && !content.includes('<img') && !isBot) actions += `<button onclick="openEditModal('${m.id}', '${escapeHtml(m.text).replace(/'/g, "\\'")}')" class="ml-2 text-[8px] text-green-600 hover:text-white font-bold uppercase">[EDIT]</button>`;
+                    if ((isMe || isModerator) && !isBot) actions += `<button onclick="deleteMsg('${m.id}')" class="ml-2 text-[8px] text-red-800 hover:text-red-500 font-bold uppercase">[DEL]</button>`;
+                    if (isModerator && !isMe && !isSysAdmin && !isBot) actions += `<button onclick="confirmBan('${m.uid}', '${m.nickname}')" class="ml-1 text-[8px] text-red-500 bg-red-900/20 px-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">[BAN]</button>`;
 
-                    return `<div class="msg-anim mb-4 flex flex-col ${isMe ? 'items-end' : 'items-start'} group"><div class="flex items-center gap-2 mb-1 px-1"><span class="text-[9px] text-green-700 font-bold tracking-tighter">${date}</span><span ${nickAction} class="text-xs font-bold ${isMe ? 'text-green-300' : 'text-green-600'} uppercase tracking-tight ${m.isMod ? '!text-yellow-500' : ''}">${m.nickname}</span>${headerBadge}${actions}</div><div class="max-w-[90%] md:max-w-[70%] text-sm font-mono break-words bg-green-900/10 border ${highlightClass} ${modColorClass} p-3 rounded-lg shadow-sm leading-relaxed">${content}</div></div>`;
+                    return `<div class="msg-anim mb-4 flex flex-col ${isMe ? 'items-end' : 'items-start'} group"><div class="flex items-center gap-2 mb-1 px-1"><span class="text-[9px] text-green-700 font-bold tracking-tighter">${date}</span><span ${nickAction} class="text-xs font-bold ${nameColor} uppercase tracking-tight">${displayNick}</span>${headerBadge}${actions}</div><div class="max-w-[90%] md:max-w-[70%] text-sm font-mono break-words bg-green-900/10 border ${highlightClass} ${modColorClass} p-3 rounded-lg shadow-sm leading-relaxed">${content}</div></div>`;
                 });
                 container.innerHTML = html.join('');
                 requestAnimationFrame(() => { setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); });
@@ -749,6 +804,7 @@
             toggleSidebar(true);
         };
 
+        // --- MMTC BOT LOGIC ---
         window.openModmail = async () => {
             const channelId = `modmail_${currentUser.uid}`;
             const chanRef = doc(db, 'channels', channelId);
@@ -757,46 +813,157 @@
                 await setDoc(chanRef, {
                     name: `TICKET_${currentUser.displayName}`,
                     type: 'modmail',
+                    status: 'bot_q1',
                     createdBy: currentUser.uid,
                     createdAt: serverTimestamp()
                 });
+                // Initial Bot Messages
+                await sendBotMsg("Hello! I am MODMAIL-TERMCHAT (MMTC) and I will help you today.", channelId);
+                await sendBotMsg("What would you like to contact support today for?", channelId);
             }
             switchChannel(channelId);
         };
 
+        window.sendBotMsg = async (text, targetChan = currentChannel) => {
+            try {
+                await addDoc(collection(db, 'messages'), {
+                    text: text, uid: currentUser.uid, nickname: currentUser.displayName, speaker: 'MMTC',
+                    timestamp: serverTimestamp(), channel: targetChan
+                });
+            } catch(e) { console.error("Bot Msg Fail:", e); }
+        };
+
+        window.advanceBotFlow = async (step, overrideValue = null) => {
+            const chanRef = doc(db, 'channels', currentChannel);
+            
+            if (step === 'q1') {
+                const val = document.getElementById('bot-q1-select').value;
+                await sendBotMsg(`> USER SELECTED: ${val}`);
+                
+                if (val === 'I want admin') {
+                    await sendBotMsg("This is not a valid option to contact support. Look out for applications when they come out.");
+                    await updateDoc(chanRef, { status: 'closed' });
+                } else {
+                    await updateDoc(chanRef, { topic: val, status: 'bot_q2' });
+                    await sendBotMsg("Are you helping yourself or a friend?");
+                }
+            } 
+            else if (step === 'q2') {
+                await sendBotMsg(`> USER SELECTED: ${overrideValue}`);
+                if (overrideValue === 'Myself') {
+                    await sendBotMsg("Great! Transferring you to an agent...");
+                    await sendBotMsg("You are currently in queue. Please Wait.");
+                    await updateDoc(chanRef, { status: 'queued', target: 'self' });
+                } else {
+                    await updateDoc(chanRef, { status: 'bot_q3', target: 'friend' });
+                    await sendBotMsg("Please insert the ID of the friend you are helping.");
+                }
+            }
+            else if (step === 'q3') {
+                const val = document.getElementById('bot-q3-input').value.trim();
+                if(!val) return;
+                await sendBotMsg(`> FRIEND ID PROVIDED: ${val}`);
+                await sendBotMsg("Great! Transferring you to an agent...");
+                await sendBotMsg("You are currently in queue. Please Wait.");
+                await updateDoc(chanRef, { status: 'queued', friendId: val });
+            }
+        };
+
+        // --- MOD TICKET CONTROLS ---
+        window.changeTicketStatus = async (newStatus) => {
+            try { await updateDoc(doc(db, 'channels', currentChannel), { status: newStatus }); } 
+            catch(e) { showMsgBox("ERROR", e.message); }
+        };
+
+        window.deleteTicket = () => {
+            showConfirmBox("PURGE TICKET", "Delete this ticket and all associated messages?", async () => {
+                try {
+                    // Note: Client-side bulk deletion requires iterating messages. 
+                    // To keep it clean, we just delete the channel doc. Messages are orphaned but hidden.
+                    await deleteDoc(doc(db, 'channels', currentChannel));
+                    switchChannel('global');
+                    showMsgBox("PURGED", "TICKET DESTROYED.");
+                } catch(e) { showMsgBox("ERROR", e.message); }
+            });
+        };
+
         function updateHeaderUI() {
             const title = document.getElementById('mobile-title');
+            const subTitle = document.getElementById('mobile-subtitle');
             const iconImg = document.getElementById('current-channel-icon');
             const defaultIcon = document.getElementById('default-channel-icon');
             const adminSetIconBtn = document.getElementById('set-global-icon-btn');
             const addMemberBtn = document.getElementById('add-group-member-btn');
-            const topicSelector = document.getElementById('modmail-topic-selector');
             const cannedResponses = document.getElementById('mod-canned-responses');
+            
+            // Input Area Management
+            const stdForm = document.getElementById('standard-chat-form');
+            const botQ1 = document.getElementById('bot-q1-form');
+            const botQ2 = document.getElementById('bot-q2-form');
+            const botQ3 = document.getElementById('bot-q3-form');
+            const closedMsg = document.getElementById('ticket-closed-msg');
+            const modActions = document.getElementById('mod-ticket-actions');
+            const inputFooter = document.getElementById('input-footer-text');
 
             let chanData = channelsCache[currentChannel];
             
+            // Reset visibilities
             adminSetIconBtn.classList.add('hidden');
             addMemberBtn.classList.add('hidden');
-            topicSelector.classList.add('hidden');
             cannedResponses.classList.add('hidden');
+            stdForm.classList.remove('hidden');
+            botQ1.classList.add('hidden');
+            botQ2.classList.add('hidden');
+            botQ3.classList.add('hidden');
+            closedMsg.classList.add('hidden');
+            modActions.classList.add('hidden');
+            inputFooter.classList.remove('hidden');
             
             if (currentChannel === 'global') {
                 title.innerText = chanData?.name || "GLOBAL_FEED";
+                subTitle.innerText = "UPLINK_ESTABLISHED";
                 if(isModerator) adminSetIconBtn.classList.remove('hidden');
             } else if (currentChannel.startsWith('modmail_')) {
                 title.innerText = chanData?.name || "MODMAIL_SUPPORT";
                 title.classList.add('text-yellow-500');
-                if(isModerator) cannedResponses.classList.remove('hidden');
-                else topicSelector.classList.remove('hidden');
+                
+                let subText = "ESTABLISHING SECURE LINE...";
+                if(chanData?.status === 'closed') subText = "TICKET LOCKED";
+                else if(chanData?.status === 'queued') subText = "IN QUEUE - WAITING FOR AGENT";
+                else if(chanData?.status?.startsWith('bot_')) subText = "MMTC VIRTUAL ASSISTANT";
+                subTitle.innerText = subText;
+                subTitle.className = "text-[8px] animate-pulse text-yellow-600";
+
+                if (isModerator) {
+                    cannedResponses.classList.remove('hidden');
+                    modActions.classList.remove('hidden');
+                    // Mods always see the standard input to type
+                } else {
+                    // Regular user view for Modmail
+                    stdForm.classList.add('hidden');
+                    inputFooter.classList.add('hidden');
+                    if (chanData?.status === 'bot_q1') botQ1.classList.remove('hidden');
+                    else if (chanData?.status === 'bot_q2') botQ2.classList.remove('hidden');
+                    else if (chanData?.status === 'bot_q3') botQ3.classList.remove('hidden');
+                    else if (chanData?.status === 'closed') closedMsg.classList.remove('hidden');
+                    else if (chanData?.status === 'queued') {
+                        stdForm.classList.remove('hidden'); // Unlock input for queued users to talk to mod
+                        inputFooter.classList.remove('hidden');
+                    }
+                }
             } else if (chanData) {
                 title.innerText = chanData.name;
                 title.classList.remove('text-yellow-500');
+                subTitle.innerText = "UPLINK_ESTABLISHED";
+                subTitle.className = "text-[8px] animate-pulse text-green-800";
                 if (chanData.type === 'private' && chanData.createdBy === currentUser.uid) {
                     addMemberBtn.classList.remove('hidden');
                 }
             } else {
                 title.innerText = "PRIVATE_DM";
                 title.classList.remove('text-yellow-500');
+                subTitle.innerText = "P2P ENCRYPTED";
+                subTitle.className = "text-[8px] animate-pulse text-green-800";
             }
 
             if(chanData && chanData.icon) {
@@ -830,12 +997,6 @@
             const input = document.getElementById('msg-input'); 
             let text = input.value.trim(); 
             if(!text) return; 
-            
-            // Append Topic if in Modmail and user is not a mod
-            if (currentChannel.startsWith('modmail_') && !isModerator) {
-                const topic = document.getElementById('modmail-topic').value;
-                text = `[TOPIC: ${topic}] ${text}`;
-            }
 
             logTestAction("MSG_SENT"); 
             try { 
@@ -911,7 +1072,6 @@
             e.preventDefault(); 
             const em=document.getElementById('email-input').value, pw=document.getElementById('password-input').value; 
             try {
-                // Strict login only. No creation.
                 await signInWithEmailAndPassword(auth, em, pw); 
             } catch(e) {
                 showMsgBox("AUTH_FAIL", "CREDENTIALS REJECTED OR NOT FOUND.");
@@ -925,12 +1085,31 @@
         window.openNameModal = () => document.getElementById('modal-name').classList.remove('hidden');
         window.saveName = async () => { const n=document.getElementById('new-name').value.trim(); if(n) { logTestAction("CHANGED_NAME"); await updateProfile(currentUser,{displayName:n}); await setDoc(doc(db,'users',currentUser.uid),{nickname:n},{merge:true}); location.reload(); } };
         
+        // --- ADMIN / MODERATION GUARDRAILS ---
+        window.confirmDemoteSelf = async () => {
+            if (isRootAdmin(currentUser)) return showMsgBox("FORBIDDEN", "ROOT_ADMIN_CANNOT_DEMOTE_SELF.");
+            showConfirmBox("DEMOTE_SELF", "REVOKE MODERATOR PRIVILEGES?", async () => {
+                await updateDoc(doc(db, 'users', currentUser.uid), { isMod: false });
+                location.reload();
+            });
+        };
+
         window.confirmDecommission = async () => { 
-            if(isRootAdmin(currentUser)) return showMsgBox("DENIED", "ROOT_ADMIN CANNOT SELF-TERMINATE.");
+            if(isRootAdmin(currentUser)) return showMsgBox("FORBIDDEN", "ROOT_ADMIN_CANNOT_PURGE_SELF.");
+            if(isModerator) return showMsgBox("FORBIDDEN", "MODERATORS CANNOT DELETE ACCOUNTS. DEMOTE YOURSELF FIRST.");
             
             showPromptBox("CRITICAL", "TYPE 'TERMINATE' TO PURGE IDENTITY:", async (val) => {
                 if(val !== 'TERMINATE') return showMsgBox("ABORTED", "DECOMMISSION ABORTED.");
                 try{ await deleteUser(currentUser); location.reload(); }catch(e){showMsgBox("ERROR", "REQUIRES RE-AUTHENTICATION. PLEASE LOGOUT AND LOGIN AGAIN TO DELETE.");} 
+            });
+        };
+
+        window.promptPromoteUser = () => {
+            showPromptBox("PROMOTE TO MOD", "ENTER USER ID TO PROMOTE:", async (val) => {
+                const target = allUsers.find(u => u.id.startsWith(val));
+                if (!target) return showMsgBox("ERROR", "NODE NOT FOUND.");
+                await updateDoc(doc(db, 'users', target.id), { isMod: true });
+                showMsgBox("SUCCESS", `${target.nickname} PROMOTED TO MODERATOR.`);
             });
         };
         
